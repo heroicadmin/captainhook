@@ -1713,20 +1713,20 @@
 
 <sc-if value="{{ picker.open }}" hint-placeholder-val="{{ false }}">
   <div onClick="{{ picker.onClose }}" style="position:fixed;inset:0;z-index:200;background:rgba(22,19,31,.42);display:grid;place-items:center;padding:32px">
-    <div onClick="{{ stop }}" style="width:min(920px,100%);max-height:82vh;overflow:auto;background:#FFFFFF;border:1px solid #E6E4EE;border-radius:12px;box-shadow:0 30px 80px -24px rgba(30,26,48,.4);padding:20px">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+    <div onClick="{{ stop }}" style="width:min(920px,100%);height:min(720px,86vh);display:flex;flex-direction:column;background:#FFFFFF;border:1px solid #E6E4EE;border-radius:12px;box-shadow:0 30px 80px -24px rgba(30,26,48,.4);padding:20px">
+      <div style="flex:none;display:flex;align-items:center;gap:12px;margin-bottom:14px">
         <span style="font-size:15px;font-weight:700">Velg bilde</span>
         <span style="font-size:12px;color:#6E6883">{{ picker.note }}</span>
         <span style="flex:1"></span>
         <button type="button" onClick="{{ picker.onUpload }}" style="font-size:12px;font-weight:600;border-radius:6px;padding:8px 12px;cursor:pointer;background:#F2F0F7;border:1px solid #D5D2E0;color:#322D45">Last opp nytt</button>
         <button type="button" onClick="{{ picker.onClose }}" style="border:0;background:transparent;color:#6E6883;cursor:pointer;font-size:18px">×</button>
       </div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
+      <div style="flex:none;display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
         <sc-for list="{{ picker.cats }}" as="c" hint-placeholder-count="4">
           <button type="button" onClick="{{ c.on }}" style="font-size:12px;font-weight:600;border-radius:6px;padding:7px 12px;cursor:pointer;background:{{ c.bg }};border:1px solid {{ c.border }};color:{{ c.fg }}">{{ c.label }}</button>
         </sc-for>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px">
+      <div style="flex:1;min-height:0;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;align-content:start">
         <sc-for list="{{ picker.items }}" as="im" hint-placeholder-count="8">
           <button type="button" onClick="{{ im.on }}" style="text-align:left;padding:0;cursor:pointer;background:#FFFFFF;border:1px solid {{ im.border }};border-radius:8px;overflow:hidden;transition:transform .16s ease,border-color .16s,box-shadow .16s" style-hover="transform:translateY(-3px);border-color:var(--accent);box-shadow:0 16px 30px -18px rgba(30,26,48,.5)">
             <span style="display:block;height:104px;background-color:#ECEAF3;background-size:cover;background-position:center;background-image:{{ im.thumb }}"></span>
