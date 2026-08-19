@@ -58,6 +58,12 @@
     var R = window.__resources; if (!R) return p;
     return R[p] || R['./' + p] || R[String(p).replace(/^\.\//, '')] || p;
   };
+  /* JS-modulene lastes med sidens query-streng, så en cache-bust på siden (?v=…)
+     også henter modulene på nytt. Uten query lastes de rått (produksjon revaliderer via headere). */
+  window.__modURL = function (p) {
+    var u = window.__resURL(p); if (!u) return u;
+    return u + (location.search || '?b=2');
+  };
   addEventListener('error', function (e) {
     var el = e.target;
     if (!el || el.tagName !== 'IMG') return;
@@ -1192,6 +1198,19 @@
 
           <div style="display:flex;flex-direction:column;gap:14px;animation:{{ subAnim }}">
             <sc-if value="{{ admin.libHasSel }}" hint-placeholder-val="{{ true }}">
+              <div style="background:#16131F;border:1px solid #E6E4EE;border-radius:10px;overflow:hidden">
+                <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;background:#FFFFFF;border-bottom:1px solid #E6E4EE">
+                  <span style="font-size:10px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#8A85A0">Forhåndsvisning</span>
+                  <span style="flex:1;min-width:0;font-size:11px;color:#A7A3B7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Slik ser sliden ut med standardinnholdet. Plassering redigeres i «Åpne full slide».</span>
+                  <button type="button" onClick="{{ admin.onLibFull }}" style="flex:none;font-size:11px;font-weight:700;border-radius:5px;padding:6px 10px;cursor:pointer;background:var(--accent);border:0;color:var(--accent-ink)">Åpne full slide</button>
+                </div>
+                <div ref="{{ admin.libThumbRef }}" style="position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;background:#16131F">
+                  <div data-noi18n="1" style="position:absolute;top:0;left:0;width:1180px;transform-origin:top left;transform:scale(var(--s,.5))">
+                    <dc-import name="PitchSlide" slide="{{ admin.libPreview }}" meta="{{ admin.libPreviewMeta }}" system="{{ system }}" index="{{ 0 }}" total="{{ 1 }}" show-num="{{ false }}" hint-size="1180px,664px"></dc-import>
+                  </div>
+                </div>
+              </div>
+
               <div style="background:#FFFFFF;border:1px solid #E6E4EE;border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:12px">
                 <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
                   <input type="text" value="{{ admin.libName }}" onInput="{{ admin.onLibName }}" style="flex:1;min-width:180px;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:5px;color:#16131F;font-size:14px;font-weight:700;padding:8px 10px">
@@ -1453,6 +1472,16 @@
             <button type="button" onClick="{{ c.on }}" title="{{ c.title }}" style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;border-radius:6px;padding:6px 10px;cursor:pointer;background:{{ c.bg }};border:1px solid {{ c.border }};color:{{ c.fg }}"><span style="font-size:11px">{{ c.mark }}</span>{{ c.label }}</button>
           </sc-for>
           <span style="flex:1;min-width:120px;font-size:11px;color:#8A85A0;line-height:1.45">Mapper som er av brukes aldri til å fylle bilderammer automatisk. De kan fortsatt velges manuelt.</span>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;background:#F8F7FB;border:1px solid #E6E4EE;border-radius:8px;padding:10px 12px;margin-bottom:16px">
+          <span style="flex:none;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#55506B;padding-top:9px">Eier · domene</span>
+          <sc-for list="{{ admin.catOwners }}" as="c" hint-placeholder-count="4">
+            <label style="display:flex;flex-direction:column;gap:3px">
+              <span style="font-size:11px;font-weight:600;color:#322D45;white-space:nowrap">{{ c.name }}</span>
+              <input type="text" value="{{ c.domain }}" onInput="{{ c.onDomain }}" placeholder="alle" style="width:132px;background:#FFFFFF;border:1px solid #D5D2E0;border-radius:5px;color:#16131F;font-size:12px;padding:6px 8px">
+            </label>
+          </sc-for>
+          <span style="flex:1;min-width:150px;font-size:11px;color:#8A85A0;line-height:1.45;padding-top:2px">Bare innloggede med dette e-postdomenet ser mappen når de velger bilder. Tomt = åpen for alle.</span>
         </div>
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;animation:{{ subAnim }}">
           <sc-for list="{{ admin.images }}" as="im" hint-placeholder-count="8">
@@ -1784,14 +1813,14 @@ class Component extends DCLogic {
   }
 
   componentDidMount() {
-    import(window.__resURL('./i18n.js')).then(I => {
+    import(window.__modURL('./i18n.js')).then(I => {
       this.I = I;
       let lang = 'no';
       try { lang = localStorage.getItem(this.LANG_KEY) || 'no'; } catch (e) {}
       this.hookDialogs();
       this.setState({ uiLang: lang }, () => this.applyLang());
     });
-    Promise.all([import(window.__resURL('./system-data.js')), import(window.__resURL('./cloud-store.js'))]).then(async ([D, A]) => {
+    Promise.all([import(window.__modURL('./system-data.js')), import(window.__modURL('./cloud-store.js'))]).then(async ([D, A]) => {
       this.D = D; this.A = A;
       /* Dataene ligger i Supabase, ikke i nettleseren. Uten oppsett eller innlogging
          vises porten i stedet for flaten — ellers ville man redigert i løse luften. */
@@ -2457,7 +2486,7 @@ class Component extends DCLogic {
     }
     this.setState({ exportingHtml: false });
   }
-  sheetIO() { return this._sheetIO || (this._sheetIO = import(window.__resURL('./sheet-io.js'))); }
+  sheetIO() { return this._sheetIO || (this._sheetIO = import(window.__modURL('./sheet-io.js'))); }
   /* Arkivminiatyrer: sliden rendres i 1180 px og skaleres etter kortets faktiske bredde. */
   thumbRef = el => {
     if (!this._ro) this._ro = new ResizeObserver(es => es.forEach(e => {
@@ -2760,6 +2789,15 @@ class Component extends DCLogic {
     /* mapper som er slått av fyller ikke bildeflater — de er fortsatt valgbare manuelt */
     const noFill = store.catsNoFill || D.NOFILL_CATS;
     const profileCats = (store.imageCats || D.IMAGE_CATS).filter(c => !noFill.includes(c));
+    /* Bildemapper eies av et selskap (e-postdomene). En innlogget bruker velger bare fra
+       mappene sitt eget domene eier; tom eier = åpen for alle. Admin → Bilder viser alle.
+       Logomappene er ett unntak: hvert selskap har sin egen, men den vises utad bare som «Logoer». */
+    const catDomains = store.catDomains || {};
+    const catOwned = c => { const d = (catDomains[c] || '').toLowerCase(); return !d || d === myDomain; };
+    const isLogoCat = c => noFill.includes(c);
+    const catLabel = c => (isLogoCat(c) ? 'Logoer' : c);
+    const myLogoCat = (store.imageCats || D.IMAGE_CATS).find(c => isLogoCat(c) && catOwned(c)) || D.LOGO_CAT;
+    const myProfileCats = profileCats.filter(catOwned);
 
     /* Levende bakgrunn: ett lag bak hele presentasjonen, ikke ett per slide.
        Tre nivåer styrer tetthet, fart og hvor mye laget slipper igjennom. */
@@ -2870,7 +2908,7 @@ class Component extends DCLogic {
         this.extractColors(rec.src, cols => this.setState(st => ({ nw: { ...st.nw, swatches: cols, accent: cols[0] || st.nw.accent } })));
       }, { maxEdge: 900 }),
       senderOpts: senders.map(sd => ({ label: sd.name, ...pill(sd.id === nwS.sender), on: () => this.setState(st => ({ nw: { ...st.nw, sender: sd.id } })) })),
-      profileOpts: profileCats.map(c => ({ label: c, ...pill(c === nwS.profile), on: () => this.setState(st => ({ nw: { ...st.nw, profile: c } })) })),
+      profileOpts: myProfileCats.map(c => ({ label: c, ...pill(c === nwS.profile), on: () => this.setState(st => ({ nw: { ...st.nw, profile: c } })) })),
       swatches: (nwS.swatches || []).map(c => ({ hex: c, border: c === nwS.accent ? '#16131F' : 'transparent', on: () => this.setState(st => ({ nw: { ...st.nw, accent: c } })) })),
       // kortene leses fra det delte laget, ikke fra koden — ellers er admin en blindvei
       templates: store.templates.map(t => ({ name: t.name, len: t.blocks.length + ' blokker', desc: t.desc || 'Egendefinert template fra admin.',
@@ -3094,7 +3132,7 @@ class Component extends DCLogic {
               subs: [
                 { isText: true, flex: 1, ph: 'Navn — vises når ruten er uten logo', value: x.text, on: e => write(i, { text: e.target.value }) },
                 { isImg: true, ph: x.img ? 'Bytt logo' : 'Velg eller last opp logo', thumb: this.cssUrl(x.img),
-                  on: () => this.setState({ picker: { mode: 'block', path: [key, i, 'img'], wall: true }, pickerCat: D.LOGO_CAT }) },
+                  on: () => this.setState({ picker: { mode: 'block', path: [key, i, 'img'], wall: true }, pickerCat: myLogoCat }) },
                 { isToggle: true, ph: 'Krone — vises når man peker på ruten', mark: x.crown ? '♚ Krone' : 'Krone av',
                   bg: x.crown ? '#FFB81C' : '#F2F0F7', border: x.crown ? '#FFB81C' : '#D5D2E0', fg: x.crown ? '#16131F' : '#8A85A0',
                   on: () => write(i, { crown: !x.crown }) },
@@ -3289,7 +3327,7 @@ class Component extends DCLogic {
             head: x.name || 'Logo ' + (i + 1), tint: 'var(--accent)', canAddSub: false,
             subs: [
               { isImg: true, ph: x.img ? 'Bytt logo' : 'Velg eller last opp logo', thumb: this.cssUrl(x.img),
-                on: () => this.setState({ picker: { mode: 'block', path: [key, i, 'img'] }, pickerCat: D.LOGO_CAT }) },
+                on: () => this.setState({ picker: { mode: 'block', path: [key, i, 'img'] }, pickerCat: myLogoCat }) },
               { isText: true, flex: 1, ph: 'Navn — vises når logo mangler', value: x.name || '', on: e => this.editData([key, i], { ...x, name: e.target.value }) }
             ],
             onDel: () => set((val || []).filter((_, j) => j !== i))
@@ -3301,7 +3339,7 @@ class Component extends DCLogic {
             head: x.head || 'Fordel ' + (i + 1), tint: 'var(--accent)', canAddSub: false,
             subs: [
               { isImg: true, ph: x.img ? 'Bytt logo' : 'Velg eller last opp logo', thumb: this.cssUrl(x.img),
-                on: () => this.setState({ picker: { mode: 'block', path: [key, i, 'img'] }, pickerCat: D.LOGO_CAT }) },
+                on: () => this.setState({ picker: { mode: 'block', path: [key, i, 'img'] }, pickerCat: myLogoCat }) },
               { isText: true, flex: 1, ph: 'Navn — Monster', value: x.head || '', on: e => this.editData([key, i], { ...x, head: e.target.value }) },
               { isText: true, flex: 1, ph: 'Tekst', value: x.text || '', on: e => this.editData([key, i], { ...x, text: e.target.value }) },
               { isText: true, flex: 1, ph: 'Kode — MONSTER1337', value: x.tag || '', on: e => this.editData([key, i], { ...x, tag: e.target.value }) }
@@ -3315,7 +3353,7 @@ class Component extends DCLogic {
             head: x.head || 'Punkt ' + (i + 1), tint: 'var(--accent)', canAddSub: false,
             subs: [
               { isImg: true, ph: x.img ? 'Bytt ikon' : 'Velg eller last opp ikon', thumb: this.cssUrl(x.img),
-                on: () => this.setState({ picker: { mode: 'block', path: [key, i, 'img'] }, pickerCat: D.LOGO_CAT }) },
+                on: () => this.setState({ picker: { mode: 'block', path: [key, i, 'img'] }, pickerCat: myLogoCat }) },
               { isText: true, flex: 1, ph: 'Overskrift', value: x.head || '', on: e => this.editData([key, i], { ...x, head: e.target.value }) },
               { isText: true, flex: 1, ph: 'Tekst', value: x.text || '', on: e => this.editData([key, i], { ...x, text: e.target.value }) },
               { isText: true, flex: 1, ph: 'Lenketekst (valgfri)', value: x.tag || '', on: e => this.editData([key, i], { ...x, tag: e.target.value }) }
@@ -3548,7 +3586,7 @@ class Component extends DCLogic {
         noLogo: !pitch.meta.logo,
         logoPlateBg: pitch.meta.logoPlate === 'dark' ? '#12101A' : pitch.meta.logoPlate === 'none' ? '#ECEAF3' : '#FFFFFF',
         senderOpts: senders.map(sd => ({ label: sd.name, ...pill(sd.id === (pitch.meta.sender || senders[0].id)), on: () => this.updatePitch(p => { p.meta.sender = sd.id; }) })),
-        profileOpts: ['Alle', ...profileCats].map(c => ({ label: c, ...pill(c === (pitch.meta.imageProfile || 'Alle')), on: () => this.updatePitch(p => { p.meta.imageProfile = c; }) })),
+        profileOpts: ['Alle', ...myProfileCats].map(c => ({ label: c, ...pill(c === (pitch.meta.imageProfile || 'Alle')), on: () => this.updatePitch(p => { p.meta.imageProfile = c; }) })),
         profileNote: 'Fyller bare tomme flater. «Fyll på nytt» bytter alle bildene i pitchen til profilen.',
         onFillImages: () => this.updatePitch(p => {
           D.applyImageProfile(p, store.images || [], p.meta.imageProfile || 'Alle', true, store.library, noFill);
@@ -3836,6 +3874,13 @@ class Component extends DCLogic {
             st.noFillStamp = list.join('|');
           }) };
       }),
+      /* eierskap per mappe: bare innloggede med dette domenet ser mappen når de velger bilder */
+      catOwners: (store.imageCats || D.IMAGE_CATS).map(c => ({
+        name: c,
+        domain: catDomains[c] || '',
+        onDomain: e => { const v = e.target.value.trim().toLowerCase();
+          this.withStore(st => { const m = { ...(st.catDomains || {}) }; if (v) m[c] = v; else delete m[c]; st.catDomains = m; }); }
+      })),
       imagesEmpty: imgList.length === 0,
       images: imgList.map(im => {
         const i = (store.images || []).findIndex(x => x.id === im.id);
@@ -4220,6 +4265,7 @@ class Component extends DCLogic {
       libPreview: libSel ? { id: 'lib-' + libSel.type, type: libSel.type, base: libSel.base, rev: libSel.rev || 1,
         data: JSON.parse(JSON.stringify(libSel.defaults || {})),
         layout: JSON.parse(JSON.stringify(libSel.layout || {})) } : null,
+      libThumbRef: this.thumbRef,
       /* flytting i biblioteket er standardplasseringen. Hele økten teller som én endring:
          versjonen bumpes når fullskjermvisningen lukkes, ikke for hver lille dytt. */
       onLibLayout: (key, v) => {
@@ -4335,18 +4381,22 @@ class Component extends DCLogic {
       }
       this.setState({ picker: null });
     };
-    const pickList = (store.images || []).filter(im => S.pickerCat === 'Alle' || im.cat === S.pickerCat);
+    /* en valgt kategori som brukeren ikke eier (f.eks. arvet fra pitchens bildeprofil) faller tilbake til «Alle» */
+    const effPickerCat = (!S.pickerCat || S.pickerCat === 'Alle' || catOwned(S.pickerCat)) ? (S.pickerCat || 'Alle') : 'Alle';
+    /* eierskap håndheves alltid — aldri bilder fra en mappe brukerens domene ikke eier */
+    const pickList = (store.images || []).filter(im => catOwned(im.cat) && (effPickerCat === 'Alle' || im.cat === effPickerCat));
+    const pickerCatOpts = ['Alle', ...(store.imageCats || D.IMAGE_CATS).filter(catOwned)];
     const picker = {
       open: !!pk,
       note: pk && pk.mode === 'tpl' ? 'Bildet festes til raden i templaten'
         : pk && pk.mode === 'sender' ? 'Bildet brukes på takk-sliden for denne avsenderen'
         : 'Bildet settes på sliden du redigerer',
-      cats: catOpts.map(c => ({ label: c, ...pill(c === S.pickerCat), on: () => this.setState({ pickerCat: c }) })),
-      items: pickList.map(im => ({ name: im.name, cat: im.cat, thumb: this.cssUrl(im.src),
+      cats: pickerCatOpts.map(c => ({ label: catLabel(c), ...pill(c === effPickerCat), on: () => this.setState({ pickerCat: c }) })),
+      items: pickList.map(im => ({ name: im.name, cat: catLabel(im.cat), thumb: this.cssUrl(im.src),
         border: '#E6E4EE', on: () => applyPick(im.src) })),
       uploadHint: 'PNG med gjennomsiktig bakgrunn ser best ut på veggen',
       onUpload: () => this.uploadMany(recs => {
-        const cat = S.pickerCat !== 'Alle' ? S.pickerCat : (store.imageCats || [])[0] || 'Generelt';
+        const cat = effPickerCat !== 'Alle' ? effPickerCat : (store.imageCats || [])[0] || 'Generelt';
         /* id-ene lages her, så galleriet og raden i templaten skrives i samme operasjon
            — ellers slo radskrivingen opp i en liste uten det nye bildet */
         const fresh = recs.map(r => ({ id: D.uid(), name: this.cleanName(r.name), cat, src: 'asset:' + r.id }));

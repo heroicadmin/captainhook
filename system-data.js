@@ -29,11 +29,13 @@ export const senderContact = sd =>
   [(sd||{}).email, (sd||{}).phone, (sd||{}).contact].filter(Boolean).join(' · ');
 
 /* Bildebase. Kategorien styrer hvilke bilder en pitch fylles med. */
-export const IMAGE_CATS = ['Generelt', 'Hardcore Esport', 'Casual Gaming', 'Malta', 'Logoer'];
-/* Logoer hører til logoveggen, ikke til bildeflatene — de holdes utenfor bildeprofilene. */
+export const IMAGE_CATS = ['Generelt', 'Hardcore Esport', 'Casual Gaming', 'Malta', 'Logoer', 'Heroic Logoer'];
+/* Logoer hører til logoveggen, ikke til bildeflatene — de holdes utenfor bildeprofilene.
+   Hvert selskap har sin egen logomappe (eierskap settes i Admin → Bilder); utad vises
+   alle logomapper bare som «Logoer». */
 export const LOGO_CAT = 'Logoer';
-/* Kategorier som ikke skal fylle bildeflater i pitcher. Redigeres i Admin → Bilder. */
-export const NOFILL_CATS = [LOGO_CAT];
+/* Kategorier som ikke skal fylle bildeflater i pitcher (logomapper). Redigeres i Admin → Bilder. */
+export const NOFILL_CATS = [LOGO_CAT, 'Heroic Logoer'];
 export const IMAGES = [
   { id:'img-ashes',    name:'Rise from the ashes',   cat:'Hardcore Esport', src:'images/heroic-ashes-banner.jpg' },
   { id:'img-jersey',   name:'Draktdetalj',           cat:'Hardcore Esport', src:'images/jersey-detalj.jpg' },
