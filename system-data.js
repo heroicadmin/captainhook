@@ -29,7 +29,7 @@ export const senderContact = sd =>
   [(sd||{}).email, (sd||{}).phone, (sd||{}).contact].filter(Boolean).join(' · ');
 
 /* Bildebase. Kategorien styrer hvilke bilder en pitch fylles med. */
-export const IMAGE_CATS = ['Generelt', 'Hardcore Esport', 'Casual Gaming', 'Malta', 'Logoer', 'Heroic Logoer'];
+export const IMAGE_CATS = ['Generelt', 'Hardcore Esport', 'Casual Gaming', 'Malta', 'Logoer', 'Heroic Logoer', 'Heroic Generelt'];
 /* Logoer hører til logoveggen, ikke til bildeflatene — de holdes utenfor bildeprofilene.
    Hvert selskap har sin egen logomappe (eierskap settes i Admin → Bilder); utad vises
    alle logomapper bare som «Logoer». */

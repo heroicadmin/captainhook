@@ -2795,7 +2795,11 @@ class Component extends DCLogic {
     const catDomains = store.catDomains || {};
     const catOwned = c => { const d = (catDomains[c] || '').toLowerCase(); return !d || d === myDomain; };
     const isLogoCat = c => noFill.includes(c);
-    const catLabel = c => (isLogoCat(c) ? 'Logoer' : c);
+    /* Interne nøkler er unike per selskap (f.eks. «Heroic Logoer», «Heroic Generelt»),
+       men vises utad bare med grunnnavnet. Hvert selskap ser bare sine egne mapper. */
+    const catLabel = c => String(c).replace(/^Heroic\s+/, '');
+    /* I admin (super-admin ser alle) legges eierdomenet på som en liten merkelapp, ikke navnet. */
+    const catAdminLabel = c => { const l = catLabel(c); const d = catDomains[c] || ''; return d ? l + ' · ' + d : l; };
     const myLogoCat = (store.imageCats || D.IMAGE_CATS).find(c => isLogoCat(c) && catOwned(c)) || D.LOGO_CAT;
     const myProfileCats = profileCats.filter(catOwned);
 
@@ -2908,7 +2912,7 @@ class Component extends DCLogic {
         this.extractColors(rec.src, cols => this.setState(st => ({ nw: { ...st.nw, swatches: cols, accent: cols[0] || st.nw.accent } })));
       }, { maxEdge: 900 }),
       senderOpts: senders.map(sd => ({ label: sd.name, ...pill(sd.id === nwS.sender), on: () => this.setState(st => ({ nw: { ...st.nw, sender: sd.id } })) })),
-      profileOpts: myProfileCats.map(c => ({ label: c, ...pill(c === nwS.profile), on: () => this.setState(st => ({ nw: { ...st.nw, profile: c } })) })),
+      profileOpts: myProfileCats.map(c => ({ label: catLabel(c), ...pill(c === nwS.profile), on: () => this.setState(st => ({ nw: { ...st.nw, profile: c } })) })),
       swatches: (nwS.swatches || []).map(c => ({ hex: c, border: c === nwS.accent ? '#16131F' : 'transparent', on: () => this.setState(st => ({ nw: { ...st.nw, accent: c } })) })),
       // kortene leses fra det delte laget, ikke fra koden — ellers er admin en blindvei
       templates: store.templates.map(t => ({ name: t.name, len: t.blocks.length + ' blokker', desc: t.desc || 'Egendefinert template fra admin.',
@@ -3586,7 +3590,7 @@ class Component extends DCLogic {
         noLogo: !pitch.meta.logo,
         logoPlateBg: pitch.meta.logoPlate === 'dark' ? '#12101A' : pitch.meta.logoPlate === 'none' ? '#ECEAF3' : '#FFFFFF',
         senderOpts: senders.map(sd => ({ label: sd.name, ...pill(sd.id === (pitch.meta.sender || senders[0].id)), on: () => this.updatePitch(p => { p.meta.sender = sd.id; }) })),
-        profileOpts: ['Alle', ...myProfileCats].map(c => ({ label: c, ...pill(c === (pitch.meta.imageProfile || 'Alle')), on: () => this.updatePitch(p => { p.meta.imageProfile = c; }) })),
+        profileOpts: ['Alle', ...myProfileCats].map(c => ({ label: catLabel(c), ...pill(c === (pitch.meta.imageProfile || 'Alle')), on: () => this.updatePitch(p => { p.meta.imageProfile = c; }) })),
         profileNote: 'Fyller bare tomme flater. «Fyll på nytt» bytter alle bildene i pitchen til profilen.',
         onFillImages: () => this.updatePitch(p => {
           D.applyImageProfile(p, store.images || [], p.meta.imageProfile || 'Alle', true, store.library, noFill);
@@ -3859,13 +3863,13 @@ class Component extends DCLogic {
           } };
       }).filter(g => g.count > 0),
 
-      imgCatFilter: catOpts.map(c => ({ label: c, ...pill(c === S.adminCat), on: () => this.setState({ adminCat: c }) })),
-      imgCatOptions: (store.imageCats || D.IMAGE_CATS).map(c => ({ v: c, label: c })),
+      imgCatFilter: catOpts.map(c => ({ label: catAdminLabel(c), ...pill(c === S.adminCat), on: () => this.setState({ adminCat: c }) })),
+      imgCatOptions: (store.imageCats || D.IMAGE_CATS).map(c => ({ v: c, label: catAdminLabel(c) })),
       /* av/på per mappe: en mappe som er av brukes aldri til å fylle bildeflater automatisk */
       catFill: (store.imageCats || D.IMAGE_CATS).map(c => {
         const on = !noFill.includes(c);
-        return { label: c, mark: on ? '✓' : '✕',
-          title: on ? c + ' fyller bildeflater' : c + ' holdes utenfor bildeflater',
+        return { label: catAdminLabel(c), mark: on ? '✓' : '✕',
+          title: on ? catAdminLabel(c) + ' fyller bildeflater' : catAdminLabel(c) + ' holdes utenfor bildeflater',
           bg: on ? '#EDF7F1' : '#F2F0F7', border: on ? '#B8DFC9' : '#D5D2E0', fg: on ? '#1F6B47' : '#8A85A0',
           on: () => this.withStore(st => {
             const list = st.catsNoFill || (st.catsNoFill = [...D.NOFILL_CATS]);
@@ -3876,7 +3880,7 @@ class Component extends DCLogic {
       }),
       /* eierskap per mappe: bare innloggede med dette domenet ser mappen når de velger bilder */
       catOwners: (store.imageCats || D.IMAGE_CATS).map(c => ({
-        name: c,
+        name: catAdminLabel(c),
         domain: catDomains[c] || '',
         onDomain: e => { const v = e.target.value.trim().toLowerCase();
           this.withStore(st => { const m = { ...(st.catDomains || {}) }; if (v) m[c] = v; else delete m[c]; st.catDomains = m; }); }
