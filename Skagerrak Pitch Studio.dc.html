@@ -148,6 +148,11 @@
           <input type="email" value="{{ gate.email }}" onInput="{{ gate.onEmail }}" onKeyDown="{{ gate.onKeyDown }}" placeholder="navn@skagerrak.no" style="background:#F7F6FA;border:1px solid #D5D2E0;border-radius:8px;color:#322D45;font-size:14px;padding:12px 14px" />
           <input type="password" value="{{ gate.pw }}" onInput="{{ gate.onPw }}" onKeyDown="{{ gate.onKeyDown }}" placeholder="passord" style="background:#F7F6FA;border:1px solid #D5D2E0;border-radius:8px;color:#322D45;font-size:14px;padding:12px 14px" />
           <button type="button" onClick="{{ gate.onLogin }}" style="margin-top:4px;background:#0E9E8F;color:#fff;border:0;border-radius:8px;font-size:14px;font-weight:700;padding:12px 18px;cursor:pointer" style-hover="filter:brightness(1.08)">Logg inn</button>
+          <button type="button" onClick="{{ gate.onRegister }}" style="background:transparent;color:#0E9E8F;border:1px solid #0E9E8F;border-radius:8px;font-size:13.5px;font-weight:600;padding:11px 18px;cursor:pointer" style-hover="background:#E9F6F4">Registrer bruker</button>
+          <p style="font-size:11.5px;line-height:1.5;color:#8A85A0;margin:2px 0 0">Ny bruker? Registrer deg med jobb-e-posten din. Bare godkjente domener slipper inn.</p>
+          <sc-if value="{{ gate.hasNote }}" hint-placeholder-val="{{ false }}">
+            <div style="background:#E9F6F4;border:1px solid #B7E3DB;border-radius:8px;padding:10px 12px;font-size:12.5px;line-height:1.5;color:#0B7A6F">{{ gate.note }}</div>
+          </sc-if>
         </div>
       </sc-if>
 
@@ -1414,6 +1419,10 @@
                 </div>
                 <input type="text" value="{{ br.note }}" onInput="{{ br.onNote }}" placeholder="Merknad — hva som er lett å gjøre feil" style="width:100%;background:#F2F0F7;border:1px solid #E6E4EE;border-radius:5px;color:#55506B;font-size:11.5px;padding:7px 9px">
                 <div style="display:flex;gap:8px;align-items:center">
+                  <label style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#55506B;white-space:nowrap">Eier · domene</label>
+                  <input type="text" value="{{ br.domain }}" onInput="{{ br.onDomain }}" placeholder="alle" title="Bare innloggede med dette e-postdomenet ser merkevaren når de velger. Tomt = alle." style="flex:1;min-width:0;background:#F2F0F7;border:1px solid #E6E4EE;border-radius:5px;color:#16131F;font-size:12px;padding:7px 9px">
+                </div>
+                <div style="display:flex;gap:8px;align-items:center">
                   <label style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#55506B">Optisk skala</label>
                   <input type="number" step="0.05" min="0.5" max="2.5" value="{{ br.scale }}" onInput="{{ br.onScale }}" style="width:74px;background:#F2F0F7;border:1px solid #E6E4EE;border-radius:5px;color:#16131F;font-size:12.5px;padding:6px 8px">
                   <span style="flex:1"></span>
@@ -2654,14 +2663,27 @@ class Component extends DCLogic {
       text: texts[g] || '',
       err: S.gateErr || '',
       hasErr: !!S.gateErr,
+      note: S.gateNote || '',
+      hasNote: !!S.gateNote,
       email: S.gEmail, pw: S.gPw,
-      onEmail: e => this.setState({ gEmail: e.target.value }),
+      onEmail: e => this.setState({ gEmail: e.target.value, gateErr: '', gateNote: '' }),
       onPw: e => this.setState({ gPw: e.target.value }),
       onLogin: async () => {
         try {
           await this.A.signIn(this.state.gEmail, this.state.gPw);
           this.setState({ gPw: '', gate: 'boot', gateErr: '' });
           location.reload();
+        } catch (e) { this.setState({ gateErr: e.message || String(e) }); }
+      },
+      onRegister: async () => {
+        const email = (this.state.gEmail || '').trim();
+        const pw = this.state.gPw || '';
+        if (!email || !pw) return this.setState({ gateErr: 'Fyll inn e-post og passord for å registrere en bruker.', gateNote: '' });
+        this.setState({ gateErr: '', gateNote: '' });
+        try {
+          const sess = await this.A.signUp(email, pw, '');
+          if (sess) { this.setState({ gPw: '', gate: 'boot', gateErr: '' }); location.reload(); }
+          else this.setState({ gPw: '', gateNote: 'Bruker opprettet. Sjekk e-posten for bekreftelse, og logg inn etterpå.' });
         } catch (e) { this.setState({ gateErr: e.message || String(e) }); }
       },
       onUnlock: () => { this.setState({ gateErr: '' }); this.loadClientPitch(this.state.clientSlug, this.state.gPw); },
@@ -2710,6 +2732,12 @@ class Component extends DCLogic {
     const sf = sfOf(isNew && S.nw ? { template: S.nw.template } : meta);
 
     const BR = store.brands || D.BRANDS;
+    /* Merkevarer eies av et selskap, angitt med e-postdomenet i brand.domain.
+       En innlogget bruker velger bare fra merkevarene sitt eget domene eier;
+       tomt domene = synlig for alle. Admin → Merkevare filtreres ikke, så eier kan settes. */
+    const myDomain = (S.who || '').split('@')[1] || '';
+    const brandOwned = k => { const d = ((BR[k] || {}).domain || '').toLowerCase(); return !d || d === myDomain; };
+    const visBrandKeys = Object.keys(BR).filter(brandOwned);
     const brandsResolved = Object.fromEntries(Object.keys(BR).map(k => [k, { ...BR[k], logo: this.resolve(BR[k].logo) }]));
     const senders = store.senders || D.SENDERS;
     const senderOf = mt => {
@@ -2890,7 +2918,7 @@ class Component extends DCLogic {
         if (row && row.type === block.type && row.layout) Object.assign(base, row.layout);
         return JSON.parse(JSON.stringify(base));
       };
-      const brandOpts = Object.keys(BR).map(k => ({ v: k, label: BR[k].name }));
+      const brandOpts = visBrandKeys.map(k => ({ v: k, label: BR[k].name }));
       /* årshjulet har i tillegg kundens egen linje, som henter navn og logo fra pitchen */
       const trackOpts = [{ v: 'client', label: (pitch.meta.client || 'Kunden') + ' — kundens linje' }, ...brandOpts];
 
@@ -3884,7 +3912,7 @@ class Component extends DCLogic {
           name: b.name, desc: b.desc, on: () => writeRows(r => r.push({ type: b.type, title: '', brand: '' }))
         }))
       })),
-      brandOptions: [{ v: '', label: 'Uten produkt' }, ...Object.keys(BR).map(k => ({ v: k, label: BR[k].name }))],
+      brandOptions: [{ v: '', label: 'Uten produkt' }, ...visBrandKeys.map(k => ({ v: k, label: BR[k].name }))],
       tplStack: tplRows.map((row, bi) => {
         const def = LIB(row.type) || { name: row.type, cat: '' };
         const bd = BR[row.brand];
@@ -4016,7 +4044,7 @@ class Component extends DCLogic {
       caseHiddenLabel: caseSel && caseSel.hidden ? 'Skjult — kan ikke velges' : 'Synlig i velgerne',
       caseHiddenBg: caseSel && caseSel.hidden ? '#F2F0F7' : 'var(--accent)',
       caseHiddenFg: caseSel && caseSel.hidden ? '#8A85A0' : 'var(--accent-ink)',
-      caseBrandOptions: [{ v: '', label: 'Ingen merkevare' }, ...Object.keys(BR).map(k => ({ v: k, label: BR[k].name }))],
+      caseBrandOptions: [{ v: '', label: 'Ingen merkevare' }, ...visBrandKeys.map(k => ({ v: k, label: BR[k].name }))],
       caseBrand: caseSel ? caseSel.brand || '' : '',
       onCaseTitle: e => { const v = e.target.value; writeCase(c => { c.title = v; }); },
       onCaseKicker: e => { const v = e.target.value; writeCase(c => { c.kicker = v; }); },
@@ -4222,6 +4250,8 @@ class Component extends DCLogic {
         const set = patch => this.withStore(st => { Object.assign(st.brands[k], patch); });
         return { name: br.name, color: br.color, scale: br.scale || 1, note: br.note || '', thumb: this.cssUrl(br.logo),
           onNote: e => set({ note: e.target.value }),
+          domain: br.domain || '',
+          onDomain: e => set({ domain: e.target.value.trim().toLowerCase() }),
           use: used ? 'på ' + used + (used === 1 ? ' slide' : ' slides') : 'ikke i bruk',
           onName: e => set({ name: e.target.value }),
           onColor: e => set({ color: e.target.value }),
@@ -4246,7 +4276,7 @@ class Component extends DCLogic {
         const name = prompt('Navn på merkevaren'); if (!name) return;
         const key = D.slugify(name).replace(/-/g, '').slice(0, 14);
         if (BR[key]) return alert('Merkevaren finnes allerede.');
-        this.upload(ref => this.withStore(st => { st.brands[key] = { name, color: '#7C5CFF', logo: ref, scale: 1 }; }), { maxEdge: 900 });
+        this.upload(ref => this.withStore(st => { st.brands[key] = { name, color: '#7C5CFF', logo: ref, scale: 1, domain: myDomain }; }), { maxEdge: 900 });
       },
       tiers: store.pricing.tiers.map((t, i) => {
         const set = patch => { const st = this.clone(store); Object.assign(st.pricing.tiers[i], patch); this.save(st); };
