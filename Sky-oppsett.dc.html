@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="supabase-config.js"></script>
+<style>
+  html, body { margin: 0; background: #F2F0F7; }
+  body { font-family: 'Inter', system-ui, sans-serif; color: #322D45; -webkit-font-smoothing: antialiased; }
+  a { color: #0E9E8F; }
+  a:hover { color: #0B7A6F; }
+  input, button, select { font-family: inherit; }
+</style>
+</helmet>
+
+<div style="min-height:100vh;padding:40px 24px 80px">
+  <div style="max-width:880px;margin:0 auto">
+
+    <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:6px">
+      <h1 style="font-size:28px;font-weight:800;letter-spacing:-.02em;margin:0">Sky-oppsett</h1>
+      <span style="font-size:13px;color:#6E6883">Pitch Studio på database i stedet for én maskin</span>
+    </div>
+    <p style="font-size:14px;line-height:1.6;color:#55506B;margin:0 0 28px;max-width:68ch">
+      Fire steg. Når de er gjennom ligger pitcher, faktabase, priser og bilder i Supabase,
+      hele teamet logger inn med egen konto, og klientlenkene er passordbeskyttet.
+    </p>
+
+    <!-- steg 1 -->
+    <div style="background:#FFFFFF;border:1px solid #E6E4EE;border-radius:12px;padding:22px 24px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+        <span style="width:24px;height:24px;border-radius:50%;background:{{ step1Bg }};color:#fff;font-size:12px;font-weight:700;display:grid;place-items:center;flex:none">1</span>
+        <h2 style="font-size:17px;font-weight:700;margin:0">Koble til prosjektet</h2>
+        <span style="flex:1"></span>
+        <span style="font-size:12px;font-weight:600;color:{{ step1Color }}">{{ step1Label }}</span>
+      </div>
+      <p style="font-size:13px;line-height:1.6;color:#6E6883;margin:0 0 14px;padding-left:34px">
+        Supabase → Project Settings → API. Lim inn Project URL og anon public key.
+      </p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;padding-left:34px">
+        <input type="text" value="{{ url }}" onInput="{{ onUrl }}" placeholder="https://xxxx.supabase.co" style="flex:1;min-width:260px;background:#F7F6FA;border:1px solid #D5D2E0;border-radius:7px;color:#322D45;font-size:13px;padding:10px 12px" />
+        <input type="text" value="{{ key }}" onInput="{{ onKey }}" placeholder="anon public key" style="flex:1;min-width:260px;background:#F7F6FA;border:1px solid #D5D2E0;border-radius:7px;color:#322D45;font-size:13px;padding:10px 12px" />
+        <button type="button" onClick="{{ onTest }}" style="flex:none;background:#0E9E8F;color:#fff;border:0;border-radius:7px;font-size:13px;font-weight:700;padding:10px 18px;cursor:pointer" style-hover="filter:brightness(1.08)">{{ testLabel }}</button>
+      </div>
+    </div>
+
+    <!-- steg 2 -->
+    <div style="background:#FFFFFF;border:1px solid #E6E4EE;border-radius:12px;padding:22px 24px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+        <span style="width:24px;height:24px;border-radius:50%;background:{{ step2Bg }};color:#fff;font-size:12px;font-weight:700;display:grid;place-items:center;flex:none">2</span>
+        <h2 style="font-size:17px;font-weight:700;margin:0">Lag tabellene</h2>
+        <span style="flex:1"></span>
+        <span style="font-size:12px;font-weight:600;color:{{ step2Color }}">{{ step2Label }}</span>
+      </div>
+      <p style="font-size:13px;line-height:1.6;color:#6E6883;margin:0 0 14px;padding-left:34px">
+        Åpne <b>supabase/schema.sql</b> i prosjektet, kopier alt, og kjør det i Supabase →
+        SQL Editor. Det lager tabeller, radsikkerhet, passordsjekk, sporing og bildelageret.
+        Trygt å kjøre på nytt senere.
+      </p>
+      <div style="padding-left:34px;display:flex;gap:8px;flex-wrap:wrap">
+        <button type="button" onClick="{{ onCheckSchema }}" style="background:#322D45;color:#fff;border:0;border-radius:7px;font-size:13px;font-weight:700;padding:10px 18px;cursor:pointer" style-hover="filter:brightness(1.15)">Sjekk om tabellene finnes</button>
+      </div>
+    </div>
+
+    <!-- steg 3 -->
+    <div style="background:#FFFFFF;border:1px solid #E6E4EE;border-radius:12px;padding:22px 24px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+        <span style="width:24px;height:24px;border-radius:50%;background:{{ step3Bg }};color:#fff;font-size:12px;font-weight:700;display:grid;place-items:center;flex:none">3</span>
+        <h2 style="font-size:17px;font-weight:700;margin:0">Logg inn</h2>
+        <span style="flex:1"></span>
+        <span style="font-size:12px;font-weight:600;color:{{ step3Color }}">{{ step3Label }}</span>
+      </div>
+      <p style="font-size:13px;line-height:1.6;color:#6E6883;margin:0 0 14px;padding-left:34px">
+        Første gang: lag kontoen din her. Deretter legger du til resten av selgerne i
+        Supabase → Authentication → Users. Alle innloggede ser alle pitcher.
+      </p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;padding-left:34px">
+        <input type="email" value="{{ email }}" onInput="{{ onEmail }}" placeholder="navn@skagerrak.no" style="flex:1;min-width:200px;background:#F7F6FA;border:1px solid #D5D2E0;border-radius:7px;color:#322D45;font-size:13px;padding:10px 12px" />
+        <input type="password" value="{{ pw }}" onInput="{{ onPw }}" placeholder="passord" style="flex:1;min-width:160px;background:#F7F6FA;border:1px solid #D5D2E0;border-radius:7px;color:#322D45;font-size:13px;padding:10px 12px" />
+        <button type="button" onClick="{{ onSignIn }}" style="flex:none;background:#0E9E8F;color:#fff;border:0;border-radius:7px;font-size:13px;font-weight:700;padding:10px 18px;cursor:pointer" style-hover="filter:brightness(1.08)">Logg inn</button>
+        <button type="button" onClick="{{ onSignUp }}" style="flex:none;background:#FFFFFF;color:#322D45;border:1px solid #D5D2E0;border-radius:7px;font-size:13px;font-weight:700;padding:10px 18px;cursor:pointer" style-hover="background:#F2F0F7">Lag konto</button>
+        <sc-if value="{{ signedIn }}" hint-placeholder-val="{{ false }}">
+          <button type="button" onClick="{{ onSignOut }}" style="flex:none;background:#FFFFFF;color:#8A85A0;border:1px solid #E6E4EE;border-radius:7px;font-size:13px;font-weight:600;padding:10px 14px;cursor:pointer">Logg ut</button>
+        </sc-if>
+      </div>
+    </div>
+
+    <!-- steg 4 -->
+    <div style="background:#FFFFFF;border:1px solid #E6E4EE;border-radius:12px;padding:22px 24px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+        <span style="width:24px;height:24px;border-radius:50%;background:{{ step4Bg }};color:#fff;font-size:12px;font-weight:700;display:grid;place-items:center;flex:none">4</span>
+        <h2 style="font-size:17px;font-weight:700;margin:0">Flytt dataene inn</h2>
+        <span style="flex:1"></span>
+        <span style="font-size:12px;font-weight:600;color:{{ step4Color }}">{{ step4Label }}</span>
+      </div>
+      <p style="font-size:13px;line-height:1.6;color:#6E6883;margin:0 0 14px;padding-left:34px">
+        Bildene lastes opp rett fra denne nettleseren til Supabase, så de store
+        filene slipper å gå gjennom noe mellomledd. Kjøres én gang, fra maskinen
+        der pitchene ligger i dag.
+      </p>
+      <div style="padding-left:34px">
+        <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px">
+          <div style="background:#F7F6FA;border:1px solid #E6E4EE;border-radius:9px;padding:12px 16px;min-width:120px">
+            <div style="font-size:20px;font-weight:700;line-height:1">{{ localPitches }}</div>
+            <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#8A85A0;margin-top:4px">Pitcher lokalt</div>
+          </div>
+          <div style="background:#F7F6FA;border:1px solid #E6E4EE;border-radius:9px;padding:12px 16px;min-width:120px">
+            <div style="font-size:20px;font-weight:700;line-height:1">{{ localAssets }}</div>
+            <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#8A85A0;margin-top:4px">Bilder lokalt</div>
+          </div>
+          <div style="background:#F7F6FA;border:1px solid #E6E4EE;border-radius:9px;padding:12px 16px;min-width:120px">
+            <div style="font-size:20px;font-weight:700;line-height:1">{{ localMb }}</div>
+            <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#8A85A0;margin-top:4px">MB bilder</div>
+          </div>
+          <div style="background:#F7F6FA;border:1px solid #E6E4EE;border-radius:9px;padding:12px 16px;min-width:120px">
+            <div style="font-size:20px;font-weight:700;line-height:1;color:#0E9E8F">{{ cloudPitches }}</div>
+            <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#8A85A0;margin-top:4px">Pitcher i sky</div>
+          </div>
+          <div style="background:#F7F6FA;border:1px solid #E6E4EE;border-radius:9px;padding:12px 16px;min-width:120px">
+            <div style="font-size:20px;font-weight:700;line-height:1;color:#0E9E8F">{{ cloudAssets }}</div>
+            <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#8A85A0;margin-top:4px">Bilder i sky</div>
+          </div>
+        </div>
+
+        <sc-if value="{{ migrating }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-bottom:12px">
+            <div style="height:8px;background:#EDEBF3;border-radius:99px;overflow:hidden">
+              <div style="height:100%;width:{{ pct }};background:#0E9E8F;border-radius:99px;transition:width .2s"></div>
+            </div>
+            <div style="font-size:12px;color:#6E6883;margin-top:7px">{{ progressLabel }}</div>
+          </div>
+        </sc-if>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button type="button" onClick="{{ onMigrate }}" style="background:#0E9E8F;color:#fff;border:0;border-radius:7px;font-size:13px;font-weight:700;padding:10px 18px;cursor:pointer" style-hover="filter:brightness(1.08)">{{ migrateLabel }}</button>
+          <button type="button" onClick="{{ onRefresh }}" style="background:#FFFFFF;color:#322D45;border:1px solid #D5D2E0;border-radius:7px;font-size:13px;font-weight:700;padding:10px 16px;cursor:pointer" style-hover="background:#F2F0F7">Oppdater tellingen</button>
+        </div>
+      </div>
+    </div>
+
+    <sc-if value="{{ hasLog }}" hint-placeholder-val="{{ false }}">
+      <div style="background:#1B1826;border-radius:12px;padding:16px 18px;margin-bottom:14px">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#8E88A3;margin-bottom:9px">Logg</div>
+        <div style="display:flex;flex-direction:column;gap:5px;max-height:220px;overflow-y:auto">
+          <sc-for list="{{ log }}" as="row" hint-placeholder-count="0">
+            <div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;line-height:1.5;color:{{ row.color }}">{{ row.text }}</div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <div style="background:#FFFFFF;border:1px solid #E6E4EE;border-radius:12px;padding:22px 24px">
+      <h2 style="font-size:15px;font-weight:700;margin:0 0 10px">Etterpå</h2>
+      <ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:7px;font-size:13px;line-height:1.6;color:#55506B">
+        <li>Sett passord per pitch i redigeringsflaten — klienten må skrive det inn før de ser noe.</li>
+        <li>Varsel når en klient åpner: legg Slack-webhooken din i tabellen <b>app_settings</b>, rad <b>open_webhook_url</b>.</li>
+        <li>Skriv URL og nøkkel inn i <b>supabase-config.js</b> før du deler appen, så slipper alle andre steg 1.</li>
+        <li>Når alt er verifisert i skyen kan du trygt tømme nettleserlagringen på maskinen.</li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:960,&quot;height&quot;:900}}">
+class Component extends DCLogic {
+  state = {
+    url: '', key: '', email: '', pw: '',
+    connected: false, schemaOk: false, signedIn: false, who: '',
+    testing: false, migrating: false, done: 0, total: 0, progressLabel: '',
+    localPitches: '—', localAssets: '—', localMb: '—',
+    cloudPitches: '—', cloudAssets: '—',
+    migratedAt: 0, log: []
+  };
+
+  componentDidMount() {
+    /* denne siden har ingen ressurskart, så __resURL finnes ikke her */
+    const url = window.__resURL ? window.__resURL('./cloud-store.js') : './cloud-store.js';
+    import(url).then(CS => {
+      this.CS = CS;
+      const cfg = CS.readConfig();
+      if (cfg) this.setState({ url: cfg.url, key: cfg.anonKey }, () => this.probe());
+      this.footprint();
+    }).catch(e => this.say('Kunne ikke laste datalaget: ' + e.message, true));
+  }
+
+  say(text, bad) {
+    const stamp = new Date().toLocaleTimeString('nb-NO');
+    this.setState(s => ({ log: [...s.log, { text: stamp + '  ' + text, color: bad ? '#FF8A8A' : '#B9F3E4' }].slice(-200) }));
+  }
+
+  async footprint() {
+    try {
+      const f = await this.CS.localFootprint();
+      this.setState({ localPitches: String(f.pitches), localAssets: String(f.assets), localMb: String(f.mb) });
+      return true;
+    } catch (e) { this.say('Kunne ikke lese lokal lagring: ' + (e.message || e), true); return false; }
+  }
+
+  async probe() {
+    if (!this.CS || !this.CS.isConfigured()) return;
+    try {
+      const s = await this.CS.session();
+      this.setState({ connected: true, signedIn: !!s, who: s ? s.user.email : '' });
+      if (s) { await this.counts(); this.setState({ schemaOk: true }); }
+    } catch (e) { this.setState({ connected: false }); }
+  }
+
+  async counts() {
+    try {
+      const sb = await this.CS.client();
+      const [p, a] = await Promise.all([
+        sb.from('pitches').select('id', { count: 'exact', head: true }),
+        sb.from('assets').select('id', { count: 'exact', head: true })
+      ]);
+      if (p.error || a.error) throw (p.error || a.error);
+      this.setState({
+        cloudPitches: p.count == null ? '—' : String(p.count),
+        cloudAssets: a.count == null ? '—' : String(a.count)
+      });
+      return true;
+    } catch (e) { this.say('Fikk ikke tellingen fra skyen: ' + (e.message || e), true); return false; }
+  }
+
+  renderVals() {
+    const S = this.state;
+    const ok = '#0E9E8F', wait = '#B7B2C6', bad = '#D2564E';
+    const pill = (done, labelDone, labelTodo) => ({
+      bg: done ? ok : '#B7B2C6',
+      color: done ? ok : '#8A85A0',
+      label: done ? labelDone : labelTodo
+    });
+    const s1 = pill(S.connected, 'tilkoblet', 'mangler nøkler');
+    const s2 = pill(S.schemaOk, 'tabeller på plass', 'ikke sjekket');
+    const s3 = pill(S.signedIn, S.who || 'innlogget', 'ikke innlogget');
+    const s4 = pill(S.migratedAt > 0, 'flyttet', 'ikke flyttet');
+
+    return {
+      url: S.url, key: S.key, email: S.email, pw: S.pw,
+      signedIn: S.signedIn, migrating: S.migrating,
+      localPitches: S.localPitches, localAssets: S.localAssets, localMb: S.localMb,
+      cloudPitches: S.cloudPitches, cloudAssets: S.cloudAssets,
+      testLabel: S.testing ? 'Kobler…' : 'Koble til',
+      migrateLabel: S.migrating ? 'Flytter…' : 'Flytt alt til skyen',
+      progressLabel: S.progressLabel,
+      pct: S.total ? Math.round((S.done / S.total) * 100) + '%' : '0%',
+      log: S.log, hasLog: S.log.length > 0,
+
+      step1Bg: s1.bg, step1Color: s1.color, step1Label: s1.label,
+      step2Bg: s2.bg, step2Color: s2.color, step2Label: s2.label,
+      step3Bg: s3.bg, step3Color: s3.color, step3Label: s3.label,
+      step4Bg: s4.bg, step4Color: s4.color, step4Label: s4.label,
+
+      onUrl: e => this.setState({ url: e.target.value }),
+      onKey: e => this.setState({ key: e.target.value }),
+      onEmail: e => this.setState({ email: e.target.value }),
+      onPw: e => this.setState({ pw: e.target.value }),
+
+      onTest: async () => {
+        if (!this.CS) return this.say('Datalaget er ikke lastet — last siden på nytt.', true);
+        if (!this.state.url || !this.state.key) return this.say('Fyll inn både URL og nøkkel.', true);
+        this.setState({ testing: true });
+        try {
+          this.CS.saveConfig(this.state.url, this.state.key);
+          const sb = await this.CS.client();
+          const { error } = await sb.from('shared_data').select('key').limit(1);
+          if (error && !/permission|row-level|JWT/i.test(error.message)) throw error;
+          this.setState({ connected: true, schemaOk: !error });
+          this.say(error ? 'Tilkoblet. Tabellene svarer, men krever innlogging — det er som det skal.'
+                         : 'Tilkoblet, og tabellene svarer.');
+          await this.probe();
+        } catch (e) {
+          this.setState({ connected: false });
+          this.say('Fikk ikke kontakt: ' + (e.message || e), true);
+        } finally { this.setState({ testing: false }); }
+      },
+
+      onCheckSchema: async () => {
+        if (!this.CS) return this.say('Datalaget er ikke lastet — last siden på nytt.', true);
+        try {
+          const sb = await this.CS.client();
+          const checks = ['pitches', 'shared_data', 'assets', 'pitch_views'];
+          const missing = [];
+          for (const t of checks) {
+            const { error } = await sb.from(t).select('*', { head: true, count: 'exact' }).limit(1);
+            if (error && /does not exist|schema cache/i.test(error.message)) missing.push(t);
+          }
+          if (missing.length) { this.setState({ schemaOk: false }); this.say('Mangler tabell: ' + missing.join(', ') + ' — kjør schema.sql.', true); }
+          else { this.setState({ schemaOk: true }); this.say('Alle tabellene finnes.'); }
+        } catch (e) { this.say('Sjekk feilet: ' + (e.message || e), true); }
+      },
+
+      onSignIn: async () => {
+        if (!this.CS) return this.say('Datalaget er ikke lastet — last siden på nytt.', true);
+        try {
+          await this.CS.signIn(this.state.email, this.state.pw);
+          this.setState({ pw: '' });
+          this.say('Logget inn som ' + this.state.email);
+          await this.probe();
+        } catch (e) { this.say('Innlogging feilet: ' + (e.message || e), true); }
+      },
+
+      onSignUp: async () => {
+        if (!this.CS) return this.say('Datalaget er ikke lastet — last siden på nytt.', true);
+        try {
+          await this.CS.signUp(this.state.email, this.state.pw, this.state.email.split('@')[0]);
+          this.say('Konto laget. Sjekk e-posten hvis Supabase krever bekreftelse.');
+          await this.probe();
+        } catch (e) { this.say('Kunne ikke lage konto: ' + (e.message || e), true); }
+      },
+
+      onSignOut: async () => { await this.CS.signOut(); this.setState({ signedIn: false, who: '' }); this.say('Logget ut.'); },
+
+      onRefresh: async () => {
+        if (!this.CS) return this.say('Datalaget er ikke lastet — last siden på nytt.', true);
+        const a = await this.footprint();
+        const b = this.state.signedIn ? await this.counts() : false;
+        if (a && b) this.say('Tellingen er oppdatert.');
+        else if (a && !this.state.signedIn) this.say('Lokal telling oppdatert. Logg inn for å se skytallene.');
+      },
+
+      onMigrate: async () => {
+        if (this.state.migrating) return;
+        if (!this.state.signedIn) return this.say('Logg inn først (steg 3).', true);
+        this.setState({ migrating: true, done: 0, total: 0, progressLabel: 'Starter…' });
+        this.say('Flytting startet. Ikke lukk fanen.');
+        try {
+          const res = await this.CS.migrateFromBrowser(p => {
+            this.setState({ done: p.done, total: p.total, progressLabel: p.done + ' av ' + p.total + ' — ' + p.label });
+            if (p.warn) this.say(p.label, true);
+          });
+          this.setState({ migratedAt: Date.now(), progressLabel: 'Ferdig' });
+          this.say('Ferdig: ' + res.pitches + ' pitcher, ' + res.assets + ' bilder, ' + res.shared + ' delte sett.');
+          await this.counts();
+        } catch (e) {
+          this.say('Flyttingen stoppet: ' + (e.message || e), true);
+        } finally { this.setState({ migrating: false }); }
+      }
+    };
+  }
+}
+
+</script>
+</body>
+</html>

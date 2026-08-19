@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Skagerrak Pitch Studio</title>
+<meta name="robots" content="noindex">
+<style>
+  html, body { margin: 0; height: 100%; background: #14121D; }
+  body { display: grid; place-items: center; font-family: 'Inter', system-ui, sans-serif; color: #8E88A3; }
+  .t { font-size: 12px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; }
+</style>
+<script>
+  /* Domenerota sender videre til appen, og tar med seg ruten.
+     Slik kan klientlenkene være https://dittdomene.no/#/p/<slug>
+     i stedet for å avsløre filnavnet. */
+  (function () {
+    var app = 'Skagerrak%20Pitch%20Studio.dc.html';
+    location.replace(app + (location.hash || '') + (location.search || ''));
+  })();
+</script>
+</head>
+<body>
+  <div class="t">Åpner Pitch Studio…</div>
+</body>
+</html>
