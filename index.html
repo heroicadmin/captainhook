@@ -306,17 +306,30 @@
     <div onClick="{{ onOwnerClose }}" style="position:fixed;inset:0;z-index:200;background:rgba(22,19,31,.42);display:grid;place-items:center;padding:32px">
       <div onClick="{{ stop }}" style="width:min(560px,100%);max-height:82vh;overflow:auto;background:#FFFFFF;border:1px solid #E6E4EE;border-radius:12px;box-shadow:0 30px 80px -24px rgba(30,26,48,.4);padding:22px">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
-          <span style="font-size:15px;font-weight:700">Eierskap · bildemapper</span>
+          <span style="font-size:15px;font-weight:700">Eierskap</span>
           <span style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#0E9E8F;background:#E9F6F4;border:1px solid #B7E3DB;border-radius:4px;padding:2px 6px">Superadmin</span>
           <span style="flex:1"></span>
           <button type="button" onClick="{{ onOwnerClose }}" style="border:0;background:transparent;color:#6E6883;cursor:pointer;font-size:18px">×</button>
         </div>
-        <p style="font-size:12px;line-height:1.55;color:#6E6883;margin:0 0 15px">Sett hvilket e-postdomene som eier hver bildemappe. Bare innloggede med det domenet ser mappen når de velger bilder. Tomt = åpen for alle.</p>
+        <p style="font-size:12px;line-height:1.55;color:#6E6883;margin:0 0 15px">Sett hvilket e-postdomene som eier hva. Bare innloggede med det domenet ser det i velgerne. Tomt = åpent for alle.</p>
+        <div style="font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#8A85A0;margin:0 0 8px">Bildemapper</div>
         <div style="display:flex;flex-direction:column;gap:8px">
           <sc-for list="{{ admin.catOwners }}" as="c" hint-placeholder-count="6">
             <div style="display:flex;align-items:center;gap:10px">
               <span style="flex:1;min-width:0;font-size:13px;font-weight:600;color:#16131F;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ c.name }}</span>
               <input type="text" value="{{ c.domain }}" onInput="{{ c.onDomain }}" placeholder="alle" style="width:200px;flex:none;background:#F7F6FA;border:1px solid #D5D2E0;border-radius:6px;color:#16131F;font-size:12.5px;padding:8px 10px">
+            </div>
+          </sc-for>
+        </div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#8A85A0;margin:20px 0 8px;padding-top:14px;border-top:1px solid #F2F0F7">Slides i biblioteket</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <sc-for list="{{ admin.libOwners }}" as="b" hint-placeholder-count="8">
+            <div style="display:flex;align-items:center;gap:10px">
+              <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px">
+                <span style="font-size:12.5px;font-weight:600;color:#16131F;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ b.name }}</span>
+                <span style="font-size:10px;color:#A7A3B7">{{ b.cat }}</span>
+              </span>
+              <input type="text" value="{{ b.domain }}" onInput="{{ b.onDomain }}" placeholder="alle" style="width:200px;flex:none;background:#F7F6FA;border:1px solid #D5D2E0;border-radius:6px;color:#16131F;font-size:12.5px;padding:7px 10px">
             </div>
           </sc-for>
         </div>
@@ -2819,6 +2832,12 @@ class Component extends DCLogic {
     /* logoen ligger som asset-referanse — sliden trenger den ferdig oppløst */
     const resolvedMeta = mt => ({ ...mt, logo: this.resolve(mt.logo) });
     const LIBALL = D.libAll(store.library);
+    /* Slides kan eies av et selskap (e-postdomene). Da vises de bare i det selskapets
+       bibliotek og blokkvelger — også for superadmin, slik at eget bibliotek er rent.
+       Eierskapet settes i tannhjulet, som lister alle slides uavhengig av filteret.
+       Filtreringen gjelder bare valglistene — pitcher som alt bruker sliden rendres som før. */
+    const libOwned = b => { const d = ((b || {}).domain || '').toLowerCase(); return !d || d === myDomain; };
+    const LIBVIS = LIBALL.filter(libOwned);
     const LIB = ty => D.libEntry(store.library, ty);
     const catOpts = ['Alle', ...(store.imageCats || D.IMAGE_CATS)];
     /* mapper som er slått av fyller ikke bildeflater — de er fortsatt valgbare manuelt */
@@ -3462,7 +3481,7 @@ class Component extends DCLogic {
       if (tl) add(!(tl.data.units || []).every(u => /^Q\d$/.test(u)), 'Årshjulet har faktiske datoer, ikke generiske kvartaler');
 
       const libGroups = D.libCats(store.library).map(cat => ({
-        cat, blocks: LIBALL.filter(b => b.cat === cat).map(b => ({
+        cat, blocks: LIBVIS.filter(b => b.cat === cat).map(b => ({
           name: b.name, desc: b.desc,
           on: () => { const at = S.insertAt == null ? pitch.blocks.length : S.insertAt;
             this.updatePitch(p => p.blocks.splice(at, 0, D.makeBlock(b.type, null, store.library)));
@@ -3807,7 +3826,7 @@ class Component extends DCLogic {
     /* ---------- slide-biblioteket ---------- */
     const BASES = ['cover','umbrella','statement','brand','metrics','table','matrix','showcase','tiers','configurator','timeline','logowall','next','closing','divider','fullbleed','adrates','placement','case','cases'];
     const KINDS = ['text','area','list','image','stats','case','caselist'];
-    const libSelId = S.libSel || (LIBALL[0] || {}).type;
+    const libSelId = (LIBVIS.some(b => b.type === S.libSel) ? S.libSel : (LIBVIS[0] || {}).type);
     const libSel = LIBALL.find(b => b.type === libSelId) || null;
     const libUse = ty => {
       const pitches = store.pitches.reduce((n, p) => n + p.blocks.filter(b => b.type === ty).length, 0);
@@ -3853,7 +3872,7 @@ class Component extends DCLogic {
     const admin = {
       nav: [
         ['facts', 'Tall og kilder', 'Verdier med kilde og dato', 'Én navngitt person', Object.keys(store.facts).length],
-        ['library', 'Slide-bibliotek', 'Slidene, feltene og standardinnholdet', 'Systemansvarlig', LIBALL.length],
+        ['library', 'Slide-bibliotek', 'Slidene, feltene og standardinnholdet', 'Systemansvarlig', LIBVIS.length],
         ['templates', 'Templates', 'Ferdige stabler av blokker', 'Salgsledelse', store.templates.length],
         ['images', 'Bilder', 'Bildebase med kategorier', 'Design', (store.images || []).length],
         ['cases', 'Caser', 'Casebasen, merket per prisnivå', 'Salg og marked', (store.cases || []).length],
@@ -3926,6 +3945,14 @@ class Component extends DCLogic {
             st.noFillStamp = list.join('|');
           }) };
       }),
+      /* eierskap per slide i biblioteket: tom = felles, ellers bare det domenet */
+      libOwners: LIBALL.map(b => ({
+        name: b.name, cat: b.cat || '',
+        domain: b.domain || '',
+        onDomain: e => { const v = e.target.value.trim().toLowerCase();
+          this.withStore(st => { const en = (st.library || []).find(x => x.type === b.type);
+            if (!en) return; if (v) en.domain = v; else delete en.domain; }); }
+      })),
       /* eierskap per mappe: bare innloggede med dette domenet ser mappen når de velger bilder */
       catOwners: (store.imageCats || D.IMAGE_CATS).map(c => ({
         name: catAdminLabel(c),
@@ -4007,7 +4034,7 @@ class Component extends DCLogic {
       tplEmpty: tpl.blocks.length === 0,
       tplPalette: D.libCats(store.library).map(cat => ({
         cat, color: catColor[cat] || '#9A96AC',
-        blocks: LIBALL.filter(b => b.cat === cat).map(b => ({
+        blocks: LIBVIS.filter(b => b.cat === cat).map(b => ({
           name: b.name, desc: b.desc, on: () => writeRows(r => r.push({ type: b.type, title: '', brand: '' }))
         }))
       })),
@@ -4210,7 +4237,7 @@ class Component extends DCLogic {
       libSel: libSel,
       libGroups: D.libCats(store.library).map(cat => ({
         cat, color: catColor[cat] || '#9A96AC',
-        rows: LIBALL.filter(b => b.cat === cat).map(b => ({
+        rows: LIBVIS.filter(b => b.cat === cat).map(b => ({
           name: b.name, type: b.type, ...pill(b.type === libSelId),
           use: libUse(b.type).label,
           on: () => this.setState({ libSel: b.type })
