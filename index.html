@@ -3882,7 +3882,7 @@ class Component extends DCLogic {
       },
       imgCatOptions: (store.imageCats || D.IMAGE_CATS).map(c => ({ v: c, label: catAdminLabel(c) })),
       /* av/på per mappe: en mappe som er av brukes aldri til å fylle bildeflater automatisk */
-      catFill: (store.imageCats || D.IMAGE_CATS).map(c => {
+      catFill: (store.imageCats || D.IMAGE_CATS).filter(c => catOwned(c) && !isLogoCat(c)).map(c => {
         const on = !noFill.includes(c);
         return { label: catAdminLabel(c), mark: on ? '✓' : '✕',
           title: on ? catAdminLabel(c) + ' fyller bildeflater' : catAdminLabel(c) + ' holdes utenfor bildeflater',
