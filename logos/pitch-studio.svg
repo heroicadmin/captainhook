@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 224 48" width="224" height="48" fill="none" role="img" aria-label="Pitch Studio">
+  <!-- mark: a stacked deck of slides -->
+  <g transform="translate(4,6)">
+    <rect x="12.4" y="1.8" width="22.3" height="22.3" rx="5.2" fill="#0E9E8F" opacity="0.28"/>
+    <rect x="1.8" y="9.4" width="22.3" height="22.3" rx="5.2" fill="#0E9E8F"/>
+    <rect x="6.9" y="15.1" width="12.6" height="2.9" rx="1.45" fill="#FFFFFF" opacity="0.92"/>
+    <rect x="6.9" y="20.6" width="8.1" height="2.9" rx="1.45" fill="#FFFFFF" opacity="0.66"/>
+  </g>
+  <!-- wordmark -->
+  <text x="50" y="31" font-family="Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="19" font-weight="700" letter-spacing="2.4">
+    <tspan fill="#322D45">PITCH</tspan><tspan fill="#0E9E8F"> STUDIO</tspan>
+  </text>
+</svg>
