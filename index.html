@@ -1508,6 +1508,10 @@
                 <input type="email" value="{{ sd.email }}" onInput="{{ sd.onEmail }}" placeholder="E-post" style="width:100%;background:#F2F0F7;border:1px solid #E6E4EE;border-radius:5px;color:#322D45;font-size:12px;padding:7px 9px">
                 <input type="tel" value="{{ sd.phone }}" onInput="{{ sd.onPhone }}" placeholder="Telefon" style="width:100%;background:#F2F0F7;border:1px solid #E6E4EE;border-radius:5px;color:#322D45;font-size:12px;padding:7px 9px">
                 <input type="text" value="{{ sd.contact }}" onInput="{{ sd.onContact }}" placeholder="Nettsted eller annet" style="width:100%;background:#F2F0F7;border:1px solid #E6E4EE;border-radius:5px;color:#322D45;font-size:12px;padding:7px 9px">
+                <div style="display:flex;align-items:center;gap:7px">
+                  <label style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#8A85A0;white-space:nowrap">Eier · domene</label>
+                  <input type="text" value="{{ sd.domain }}" onInput="{{ sd.onDomain }}" placeholder="alle" title="Bare innloggede med dette e-postdomenet kan velge denne avsenderen. Tomt = alle." style="flex:1;min-width:0;background:#F2F0F7;border:1px solid #E6E4EE;border-radius:5px;color:#16131F;font-size:12px;padding:7px 9px">
+                </div>
                 <span style="font-size:10.5px;line-height:1.45;color:#8A85A0">Kontaktlinje på takk-sliden: <span style="color:#322D45">{{ sd.contactLine }}</span></span>
                 <div style="display:flex;align-items:center;gap:7px;background:#F8F7FB;border:1px solid #E6E4EE;border-radius:5px;padding:6px 7px">
                   <span style="display:block;flex:none;width:44px;height:30px;border-radius:3px;background-color:#ECEAF3;background-size:cover;background-position:center;background-image:{{ sd.closingThumb }}"></span>
@@ -2804,6 +2808,9 @@ class Component extends DCLogic {
     const visBrandKeys = Object.keys(BR).filter(brandOwned);
     const brandsResolved = Object.fromEntries(Object.keys(BR).map(k => [k, { ...BR[k], logo: this.resolve(BR[k].logo) }]));
     const senders = store.senders || D.SENDERS;
+    /* Avsendere eies av et selskap (e-postdomene). Brukeren velger bare fra sine egne. */
+    const senderOwned = sd => { const d = ((sd || {}).domain || '').toLowerCase(); return !d || d === myDomain; };
+    const ownSenders = senders.filter(senderOwned);
     const senderOf = mt => {
       const sd = senders.find(x => x.id === (mt || {}).sender) || senders[0] || { name: 'Skagerrak Technologies', logo: D.SKAGERRAK_LOGO };
       /* bildet til takk-sliden ligger som en id i bildebasen — slås opp der, ikke lagres som sti */
@@ -2936,6 +2943,8 @@ class Component extends DCLogic {
 
     /* ---------- NEW ---------- */
     const nwS = S.nw || this.freshNew(D);
+    /* ny pitch: fall tilbake til brukerens egen første avsender hvis standarden ikke eies */
+    const nwSender = ownSenders.some(s => s.id === nwS.sender) ? nwS.sender : (ownSenders[0] || {}).id;
     const nw = {
       client: nwS.client, accent: nwS.accent, slug: D.slugify(nwS.client || 'ny-kunde'),
       logoLabel: nwS.logo ? 'Logo lastet opp — klikk for å bytte' : 'Klikk for å laste opp PNG eller SVG',
@@ -2947,7 +2956,7 @@ class Component extends DCLogic {
         this.setState(st => ({ nw: { ...st.nw, logo: ref } }));
         this.extractColors(rec.src, cols => this.setState(st => ({ nw: { ...st.nw, swatches: cols, accent: cols[0] || st.nw.accent } })));
       }, { maxEdge: 900 }),
-      senderOpts: senders.map(sd => ({ label: sd.name, ...pill(sd.id === nwS.sender), on: () => this.setState(st => ({ nw: { ...st.nw, sender: sd.id } })) })),
+      senderOpts: ownSenders.map(sd => ({ label: sd.name, ...pill(sd.id === nwSender), on: () => this.setState(st => ({ nw: { ...st.nw, sender: sd.id } })) })),
       profileOpts: myProfileCats.map(c => ({ label: catLabel(c), ...pill(c === nwS.profile), on: () => this.setState(st => ({ nw: { ...st.nw, profile: c } })) })),
       swatches: (nwS.swatches || []).map(c => ({ hex: c, border: c === nwS.accent ? '#16131F' : 'transparent', on: () => this.setState(st => ({ nw: { ...st.nw, accent: c } })) })),
       // kortene leses fra det delte laget, ikke fra koden — ellers er admin en blindvei
@@ -2965,7 +2974,7 @@ class Component extends DCLogic {
         const st = this.clone(store);
         const tpl = store.templates.find(t => t.id === cur.template) || store.templates[0];
         const gallery = store.images || D.IMAGES;
-        const p = D.makePitchFromTemplate(tpl, { client: cur.client || 'Ny kunde', slug: D.slugify(cur.client), logo: cur.logo, accent: cur.accent, sender: cur.sender, imageProfile: cur.profile }, gallery, st.library, st.cases, st.catsNoFill);
+        const p = D.makePitchFromTemplate(tpl, { client: cur.client || 'Ny kunde', slug: D.slugify(cur.client), logo: cur.logo, accent: cur.accent, sender: nwSender, imageProfile: cur.profile }, gallery, st.library, st.cases, st.catsNoFill);
         D.applyImageProfile(p, gallery, cur.profile, false, st.library, st.catsNoFill);
         /* takk-sliden arver avsenderens bilde — den skal ikke fylles fra profilen */
         if ((senders.find(x => x.id === cur.sender) || {}).closingImg)
@@ -3625,7 +3634,7 @@ class Component extends DCLogic {
         logoThumb: this.cssUrl(pitch.meta.logo),
         noLogo: !pitch.meta.logo,
         logoPlateBg: pitch.meta.logoPlate === 'dark' ? '#12101A' : pitch.meta.logoPlate === 'none' ? '#ECEAF3' : '#FFFFFF',
-        senderOpts: senders.map(sd => ({ label: sd.name, ...pill(sd.id === (pitch.meta.sender || senders[0].id)), on: () => this.updatePitch(p => { p.meta.sender = sd.id; }) })),
+        senderOpts: ownSenders.map(sd => ({ label: sd.name, ...pill(sd.id === (pitch.meta.sender || (ownSenders[0] || {}).id)), on: () => this.updatePitch(p => { p.meta.sender = sd.id; }) })),
         profileOpts: ['Alle', ...myProfileCats].map(c => ({ label: catLabel(c), ...pill(c === (pitch.meta.imageProfile || 'Alle')), on: () => this.updatePitch(p => { p.meta.imageProfile = c; }) })),
         profileNote: 'Fyller bare tomme flater. «Fyll på nytt» bytter alle bildene i pitchen til profilen.',
         onFillImages: () => this.updatePitch(p => {
@@ -3961,6 +3970,8 @@ class Component extends DCLogic {
           closingLabel: sd.closingImg ? 'Bytt takk-bilde' : 'Velg takk-bilde',
           onClosingImg: () => this.setState({ picker: { mode: 'sender', i }, pickerCat: 'Alle' }),
           use: used ? 'brukt i ' + used + (used === 1 ? ' pitch' : ' pitcher') : 'ikke i bruk',
+          domain: sd.domain || '',
+          onDomain: e => { const v = e.target.value.trim().toLowerCase(); this.withStore(st => { if (v) st.senders[i].domain = v; else delete st.senders[i].domain; }); },
           onName: e => { const v = e.target.value; this.withStore(st => { st.senders[i].name = v; }); },
           onContact: e => { const v = e.target.value; this.withStore(st => { st.senders[i].contact = v; }); },
           onEmail: e => { const v = e.target.value; this.withStore(st => { st.senders[i].email = v; }); },
@@ -3971,7 +3982,7 @@ class Component extends DCLogic {
             this.withStore(st => { st.senders.splice(i, 1); }); } };
       }),
       onSenderNew: () => { const name = prompt('Navn på avsender'); if (!name) return;
-        this.upload(ref => this.withStore(st => { st.senders.push({ id: D.slugify(name), name, logo: ref, email: '', phone: '', contact: '' }); }), { maxEdge: 900 }); },
+        this.upload(ref => this.withStore(st => { st.senders.push({ id: D.slugify(name), name, logo: ref, email: '', phone: '', contact: '', domain: myDomain }); }), { maxEdge: 900 }); },
 
       tplPicker: store.templates.map(t => ({ label: t.name, ...pill(t.id === tplId), on: () => this.setState({ adminTpl: t.id }) })),
       tplName: tpl.name,
