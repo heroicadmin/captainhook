@@ -317,7 +317,7 @@ export const LIBRARY = [
       cols:['Plattform','Native ads','Socials','Broadcast','Produktplassering','Playoffs'],
       rows:[ {brand:'gamer',v:[1,1,1,0,1,0]},{brand:'komplett',v:[1,1,1,1,1,1]},{brand:'bl',v:[1,0,1,1,1,1]} ] } },
 
-  { type:'showcase', cat:'Bevis', name:'Fysisk produkt', desc:'Care packages, keycaps, premier. Stort produktbilde.',
+  { type:'showcase', cat:'Bevis', name:'Duo', desc:'Care packages, keycaps, premier. Stort produktbilde.',
     fields:[['eyebrow','Eyebrow','text'],['title','Tittel','text'],['body','Punkter','list'],['img','Bilde','image'],['imgHint','Bildeanvisning','text']],
     defaults:{ eyebrow:'Aktivering', title:'Care package', body:['Fysisk pakke til alle påmeldte lag','Kundens produkt i hendene på deltakerne','Unboxing deles organisk i sosiale kanaler'], imgHint:'Produktfoto — care package, flatlay på mørk flate' } },
 
