@@ -1544,35 +1544,13 @@
         </div>
         <sc-for list="{{ admin.tiers }}" as="t" hint-placeholder-count="5">
           <div style="display:flex;gap:12px;align-items:center;padding:9px 14px;border-top:1px solid #F2F0F7">
-            <span style="flex:1.2;font-size:13px;font-weight:600">{{ t.name }}</span>
+            <input type="text" value="{{ t.name }}" onInput="{{ t.onName }}" placeholder="Navn på nivå" style="flex:1.2;min-width:0;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:5px;color:#16131F;font-size:13px;font-weight:600;padding:7px 9px">
             <input type="number" value="{{ t.price }}" onInput="{{ t.onPrice }}" style="flex:1;min-width:0;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:5px;color:#16131F;font-size:12.5px;padding:7px 9px;font-variant-numeric:tabular-nums">
             <input type="number" value="{{ t.reach }}" onInput="{{ t.onReach }}" style="flex:1;min-width:0;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:5px;color:#322D45;font-size:12.5px;padding:7px 9px;font-variant-numeric:tabular-nums">
             <input type="number" step="0.1" value="{{ t.emv }}" onInput="{{ t.onEmv }}" style="flex:.7;min-width:0;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:5px;color:#322D45;font-size:12.5px;padding:7px 9px">
             <span style="flex:1;font-size:12.5px;color:var(--accent);font-variant-numeric:tabular-nums">{{ t.cpm }}</span>
           </div>
         </sc-for>
-        <div style="margin-top:26px;display:grid;grid-template-columns:1fr 1fr;gap:14px">
-          <div style="background:#FFFFFF;border:1px solid #E6E4EE;border-radius:10px;padding:16px">
-            <div style="font-size:13px;font-weight:700;margin-bottom:10px">Plattformaktiveringer</div>
-            <sc-for list="{{ admin.addons }}" as="a" hint-placeholder-count="2">
-              <div style="display:flex;gap:10px;align-items:center;padding:7px 0">
-                <span style="flex:1;font-size:12.5px">{{ a.name }}</span>
-                <input type="number" value="{{ a.price }}" onInput="{{ a.onPrice }}" style="width:120px;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:5px;color:#16131F;font-size:12.5px;padding:7px 9px;font-variant-numeric:tabular-nums">
-                <span style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#E9376E;min-width:82px">{{ a.flag }}</span>
-              </div>
-            </sc-for>
-            <div style="font-size:11px;color:#8A85A0;line-height:1.6;margin-top:8px">Lisens, ikke eksponering. Holdes utenfor CPM og medieverdi.</div>
-          </div>
-          <div style="background:#FFFFFF;border:1px solid #E6E4EE;border-radius:10px;padding:16px">
-            <div style="font-size:13px;font-weight:700;margin-bottom:10px">Rabatt og multiplikatorer</div>
-            <sc-for list="{{ admin.rates }}" as="r" hint-placeholder-count="6">
-              <div style="display:flex;gap:10px;align-items:center;padding:6px 0;font-size:12.5px">
-                <span style="flex:1;color:#322D45">{{ r.label }}</span>
-                <span style="color:#16131F;font-variant-numeric:tabular-nums">{{ r.value }}</span>
-              </div>
-            </sc-for>
-          </div>
-        </div>
       </sc-if>
 
       <sc-if value="{{ admin.isAccess }}" hint-placeholder-val="{{ false }}">
@@ -4397,6 +4375,7 @@ class Component extends DCLogic {
         const set = patch => { const st = this.clone(store); Object.assign(st.pricing.tiers[i], patch); this.save(st); };
         return { name: t.name, price: t.price, reach: t.reach, emv: t.emv,
           cpm: nf(t.reach ? t.price / (t.reach / 1000) : 0) + ' kr',
+          onName: e => set({ name: e.target.value }),
           onPrice: e => set({ price: +e.target.value }), onReach: e => set({ reach: +e.target.value }), onEmv: e => set({ emv: +e.target.value }) };
       }),
       addons: store.pricing.addons.map((a, i) => ({ name: a.name, price: a.price, flag: a.provisional ? 'Foreløpig' : '',
