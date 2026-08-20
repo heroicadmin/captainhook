@@ -1415,13 +1415,13 @@
                   <button type="button" onClick="{{ br.onDel }}" title="Slett merkevaren" style="width:28px;border:1px solid #E6E4EE;background:transparent;color:#9A96AC;border-radius:5px;cursor:pointer;font-size:14px">×</button>
                 </div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-                  <div style="border:1px solid #D5D2E0;border-radius:6px;height:64px;background-color:#1B1826;background-size:contain;background-repeat:no-repeat;background-position:center;background-origin:content-box;padding:10px;background-image:{{ br.thumb }}"></div>
-                  <div style="border:1px solid #D5D2E0;border-radius:6px;height:64px;background-color:#F7F6FA;background-size:contain;background-repeat:no-repeat;background-position:center;background-origin:content-box;padding:10px;background-image:{{ br.thumb }}"></div>
+                  <div style="position:relative;border:1px solid #D5D2E0;border-radius:6px;height:64px;background-color:#1B1826;background-size:contain;background-repeat:no-repeat;background-position:center;background-origin:content-box;padding:10px;background-image:{{ br.thumb }}"><span style="position:absolute;left:5px;top:4px;font-size:8.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6E6883">Logo</span></div>
+                  <div style="position:relative;border:1px solid #D5D2E0;border-radius:6px;height:64px;background-color:#1B1826;background-size:contain;background-repeat:no-repeat;background-position:center;background-origin:content-box;padding:10px;background-image:{{ br.iconThumb }}"><span style="position:absolute;left:5px;top:4px;font-size:8.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6E6883">Ikon</span></div>
                 </div>
                 <div style="display:flex;gap:8px;align-items:center">
                   <input type="color" value="{{ br.color }}" onInput="{{ br.onColor }}" title="Produktfarge" style="width:40px;height:32px;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:5px;cursor:pointer;padding:2px">
-                  <span style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:#8A85A0;min-width:62px">{{ br.color }}</span>
                   <button type="button" onClick="{{ br.onLogo }}" style="flex:1;font-size:11.5px;font-weight:600;border-radius:5px;padding:7px;cursor:pointer;background:#F2F0F7;border:1px solid #D5D2E0;color:#322D45">Bytt logo</button>
+                  <button type="button" onClick="{{ br.onIcon }}" style="flex:1;font-size:11.5px;font-weight:600;border-radius:5px;padding:7px;cursor:pointer;background:#F2F0F7;border:1px solid #D5D2E0;color:#322D45">Bytt ikon</button>
                 </div>
                 <input type="text" value="{{ br.note }}" onInput="{{ br.onNote }}" placeholder="Merknad — hva som er lett å gjøre feil" style="width:100%;background:#F2F0F7;border:1px solid #E6E4EE;border-radius:5px;color:#55506B;font-size:11.5px;padding:7px 9px">
                 <div style="display:flex;gap:8px;align-items:center">
@@ -2811,7 +2811,7 @@ class Component extends DCLogic {
     const isSuperadmin = ['sindre@heroic.gg'].includes((S.who || '').toLowerCase());
     const brandOwned = k => { const d = ((BR[k] || {}).domain || '').toLowerCase(); return !d || d === myDomain; };
     const visBrandKeys = Object.keys(BR).filter(brandOwned);
-    const brandsResolved = Object.fromEntries(Object.keys(BR).map(k => [k, { ...BR[k], logo: this.resolve(BR[k].logo) }]));
+    const brandsResolved = Object.fromEntries(Object.keys(BR).map(k => [k, { ...BR[k], logo: this.resolve(BR[k].logo), icon: this.resolve(BR[k].icon || '') }]));
     const senders = store.senders || D.SENDERS;
     /* Avsendere eies av et selskap (e-postdomene). Brukeren velger bare fra sine egne. */
     const senderOwned = sd => { const d = ((sd || {}).domain || '').toLowerCase(); return !d || d === myDomain; };
@@ -3516,6 +3516,13 @@ class Component extends DCLogic {
           options: [
             { label: 'Vis', ...pill(!hi), on: () => this.editData(['hideImg'], false) },
             { label: 'Skjul', ...pill(hi), on: () => this.editData(['hideImg'], true) }
+          ] });
+        const mk = block.data.mark === 'icon' ? 'icon' : 'logo';
+        F.push({ label: 'Merke', isText: false, isArea: false, isNum: false, isSelect: true,
+          isList: false, isStats: false, isRepeat: false, canAdd: true, items: [], factOptions: [],
+          options: [
+            { label: 'Logo', ...pill(mk === 'logo'), on: () => this.editData(['mark'], 'logo') },
+            { label: 'Ikon', ...pill(mk === 'icon'), on: () => this.editData(['mark'], 'icon') }
           ] });
       }
 
@@ -4355,6 +4362,8 @@ class Component extends DCLogic {
         const used = store.pitches.reduce((n, p) => n + p.blocks.filter(b => b.data.brand === k).length, 0);
         const set = patch => this.withStore(st => { Object.assign(st.brands[k], patch); });
         return { name: br.name, color: br.color, scale: br.scale || 1, note: br.note || '', thumb: this.cssUrl(br.logo),
+          iconThumb: this.cssUrl(br.icon), hasIcon: !!br.icon,
+          onIcon: () => this.upload(ref => set({ icon: ref }), { maxEdge: 600 }),
           onNote: e => set({ note: e.target.value }),
           domain: br.domain || '',
           onDomain: e => set({ domain: e.target.value.trim().toLowerCase() }),

@@ -2583,7 +2583,7 @@ class Component extends DCLogic {
 
     return {
       rootRef: this.root,
-      s, m, t, is, interactive, locked: !interactive, picked, b: { ...bk, hLg: h(4.4, bk.scale) },
+      s, m, t, is, interactive, locked: !interactive, picked, b: { ...bk, logo: (s.mark === 'icon' && bk.icon) ? bk.icon : bk.logo, hLg: h(4.4, bk.scale) },
       frameIsBox: frameStyleVal === 'box', frameIsBrowser: frameStyleVal === 'browser', frameIsPolaroid: frameStyleVal === 'polaroid', frameIsSquare: frameStyleVal === 'square',
       statIsBoxed: statStyleVal === 'boxed', statIsRuled: statStyleVal === 'ruled',
       extraImages, hasExtraImages: extraImages.length > 0,
