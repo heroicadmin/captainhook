@@ -1065,6 +1065,11 @@
               <span style="flex:1"></span>
               <button type="button" onClick="{{ admin.onCaseNew }}" style="font-size:11.5px;font-weight:600;border-radius:5px;padding:6px 10px;cursor:pointer;background:#322D45;border:1px solid #322D45;color:#FFFFFF">+ Ny case</button>
             </div>
+            <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px">
+              <sc-for list="{{ admin.caseBrandFilter }}" as="b" hint-placeholder-count="3">
+                <button type="button" onClick="{{ b.on }}" style="font-size:11px;font-weight:600;border-radius:5px;padding:5px 9px;cursor:pointer;background:{{ b.bg }};border:1px solid {{ b.border }};color:{{ b.fg }}">{{ b.label }}</button>
+              </sc-for>
+            </div>
             <div style="display:flex;flex-direction:column;gap:4px">
               <sc-for list="{{ admin.caseRows }}" as="c" hint-placeholder-count="8">
                 <button type="button" onClick="{{ c.on }}" style="text-align:left;font-size:12.5px;font-weight:600;border-radius:6px;padding:8px 10px;cursor:pointer;background:{{ c.bg }};border:1px solid {{ c.border }};color:{{ c.fg }};display:flex;flex-direction:column;gap:2px">
@@ -3787,7 +3792,12 @@ class Component extends DCLogic {
     const imgPageList = imgList.slice(imgPage * IMG_PER_PAGE, imgPage * IMG_PER_PAGE + IMG_PER_PAGE);
 
     /* ---------- casebasen ---------- */
-    const caseSelId = S.caseSel || ((store.cases || [])[0] || {}).id;
+    /* Caser eies av selskapet som eier merkevaren de er merket med (tom merkevare = felles).
+       Brukeren ser bare sine egne, og kan filtrere på en enkelt merkevare. */
+    const caseOwned = c => !c.brand || brandOwned(c.brand);
+    const caseBrandFilterVal = S.adminCaseBrand || 'all';
+    const visibleCases = (store.cases || []).filter(c => caseOwned(c) && (caseBrandFilterVal === 'all' || c.brand === caseBrandFilterVal));
+    const caseSelId = (visibleCases.some(c => c.id === S.caseSel) ? S.caseSel : (visibleCases[0] || {}).id);
     const caseSel = (store.cases || []).find(c => c.id === caseSelId) || null;
     const writeCase = fn => {
       const st = this.clone(this.state.store);
@@ -4109,14 +4119,15 @@ class Component extends DCLogic {
           .catch(e => alert('Kunne ikke lese arket: ' + (e && e.message ? e.message : e)));
       }),
       /* ---------- CASEBASEN ---------- */
-      caseRows: (store.cases || []).map(c => ({
+      caseRows: visibleCases.map(c => ({
         title: c.title || 'Uten tittel', kicker: c.kicker || '',
         ...pill(c.id === caseSelId),
         tiers: (c.tiers || []).length ? (c.tiers || []).map(id => (store.pricing.tiers.find(t => t.id === id) || {}).name || id).join(' · ') : 'ingen nivåer',
         hidden: !!c.hidden,
         on: () => this.setState({ caseSel: c.id })
       })),
-      casesEmpty: (store.cases || []).length === 0,
+      caseBrandFilter: [{ v: 'all', label: 'Alle' }, ...visBrandKeys.map(k => ({ v: k, label: BR[k].name }))].map(o => ({ label: o.label, ...pill(o.v === caseBrandFilterVal), on: () => this.setState({ adminCaseBrand: o.v, caseSel: null }) })),
+      casesEmpty: visibleCases.length === 0,
       onCaseNew: () => {
         const title = prompt('Tittel på den nye casen');
         if (!title) return;
