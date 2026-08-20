@@ -2601,8 +2601,12 @@ class Component extends DCLogic {
       partBullets, logo1Src, hasLogo1: !!logo1Src, noLogo1: !logo1Src, logos2,
       logoGap, logo1H, logo1MaxW, logo1FS, logo2H, logo2MaxW, logo2FS,
       formLogos, formTitle,
-      senderLogo: (S.sender && S.sender.logo) || S.skagerrakLogo || 'logos/skagerrak.png',
-      senderName: (S.sender && S.sender.name) || 'Skagerrak Technologies',
+      /* Vannmerket følger merkevaren på sliden når den har én — ikonet først, det er
+         små dimensjoner. Uten merkevare faller det tilbake til avsenderen. */
+      senderLogo: (s.brand && brands[s.brand] ? (brands[s.brand].icon || brands[s.brand].logo) : '')
+        || (S.sender && S.sender.logo) || S.skagerrakLogo || 'logos/skagerrak.png',
+      senderName: (s.brand && brands[s.brand] ? brands[s.brand].name : '')
+        || (S.sender && S.sender.name) || 'Skagerrak Technologies',
       /* kontaktlinja eies av avsenderen — blokka overstyrer bare når den er fylt ut */
       contactLine: s.contact || (S.sender && S.sender.contactLine) || '',
       imgSrc, hasImg: !!imgSrc, noImg: !imgSrc, photoVeil,
