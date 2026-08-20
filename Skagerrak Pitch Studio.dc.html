@@ -1408,10 +1408,24 @@
       </sc-if>
 
       <sc-if value="{{ admin.isImages }}" hint-placeholder-val="{{ false }}">
-        <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:16px">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
           <h2 style="font-size:19px;font-weight:700;letter-spacing:-.01em;margin:0">Bilder</h2>
           <span style="font-size:12px;color:#6E6883">Kategorien styrer hvilke bilder en pitch fylles med.</span>
           <span style="flex:1"></span>
+          <div style="position:relative">
+            <button type="button" onClick="{{ admin.onToggleFill }}" style="font-size:12px;font-weight:600;color:#322D45;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:6px;padding:9px 13px;cursor:pointer" style-hover="background:#EAE7F2">Fyller bildeflater ▾</button>
+            <sc-if value="{{ admin.fillOpen }}" hint-placeholder-val="{{ false }}">
+              <div onClick="{{ stop }}" style="position:absolute;top:calc(100% + 6px);right:0;z-index:40;width:288px;background:#FFFFFF;border:1px solid #E6E4EE;border-radius:8px;box-shadow:0 18px 44px -20px rgba(30,26,48,.4);padding:13px;display:flex;flex-direction:column;gap:8px">
+                <span style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#8A85A0">Fyller bildeflater</span>
+                <span style="font-size:11px;color:#8A85A0;line-height:1.45">Mapper som er av fyller aldri bilderammer automatisk. De kan fortsatt velges manuelt.</span>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:2px">
+                  <sc-for list="{{ admin.catFill }}" as="c" hint-placeholder-count="4">
+                    <button type="button" onClick="{{ c.on }}" title="{{ c.title }}" style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;border-radius:6px;padding:6px 10px;cursor:pointer;background:{{ c.bg }};border:1px solid {{ c.border }};color:{{ c.fg }}"><span style="font-size:11px">{{ c.mark }}</span>{{ c.label }}</button>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+          </div>
           <button type="button" onClick="{{ admin.onImgUpload }}" style="font-size:12px;font-weight:700;color:var(--accent-ink);background:var(--accent);border:0;border-radius:6px;transition:filter .14s,box-shadow .14s;padding:9px 14px;cursor:pointer" style-hover="filter:brightness(1.08);box-shadow:0 10px 22px -12px var(--accent)">{{ admin.uploadLabel }}</button>
         </div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">
@@ -1419,13 +1433,6 @@
             <button type="button" onClick="{{ c.on }}" style="font-size:12px;font-weight:600;border-radius:6px;padding:7px 12px;cursor:pointer;background:{{ c.bg }};border:1px solid {{ c.border }};color:{{ c.fg }}">{{ c.label }}</button>
           </sc-for>
           <button type="button" onClick="{{ admin.onNewCat }}" style="font-size:12px;font-weight:600;border-radius:6px;padding:7px 12px;cursor:pointer;background:transparent;border:1px dashed #D5D2E0;color:#6E6883">+ Ny kategori</button>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#F8F7FB;border:1px solid #E6E4EE;border-radius:8px;padding:10px 12px;margin-bottom:16px">
-          <span style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#55506B">Fyller bildeflater</span>
-          <sc-for list="{{ admin.catFill }}" as="c" hint-placeholder-count="4">
-            <button type="button" onClick="{{ c.on }}" title="{{ c.title }}" style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;border-radius:6px;padding:6px 10px;cursor:pointer;background:{{ c.bg }};border:1px solid {{ c.border }};color:{{ c.fg }}"><span style="font-size:11px">{{ c.mark }}</span>{{ c.label }}</button>
-          </sc-for>
-          <span style="flex:1;min-width:120px;font-size:11px;color:#8A85A0;line-height:1.45">Mapper som er av brukes aldri til å fylle bilderammer automatisk. De kan fortsatt velges manuelt.</span>
         </div>
         <div style="display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;background:#F8F7FB;border:1px solid #E6E4EE;border-radius:8px;padding:10px 12px;margin-bottom:16px">
           <span style="flex:none;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#55506B;padding-top:9px">Eier · domene</span>
@@ -1455,6 +1462,13 @@
             </div>
           </sc-for>
         </div>
+        <sc-if value="{{ admin.imgPager.show }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:center;justify-content:center;gap:14px;margin-top:16px">
+            <button type="button" onClick="{{ admin.imgPager.onPrev }}" style="font-size:13px;font-weight:700;border:1px solid #E6E4EE;background:#FFFFFF;border-radius:6px;padding:7px 13px;cursor:pointer;color:{{ admin.imgPager.prevFg }}">← Forrige</button>
+            <span style="font-size:12px;font-variant-numeric:tabular-nums;color:#6E6883">{{ admin.imgPager.label }}</span>
+            <button type="button" onClick="{{ admin.imgPager.onNext }}" style="font-size:13px;font-weight:700;border:1px solid #E6E4EE;background:#FFFFFF;border-radius:6px;padding:7px 13px;cursor:pointer;color:{{ admin.imgPager.nextFg }}">Neste →</button>
+          </div>
+        </sc-if>
         <sc-if value="{{ admin.imagesEmpty }}" hint-placeholder-val="{{ false }}">
           <div style="border:1.5px dashed #D5D2E0;border-radius:10px;padding:44px;text-align:center;color:#6E6883;font-size:13px">Ingen bilder i denne kategorien ennå.</div>
         </sc-if>
@@ -3737,6 +3751,11 @@ class Component extends DCLogic {
     const writeRows = fn => writeTpl(t => { const rows = D.tplBlocks(t); fn(rows); t.blocks = rows; t.brands = {}; });
 
     const imgList = (store.images || []).filter(im => S.adminCat === 'Alle' || im.cat === S.adminCat);
+    /* 9 bilder per side, så en tung mappe ikke skyver alt annet nedover */
+    const IMG_PER_PAGE = 9;
+    const imgPageCount = Math.max(1, Math.ceil(imgList.length / IMG_PER_PAGE));
+    const imgPage = Math.min(Math.max(0, S.imgPage || 0), imgPageCount - 1);
+    const imgPageList = imgList.slice(imgPage * IMG_PER_PAGE, imgPage * IMG_PER_PAGE + IMG_PER_PAGE);
 
     /* ---------- casebasen ---------- */
     const caseSelId = S.caseSel || ((store.cases || [])[0] || {}).id;
@@ -3846,7 +3865,19 @@ class Component extends DCLogic {
           } };
       }).filter(g => g.count > 0),
 
-      imgCatFilter: catOpts.map(c => ({ label: catAdminLabel(c), ...pill(c === S.adminCat), on: () => this.setState({ adminCat: c }) })),
+      imgCatFilter: catOpts.map(c => ({ label: catAdminLabel(c), ...pill(c === S.adminCat), on: () => this.setState({ adminCat: c, imgPage: 0 }) })),
+      fillOpen: !!S.fillMenuOpen,
+      onToggleFill: () => this.setState({ fillMenuOpen: !this.state.fillMenuOpen }),
+      imgPager: {
+        show: imgList.length > IMG_PER_PAGE,
+        label: (imgPage + 1) + ' / ' + imgPageCount,
+        hasPrev: imgPage > 0,
+        hasNext: imgPage < imgPageCount - 1,
+        prevFg: imgPage > 0 ? '#322D45' : '#C6C2D4',
+        nextFg: imgPage < imgPageCount - 1 ? '#322D45' : '#C6C2D4',
+        onPrev: () => this.setState({ imgPage: Math.max(0, (this.state.imgPage || 0) - 1) }),
+        onNext: () => this.setState({ imgPage: (this.state.imgPage || 0) + 1 })
+      },
       imgCatOptions: (store.imageCats || D.IMAGE_CATS).map(c => ({ v: c, label: catAdminLabel(c) })),
       /* av/på per mappe: en mappe som er av brukes aldri til å fylle bildeflater automatisk */
       catFill: (store.imageCats || D.IMAGE_CATS).map(c => {
@@ -3869,7 +3900,7 @@ class Component extends DCLogic {
           this.withStore(st => { const m = { ...(st.catDomains || {}) }; if (v) m[c] = v; else delete m[c]; st.catDomains = m; }); }
       })),
       imagesEmpty: imgList.length === 0,
-      images: imgList.map(im => {
+      images: imgPageList.map(im => {
         const i = (store.images || []).findIndex(x => x.id === im.id);
         const used = store.pitches.reduce((n, p) => n + p.blocks.filter(b => b.data.img === im.src).length, 0);
         return { name: im.name, cat: im.cat, thumb: this.cssUrl(im.src),
