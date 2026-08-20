@@ -533,57 +533,6 @@
           </sc-if>
         </div>
 
-        <div style="background:#FFFFFF;border:1px solid #E6E4EE;border-radius:10px;padding:18px 20px">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;flex-wrap:wrap">
-            <span style="font-size:14px;font-weight:700">Deling og sporing</span>
-            <span style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:3px 7px;border-radius:4px;background:{{ share.lockBg }};color:{{ share.lockFg }}">{{ share.lockLabel }}</span>
-            <span style="flex:1"></span>
-            <button type="button" onClick="{{ share.onCopy }}" style="font-size:12px;font-weight:600;color:#322D45;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:6px;padding:7px 11px;cursor:pointer" style-hover="background:#EAE7F2">{{ share.copyLabel }}</button>
-          </div>
-          <p style="font-size:12px;line-height:1.6;color:#6E6883;margin:0 0 13px">
-            Klienten åpner lenken uten innlogging. Passord og utløp for lenken settes i Admin → Passord.
-          </p>
-
-          <div style="display:flex;gap:18px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid #F2F0F7">
-            <div>
-              <div style="font-size:18px;font-weight:700;line-height:1">{{ share.opens }}</div>
-              <div style="font-size:10.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#8A85A0;margin-top:3px">Åpninger</div>
-            </div>
-            <div>
-              <div style="font-size:18px;font-weight:700;line-height:1">{{ share.lastOpen }}</div>
-              <div style="font-size:10.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#8A85A0;margin-top:3px">Sist åpnet</div>
-            </div>
-            <div>
-              <div style="font-size:18px;font-weight:700;line-height:1">{{ share.deepest }}</div>
-              <div style="font-size:10.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#8A85A0;margin-top:3px">Kom lengst</div>
-            </div>
-            <div>
-              <div style="font-size:18px;font-weight:700;line-height:1">{{ share.avgTime }}</div>
-              <div style="font-size:10.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#8A85A0;margin-top:3px">Snitt tid</div>
-            </div>
-            <span style="flex:1"></span>
-            <button type="button" onClick="{{ share.onStats }}" style="align-self:center;font-size:12px;font-weight:600;color:#322D45;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:6px;padding:7px 11px;cursor:pointer" style-hover="background:#EAE7F2">Hent tall</button>
-          </div>
-
-          <sc-if value="{{ share.hasSlides }}" hint-placeholder-val="{{ false }}">
-            <div style="margin-top:14px;display:flex;flex-direction:column;gap:5px">
-              <sc-for list="{{ share.slideRows }}" as="r" hint-placeholder-count="0">
-                <div style="display:flex;align-items:center;gap:9px">
-                  <span style="font-size:11.5px;color:#6E6883;width:120px;flex:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.label }}</span>
-                  <span style="flex:1;height:6px;background:#EDEBF3;border-radius:99px;overflow:hidden">
-                    <span style="display:block;height:100%;width:{{ r.pct }};background:var(--accent);border-radius:99px"></span>
-                  </span>
-                  <span style="font-size:11.5px;font-variant-numeric:tabular-nums;color:#322D45;width:52px;text-align:right;flex:none">{{ r.time }}</span>
-                </div>
-              </sc-for>
-            </div>
-          </sc-if>
-
-          <sc-if value="{{ share.hasMsg }}" hint-placeholder-val="{{ false }}">
-            <div style="margin-top:12px;font-size:12px;color:{{ share.msgColor }}">{{ share.msg }}</div>
-          </sc-if>
-        </div>
-
         <sc-if value="{{ ed.showCheck }}" hint-placeholder-val="{{ false }}">
           <div style="background:#FFFFFF;border:1px solid #E6E4EE;border-radius:10px;padding:18px 20px">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
@@ -1502,7 +1451,6 @@
                   </select>
                   <button type="button" onClick="{{ im.onDel }}" title="Slett bildet" style="width:28px;border:1px solid #E6E4EE;background:transparent;color:#9A96AC;border-radius:5px;cursor:pointer">×</button>
                 </div>
-                <span style="font-size:10.5px;color:#A7A3B7">{{ im.use }}</span>
               </div>
             </div>
           </sc-for>
@@ -1588,31 +1536,79 @@
 
       <sc-if value="{{ admin.isAccess }}" hint-placeholder-val="{{ false }}">
         <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:16px">
-          <h2 style="font-size:19px;font-weight:700;letter-spacing:-.01em;margin:0;flex:none">Passord</h2>
-          <span style="font-size:12px;color:#6E6883">Passord og utløp for klientlenken, per pitch. Tomt felt fjerner passordet.</span>
+          <h2 style="font-size:19px;font-weight:700;letter-spacing:-.01em;margin:0;flex:none">Deling og sporing</h2>
+          <span style="font-size:12px;color:#6E6883">Passord, delingslenke og tall per pitch. Velg en pitch i lista.</span>
         </div>
-        <div style="display:flex;gap:12px;padding:0 14px 8px;font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#8A85A0">
-          <span style="flex:1.4">Pitch</span><span style="flex:1">Passord</span><span style="flex:.9">Utløper</span><span style="flex:none;width:126px"></span>
-        </div>
-        <sc-for list="{{ admin.access }}" as="a" hint-placeholder-count="4">
-          <div style="border-top:1px solid #F2F0F7">
-            <div style="display:flex;gap:12px;align-items:center;padding:10px 14px">
-              <span style="flex:1.4;min-width:0;display:flex;flex-direction:column;gap:3px">
-                <span style="font-size:13px;font-weight:600;color:#16131F;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ a.client }}</span>
-                <span style="font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:{{ a.lockFg }}">{{ a.lockLabel }}</span>
-              </span>
-              <input type="text" value="{{ a.pw }}" onInput="{{ a.onPw }}" placeholder="nytt passord" style="flex:1;min-width:0;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:5px;color:#322D45;font-size:12.5px;padding:8px 10px">
-              <input type="date" value="{{ a.exp }}" onInput="{{ a.onExp }}" title="Lenken slutter å virke etter denne datoen" style="flex:.9;min-width:0;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:5px;color:#322D45;font-size:12.5px;padding:8px 10px">
-              <button type="button" onClick="{{ a.onSave }}" style="flex:none;width:88px;font-size:12px;font-weight:700;color:var(--accent-ink);background:var(--accent);border:0;border-radius:6px;padding:9px 12px;cursor:pointer" style-hover="filter:brightness(1.08)">{{ a.saveLabel }}</button>
-              <a href="{{ a.viewHref }}" target="_blank" rel="noopener" title="Åpne klientlenken" style="flex:none;width:30px;text-align:center;text-decoration:none;border:1px solid #E6E4EE;color:#9A96AC;border-radius:5px;padding:7px 0">↗</a>
+        <sc-if value="{{ admin.shareEmpty }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#FFFFFF;border:1px solid #E6E4EE;border-radius:10px;padding:22px 16px;font-size:13px;color:#8A85A0">Ingen pitcher ennå.</div>
+        </sc-if>
+        <sc-if value="{{ admin.shareHasSel }}" hint-placeholder-val="{{ true }}">
+          <div style="display:grid;grid-template-columns:250px minmax(0,1fr);gap:14px;align-items:start">
+            <div style="background:#FFFFFF;border:1px solid #E6E4EE;border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:4px;max-height:60vh;overflow:auto">
+              <sc-for list="{{ admin.sharePitches }}" as="p" hint-placeholder-count="5">
+                <button type="button" onClick="{{ p.on }}" style="text-align:left;display:flex;flex-direction:column;gap:2px;border-radius:7px;padding:9px 11px;cursor:pointer;background:{{ p.bg }};border:1px solid {{ p.border }};color:{{ p.fg }}">
+                  <span style="font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.client }}</span>
+                  <span style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:{{ p.lockFg }}">{{ p.lockLabel }}</span>
+                </button>
+              </sc-for>
             </div>
-            <sc-if value="{{ a.hasMsg }}" hint-placeholder-val="{{ false }}">
-              <div style="padding:0 14px 9px;font-size:11.5px;color:{{ a.msgColor }}">{{ a.msg }}</div>
-            </sc-if>
+
+            <div style="background:#FFFFFF;border:1px solid #E6E4EE;border-radius:10px;padding:18px 20px;animation:{{ subAnim }}">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;flex-wrap:wrap">
+                <span style="font-size:14px;font-weight:700">{{ admin.shareClient }}</span>
+                <span style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:3px 7px;border-radius:4px;background:{{ admin.share.lockBg }};color:{{ admin.share.lockFg }}">{{ admin.share.lockLabel }}</span>
+                <span style="flex:1"></span>
+                <button type="button" onClick="{{ admin.share.onCopy }}" style="font-size:12px;font-weight:600;color:#322D45;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:6px;padding:7px 11px;cursor:pointer" style-hover="background:#EAE7F2">{{ admin.share.copyLabel }}</button>
+              </div>
+              <p style="font-size:12px;line-height:1.6;color:#6E6883;margin:0 0 13px">
+                Klienten åpner lenken uten innlogging, men må skrive passordet. Tomt felt fjerner passordet.
+              </p>
+              <div style="display:flex;gap:7px;flex-wrap:wrap;align-items:center">
+                <input type="text" value="{{ admin.share.pw }}" onInput="{{ admin.share.onPw }}" placeholder="passord for denne pitchen" style="flex:1;min-width:180px;background:#F7F6FA;border:1px solid #D5D2E0;border-radius:6px;color:#322D45;font-size:12.5px;padding:9px 11px" />
+                <input type="date" value="{{ admin.share.expiry }}" onInput="{{ admin.share.onExpiry }}" title="Lenken slutter å virke etter denne datoen" style="flex:none;background:#F7F6FA;border:1px solid #D5D2E0;border-radius:6px;color:#322D45;font-size:12.5px;padding:9px 11px" />
+                <button type="button" onClick="{{ admin.share.onSave }}" style="flex:none;font-size:12px;font-weight:700;color:var(--accent-ink);background:var(--accent);border:0;border-radius:6px;padding:9px 14px;cursor:pointer" style-hover="filter:brightness(1.08)">{{ admin.share.saveLabel }}</button>
+              </div>
+
+              <div style="display:flex;gap:18px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid #F2F0F7">
+                <div>
+                  <div style="font-size:18px;font-weight:700;line-height:1">{{ admin.share.opens }}</div>
+                  <div style="font-size:10.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#8A85A0;margin-top:3px">Åpninger</div>
+                </div>
+                <div>
+                  <div style="font-size:18px;font-weight:700;line-height:1">{{ admin.share.lastOpen }}</div>
+                  <div style="font-size:10.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#8A85A0;margin-top:3px">Sist åpnet</div>
+                </div>
+                <div>
+                  <div style="font-size:18px;font-weight:700;line-height:1">{{ admin.share.deepest }}</div>
+                  <div style="font-size:10.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#8A85A0;margin-top:3px">Kom lengst</div>
+                </div>
+                <div>
+                  <div style="font-size:18px;font-weight:700;line-height:1">{{ admin.share.avgTime }}</div>
+                  <div style="font-size:10.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#8A85A0;margin-top:3px">Snitt tid</div>
+                </div>
+                <span style="flex:1"></span>
+                <button type="button" onClick="{{ admin.share.onStats }}" style="align-self:center;font-size:12px;font-weight:600;color:#322D45;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:6px;padding:7px 11px;cursor:pointer" style-hover="background:#EAE7F2">Hent tall</button>
+              </div>
+
+              <sc-if value="{{ admin.share.hasSlides }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-top:14px;display:flex;flex-direction:column;gap:5px">
+                  <sc-for list="{{ admin.share.slideRows }}" as="r" hint-placeholder-count="0">
+                    <div style="display:flex;align-items:center;gap:9px">
+                      <span style="font-size:11.5px;color:#6E6883;width:120px;flex:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.label }}</span>
+                      <span style="flex:1;height:6px;background:#EDEBF3;border-radius:99px;overflow:hidden">
+                        <span style="display:block;height:100%;width:{{ r.pct }};background:var(--accent);border-radius:99px"></span>
+                      </span>
+                      <span style="font-size:11.5px;font-variant-numeric:tabular-nums;color:#322D45;width:52px;text-align:right;flex:none">{{ r.time }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ admin.share.hasMsg }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-top:12px;font-size:12px;color:{{ admin.share.msgColor }}">{{ admin.share.msg }}</div>
+              </sc-if>
+            </div>
           </div>
-        </sc-for>
-        <sc-if value="{{ admin.accessEmpty }}" hint-placeholder-val="{{ false }}">
-          <div style="padding:22px 14px;font-size:13px;color:#8A85A0">Ingen pitcher ennå.</div>
         </sc-if>
       </sc-if>
         </div>
@@ -2804,7 +2800,8 @@ class Component extends DCLogic {
        men vises utad bare med grunnnavnet. Hvert selskap ser bare sine egne mapper. */
     const catLabel = c => String(c).replace(/^Heroic\s+/, '');
     /* I admin (super-admin ser alle) legges eierdomenet på som en liten merkelapp, ikke navnet. */
-    const catAdminLabel = c => { const l = catLabel(c); const d = catDomains[c] || ''; return d ? l + ' · ' + d : l; };
+    /* utad viser vi bare grunnnavnet (uten domenehalen) — eieren ses i domene-feltet i Eier-seksjonen */
+    const catAdminLabel = c => catLabel(c);
     const myLogoCat = (store.imageCats || D.IMAGE_CATS).find(c => isLogoCat(c) && catOwned(c)) || D.LOGO_CAT;
     const myProfileCats = profileCats.filter(catOwned);
 
@@ -3796,6 +3793,10 @@ class Component extends DCLogic {
       };
     }).filter(Boolean);
 
+    /* Deling og sporing bor i admin: velg en pitch i lista, få full panel (passord, lenke, tall). */
+    const adminShareId = S.adminShareId || (store.pitches[0] || {}).id || null;
+    const adminSharePitch = (store.pitches || []).find(p => p.id === adminShareId) || null;
+
     const admin = {
       nav: [
         ['facts', 'Tall og kilder', 'Verdier med kilde og dato', 'Én navngitt person', Object.keys(store.facts).length],
@@ -3806,7 +3807,7 @@ class Component extends DCLogic {
         ['senders', 'Avsender', 'Hvem pitchen kommer fra', 'Salgsledelse', senders.length],
         ['brand', 'Merkevare', 'Logoer og produktfarger', 'Design', Object.keys(BR).length],
         ['pricing', 'Prismodell', 'Trapp, rabatter og lisens', 'Salgsledelse', store.pricing.tiers.length],
-        ['access', 'Passord', 'Passord og utløp per pitch', 'Salgsledelse', store.pitches.length]
+        ['access', 'Deling og sporing', 'Passord, lenke og tall per pitch', 'Salgsledelse', store.pitches.length]
       ].map(([v, label, desc, owner, count]) => ({
         label, desc, owner, count, on: () => this.setState({ adminTab: v }),
         bg: at === v ? 'color-mix(in srgb, var(--accent) 12%, #FFFFFF)' : '#FFFFFF',
@@ -3816,43 +3817,20 @@ class Component extends DCLogic {
       isFacts: at === 'facts', isLibrary: at === 'library', isTemplates: at === 'templates', isBrand: at === 'brand', isPricing: at === 'pricing',
       isImages: at === 'images', isSenders: at === 'senders', isCases: at === 'cases', isAccess: at === 'access',
 
-      accessEmpty: store.pitches.length === 0,
-      access: store.pitches.map(p => {
-        const pe = (S.pwEdit || {})[p.id] || {};
-        const pm = (S.pwMsg || {})[p.id] || null;
-        const locked = !!p.hasPassword;
-        const curExp = p.expiresAt ? String(p.expiresAt).slice(0, 10) : '';
-        const setEdit = patch => { const m = { ...(this.state.pwEdit || {}) }; m[p.id] = { ...(m[p.id] || {}), ...patch }; this.setState({ pwEdit: m }); };
-        const setMsg = val => ({ ...(this.state.pwMsg || {}), [p.id]: val });
-        return {
-          client: p.meta.client,
-          lockLabel: locked ? 'Passord' : 'Åpen lenke',
-          lockFg: locked ? '#0B7A6F' : '#8A6D2F',
-          pw: pe.pw || '',
-          exp: pe.exp != null ? pe.exp : curExp,
-          saveLabel: S.pwBusyId === p.id ? 'Lagrer…' : 'Lagre',
-          hasMsg: !!pm, msg: pm ? pm.text : '', msgColor: pm && pm.bad ? '#A8352C' : '#0B7A6F',
-          viewHref: '#/p/' + (p.meta.slug || p.id),
-          onPw: e => setEdit({ pw: e.target.value }),
-          onExp: e => setEdit({ exp: e.target.value }),
-          onSave: async () => {
-            const cur = (this.state.pwEdit || {})[p.id] || {};
-            const pw = cur.pw || '';
-            const exp = cur.exp != null ? cur.exp : curExp;
-            this.setState({ pwBusyId: p.id, pwMsg: setMsg(null) });
-            try {
-              await this.A.setPitchPassword(p.id, pw);
-              await this.A.setPitchExpiry(p.id, exp ? new Date(exp + 'T23:59:59').toISOString() : null);
-              /* hasPassword/expiresAt er visningsfelt (strippes ved lagring til DB), så vi oppdaterer dem lokalt */
-              p.hasPassword = !!pw; p.expiresAt = exp || '';
-              const m = { ...(this.state.pwEdit || {}) }; m[p.id] = { pw: '', exp };
-              this.setState({ pwBusyId: null, pwEdit: m, pwMsg: setMsg({ text: pw ? 'Passordet er lagret.' : 'Passordet er fjernet.', bad: false }) });
-            } catch (e) {
-              this.setState({ pwBusyId: null, pwMsg: setMsg({ text: 'Kunne ikke lagre: ' + (e.message || e), bad: true }) });
-            }
-          }
-        };
-      }),
+      shareEmpty: store.pitches.length === 0,
+      shareHasSel: !!adminSharePitch,
+      shareClient: adminSharePitch ? adminSharePitch.meta.client : '',
+      shareSlug: adminSharePitch ? '/' + (adminSharePitch.meta.slug || adminSharePitch.id) : '',
+      share: this.shareVals(adminSharePitch),
+      sharePitches: store.pitches.map(p => ({
+        client: p.meta.client,
+        lockLabel: p.hasPassword ? 'Passord' : 'Åpen lenke',
+        lockFg: p.hasPassword ? '#0B7A6F' : '#8A6D2F',
+        bg: p.id === adminShareId ? 'color-mix(in srgb, var(--accent) 12%, #FFFFFF)' : '#FFFFFF',
+        border: p.id === adminShareId ? 'var(--accent)' : '#E6E4EE',
+        fg: p.id === adminShareId ? '#16131F' : '#322D45',
+        on: () => this.setState({ adminShareId: p.id, shareStats: null, sharePw: '', shareExpiry: '', shareLocked: null, shareMsg: '', shareCopied: false })
+      })),
 
       factGroups: FGROUPS.map(([pre, label, color]) => {
         const keys = Object.keys(store.facts).filter(k => k.split('.')[0] === pre);
