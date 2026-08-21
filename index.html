@@ -3521,6 +3521,18 @@ class Component extends DCLogic {
         }
       }
 
+      /* Tallsliden: tre utforminger av samme innhold */
+      if ((block.base || block.type) === 'metrics') {
+        const ms = block.data.mStyle === 'hero' ? 'hero' : block.data.mStyle === 'bars' ? 'bars' : 'flat';
+        F.push({ label: 'Utforming', isText: false, isArea: false, isNum: false, isSelect: true,
+          isList: false, isStats: false, isRepeat: false, canAdd: true, items: [], factOptions: [],
+          options: [
+            { label: 'Rekke', ...pill(ms === 'flat'), on: () => this.editData(['mStyle'], '') },
+            { label: 'Fremhevet', ...pill(ms === 'hero'), on: () => this.editData(['mStyle'], 'hero') },
+            { label: 'Søyler', ...pill(ms === 'bars'), on: () => this.editData(['mStyle'], 'bars') }
+          ] });
+      }
+
       /* Produktprofil og Produktvitrine er samme base med to utforminger */
       if ((block.base || block.type) === 'brand') {
         const va = block.data.variant === 'scene' ? 'scene' : 'profile';

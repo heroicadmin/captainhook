@@ -746,6 +746,7 @@
     <div style="position:absolute;inset:0;padding:6cqw 5.5cqw;display:flex;flex-direction:column">
       <div data-el="eyebrow" data-el-name="Stikktittel" data-in="1" style="font-size:.8cqw;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--accent,#1434CB)">{{ s.eyebrow }}</div>
       <h1 data-el="title" data-el-name="Tittel" data-in="2" style="font-size:3.6cqw;font-weight:700;letter-spacing:-.02em;line-height:1.12;margin:.9cqw 0 0">{{ s.title }}</h1>
+      <sc-if value="{{ mStyleFlat }}" hint-placeholder-val="{{ true }}">
       <div data-el="stats" data-el-name="Talloppstilling" style="display:grid;grid-template-columns:{{ metricCols }};gap:1.4cqw;flex:1;align-content:center">
         <sc-for list="{{ stats }}" as="st" hint-placeholder-count="4">
           <div data-in="4" style="border-top:.25cqw solid var(--accent,#1434CB);padding-top:1.4cqw;transition:opacity .55s cubic-bezier(.22,.61,.36,1),transform .3s cubic-bezier(.22,.61,.36,1),border-top-width .18s" style-hover="transform:translateY(-.3cqw);border-top-width:.4cqw">
@@ -754,6 +755,40 @@
           </div>
         </sc-for>
       </div>
+      </sc-if>
+
+      <sc-if value="{{ mStyleHero }}" hint-placeholder-val="{{ false }}">
+      <div data-el="stats" data-el-name="Talloppstilling" style="display:grid;grid-template-columns:1.15fr 1fr;gap:3.2cqw;flex:1;align-content:center;align-items:center">
+        <div data-in="4" style="position:relative;padding-left:2cqw">
+          <span style="position:absolute;left:0;top:.4cqw;bottom:.4cqw;width:.42cqw;border-radius:.21cqw;background:var(--accent,#1434CB)"></span>
+          <div data-countup="{{ heroStat.value }}" style="font-size:7.4cqw;font-weight:700;letter-spacing:-.045em;line-height:.92;font-variant-numeric:tabular-nums;white-space:nowrap">{{ heroStat.value }}</div>
+          <span style="font-size:1.05cqw;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft,#C9C4D6);margin-top:1cqw;display:block">{{ heroStat.label }}</span>
+        </div>
+        <div style="display:grid;grid-template-columns:{{ heroRestCols }};gap:1.3cqw">
+          <sc-for list="{{ heroRest }}" as="st" hint-placeholder-count="3">
+            <div data-in="4" style="background:var(--plate2,#23202F);border:1px solid var(--rule,#302B3F);border-radius:.6cqw;padding:1.25cqw 1.2cqw;transition:transform .3s cubic-bezier(.22,.61,.36,1),border-color .18s" style-hover="transform:translateY(-.3cqw);border-color:var(--accent,#1434CB)">
+              <div data-countup="{{ st.value }}" style="font-size:2.35cqw;font-weight:700;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums;white-space:nowrap">{{ st.value }}</div>
+              <span style="font-size:.66cqw;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-mute,#8E88A3);margin-top:.6cqw;display:block;line-height:1.4">{{ st.label }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ mStyleBars }}" hint-placeholder-val="{{ false }}">
+      <div data-el="stats" data-el-name="Talloppstilling" style="display:flex;flex-direction:column;gap:1.15cqw;flex:1;justify-content:center">
+        <sc-for list="{{ barStats }}" as="st" hint-placeholder-count="4">
+          <div data-in="4" style="display:flex;align-items:baseline;gap:1.2cqw">
+            <span style="font-size:.68cqw;font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink-mute,#8E88A3);width:2cqw;flex:none">{{ st.idx }}</span>
+            <span style="font-size:.82cqw;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft,#C9C4D6);width:16cqw;flex:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ st.label }}</span>
+            <span style="flex:1;min-width:0;height:1.5cqw;background:color-mix(in srgb, var(--ink,#FFFFFF) 7%, transparent);border-radius:.75cqw;overflow:hidden;display:block">
+              <span style="display:block;height:100%;width:{{ st.pct }};background:{{ st.barColor }};border-radius:.75cqw;transition:width .8s cubic-bezier(.22,.61,.36,1)"></span>
+            </span>
+            <span data-countup="{{ st.value }}" style="font-size:1.9cqw;font-weight:700;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums;white-space:nowrap;width:9cqw;text-align:right;flex:none">{{ st.value }}</span>
+          </div>
+        </sc-for>
+      </div>
+      </sc-if>
       <p data-el="source" data-el-name="Kildelinje" data-in="3" style="font-size:.72cqw;line-height:1.5;color:var(--ink-mute,#8E88A3);max-width:88ch">{{ s.source }}</p>
     </div>
   </sc-if>
@@ -2758,6 +2793,25 @@ class Component extends DCLogic {
       bullets: (Array.isArray(s.body) ? s.body : []).map(x => ({ text: x })),
       stats: statList,
       metricCols: 'repeat(' + Math.min(4, Math.max(2, statList.length)) + ',1fr)',
+      /* Tallsliden har tre utforminger. «flat» er den opprinnelige rekka; «hero» løfter
+         det første tallet og lar resten støtte; «bars» viser tallene mot hverandre.
+         Søylene leses ut av tallverdien selv, så de krever ingen nye felter. */
+      mStyleFlat: (s.mStyle || 'flat') === 'flat',
+      mStyleHero: s.mStyle === 'hero',
+      mStyleBars: s.mStyle === 'bars',
+      heroStat: statList[0] || { value: '', label: '' },
+      heroRest: statList.slice(1),
+      heroRestCols: 'repeat(' + Math.min(3, Math.max(1, Math.max(1, statList.length - 1))) + ',1fr)',
+      barStats: (() => {
+        const num = v => Math.abs(parseFloat(String(v == null ? '' : v).replace(/[^\d,.-]/g, '').replace(/\.(?=\d{3}\b)/g, '').replace(',', '.'))) || 0;
+        const vals = statList.map(x => num(x.value));
+        const peak = Math.max.apply(null, vals.concat([0])) || 1;
+        return statList.map((x, i) => ({ ...x,
+          pct: Math.max(6, Math.round((vals[i] / peak) * 100)) + '%',
+          isTop: vals[i] === peak && peak > 0,
+          barColor: vals[i] === peak && peak > 0 ? 'var(--accent,#1434CB)' : 'color-mix(in srgb, var(--accent,#1434CB) 38%, transparent)',
+          idx: String(i + 1).padStart(2, '0') }));
+      })(),
       cols: (s.cols || []).map(x => ({ text: x })),
       rows: rowsOf(s.rows, 1.9).map(r => ({ ...r, cells: (r.v || []).map(v => ({ text: v })) })),
       sumCells: (s.cols || []).map((_, j) => ({
