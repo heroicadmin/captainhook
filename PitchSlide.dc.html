@@ -2320,7 +2320,34 @@ class Component extends DCLogic {
     const m = P.meta || {};
     const t = (S.strings && S.strings[m.lang || 'no']) || (S.strings && S.strings.no) || {};
     const blk = P.slide || { type: 'cover', data: {} };
-    const s = blk.data || {};
+    /* Tekstfelter kan skrive %avsender% og %brand% i stedet for navnet. De byttes ut ved
+       rendering, så det lagrede innholdet beholder plassholderen og følger backenden om
+       avsender eller merkevare endres. %brand% er per slide — den løses mot slidens egen
+       merkevare. Ukjente tokens står urørt, slik at en skrivefeil er synlig. */
+    const sRaw = blk.data || {};
+    const s = (() => {
+      const tokens = {
+        avsender: ((S.sender && S.sender.name) || '').trim(),
+        brand: ((brands[sRaw.brand] || {}).name || '').trim()
+      };
+      tokens.merkevare = tokens.brand;
+      tokens.sender = tokens.avsender;
+      const fix = str => str.replace(/%(avsender|sender|brand|merkevare)%/gi, (hit, key) => {
+        const v = tokens[String(key).toLowerCase()];
+        return v ? v : hit;
+      });
+      const walk = v => {
+        if (typeof v === 'string') return v.indexOf('%') < 0 ? v : fix(v);
+        if (Array.isArray(v)) return v.map(walk);
+        if (v && typeof v === 'object') {
+          const out = {};
+          Object.keys(v).forEach(k => { out[k] = walk(v[k]); });
+          return out;
+        }
+        return v;
+      };
+      return walk(sRaw);
+    })();
     /* fargeforløp over bildene, i pitchens aksentfarge. Vinkel, utstrekning og styrke settes på pitchen;
        en enkelt slide kan holdes utenfor. */
     const sGrad = s.grad == null ? (s.noGrad ? 'off' : 'inherit') : s.grad;
