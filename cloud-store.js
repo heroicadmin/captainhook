@@ -10,6 +10,13 @@
 */
 
 const CONFIG_KEY = 'skgr.supabase.config';   // kun tilkobling, ingen pitchdata
+/* ⚠️  SHARED_KEYS er lagringsfilteret for alt delt innhold.
+   En nøkkel som IKKE står her blir aldri skrevet til databasen — helt stille, uten feilmelding.
+   Legger du til en ny nøkkel på toppnivå i store-objektet, MÅ den føres opp her, ellers
+   ser endringen riktig ut i grensesnittet og er borte ved neste innlasting.
+   Dette var årsaken til at «slett bilde» ikke virket (august 2026): gravsteinene som husker
+   hva som er slettet ble aldri lagret, så re-seedingen la bildene tilbake ved hver innlasting.
+   Se NOTES.md. */
 const SHARED_KEYS = ['facts', 'pricing', 'brands', 'senders', 'library',
                      'templates', 'cases', 'imageCats', 'images', 'catDomains', 'pricingByDomain',
                      /* Styringsnøkler. De MÅ lagres: gravsteinene husker hva som er slettet, og

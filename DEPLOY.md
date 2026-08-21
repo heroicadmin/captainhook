@@ -8,8 +8,7 @@ last filene opp et sted som serverer statiske filer, og pek domenet dit.
 Repoet `heroicadmin/captainhook` er tomt i dag. Last ned prosjektet herfra og
 push innholdet til `main`. Disse må med:
 
-    index.html
-    Skagerrak Pitch Studio.dc.html
+    index.html                (selve appen — ligger på rota)
     Sky-oppsett.dc.html
     PitchSlide.dc.html
     support.js
@@ -33,25 +32,29 @@ Første deploy tar under et minutt. Ny push publiserer automatisk.
 
 ## 3. Domenet
 
-Legg til domenet i hostingpanelet (f.eks. `pitch.skagerrak.tech`) og opprett
+Domenet er satt opp: `pitch.limitbreak.no` (CNAME `pitch` → Railway, hos one.com).
+For et nytt domene: legg det til i hostingpanelet og opprett
 CNAME-en de oppgir hos domeneleverandøren. Sertifikatet ordner de selv.
 
 ## 4. Si det til Supabase
 
 Supabase → Authentication → URL Configuration:
 
-- **Site URL:** `https://pitch.dittdomene.no`
-- **Redirect URLs:** legg til `https://pitch.dittdomene.no/**`
+- **Site URL:** `https://pitch.limitbreak.no`
+- **Redirect URLs:** legg til `https://pitch.limitbreak.no/**`
 
 Uten dette virker ikke passordtilbakestilling og e-postlenker fra det nye domenet.
 
 ## 5. Lenkene
 
-- Selgerne: `https://pitch.dittdomene.no/` → arkivet, logg inn med egen konto.
-- Klienten: `https://pitch.dittdomene.no/#/p/<slug>` → passordporten, deretter pitchen.
-- Oppsett og flytting: `https://pitch.dittdomene.no/Sky-oppsett.dc.html`
+- Selgerne: `https://pitch.limitbreak.no/` → arkivet, logg inn med egen konto.
+- Klienten: `https://pitch.limitbreak.no/#/p/<slug>` → passordporten, deretter pitchen.
+- Oppsett og flytting: `https://pitch.limitbreak.no/Sky-oppsett.dc.html`
 
-`index.html` tar vare på ruten, så klientlenkene trenger ikke filnavnet.
+Appen ligger på rota, så klientlenkene er rene: `https://pitch.limitbreak.no/#/p/<slug>`.
+
+**Før du endrer koden: les `NOTES.md`.** Den samler fellene som svikter stille
+(særlig `SHARED_KEYS` i `cloud-store.js` — en ny nøkkel som ikke står der lagres aldri).
 
 ## Verdt å vite
 
