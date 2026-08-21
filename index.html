@@ -291,6 +291,12 @@
     </nav>
     <span style="flex:1"></span>
     <span style="font-size:11px;color:#9A96AC;letter-spacing:.06em">facts {{ system.factsVersion }}</span>
+    <sc-if value="{{ cloud.hasErr }}" hint-placeholder-val="{{ false }}">
+      <span title="{{ cloud.err }}" style="display:flex;align-items:center;gap:7px;max-width:340px;background:#FDECEA;border:1px solid #F3C9C5;border-radius:6px;padding:5px 9px;font-size:11.5px;color:#A8352C">
+        <span style="flex:none;font-weight:700">Ikke lagret</span>
+        <span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ cloud.err }}</span>
+      </span>
+    </sc-if>
     <sc-if value="{{ superadmin }}" hint-placeholder-val="{{ false }}">
       <button type="button" onClick="{{ onOwnerToggle }}" title="Eierskap for bildemapper (superadmin)" style="width:30px;height:30px;display:grid;place-items:center;border-radius:6px;cursor:pointer;background:#F2F0F7;border:1px solid #E6E4EE;color:#55506B;font-size:15px;line-height:1" style-hover="background:#EAE7F2">⚙</button>
     </sc-if>
@@ -1489,8 +1495,13 @@
           </div>
           <button type="button" onClick="{{ admin.onImgUpload }}" style="font-size:12px;font-weight:700;color:var(--accent-ink);background:var(--accent);border:0;border-radius:6px;transition:filter .14s,box-shadow .14s;padding:9px 14px;cursor:pointer" style-hover="filter:brightness(1.08);box-shadow:0 10px 22px -12px var(--accent)">{{ admin.uploadLabel }}</button>
         </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:7px">
+          <sc-for list="{{ admin.imgCatFilter }}" as="c" hint-placeholder-count="3">
+            <button type="button" onClick="{{ c.on }}" style="font-size:12px;font-weight:600;border-radius:6px;padding:7px 12px;cursor:pointer;background:{{ c.bg }};border:1px solid {{ c.border }};color:{{ c.fg }}">{{ c.label }}</button>
+          </sc-for>
+        </div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">
-          <sc-for list="{{ admin.imgCatFilter }}" as="c" hint-placeholder-count="4">
+          <sc-for list="{{ admin.imgCatFilterRest }}" as="c" hint-placeholder-count="3">
             <button type="button" onClick="{{ c.on }}" style="font-size:12px;font-weight:600;border-radius:6px;padding:7px 12px;cursor:pointer;background:{{ c.bg }};border:1px solid {{ c.border }};color:{{ c.fg }}">{{ c.label }}</button>
           </sc-for>
           <button type="button" onClick="{{ admin.onNewCat }}" style="font-size:12px;font-weight:600;border-radius:6px;padding:7px 12px;cursor:pointer;background:transparent;border:1px dashed #D5D2E0;color:#6E6883">+ Ny kategori</button>
@@ -1507,7 +1518,7 @@
                       <option value="{{ o.v }}">{{ o.label }}</option>
                     </sc-for>
                   </select>
-                  <button type="button" onClick="{{ im.onDel }}" title="Slett bildet" style="width:28px;border:1px solid #E6E4EE;background:transparent;color:#9A96AC;border-radius:5px;cursor:pointer">×</button>
+                  <button type="button" onClick="{{ im.onDel }}" title="{{ im.delTitle }}" style="flex:none;width:{{ im.delWidth }};border:1px solid {{ im.delBorder }};background:{{ im.delBg }};color:{{ im.delFg }};border-radius:5px;cursor:pointer;font-size:11.5px;font-weight:700">{{ im.delLabel }}</button>
                 </div>
               </div>
             </div>
@@ -2882,6 +2893,18 @@ class Component extends DCLogic {
     /* I admin (super-admin ser alle) legges eierdomenet på som en liten merkelapp, ikke navnet. */
     /* utad viser vi bare grunnnavnet (uten domenehalen) — eieren ses i domene-feltet i Eier-seksjonen */
     const catAdminLabel = c => catLabel(c);
+    /* Fast rekkefølge på mappene: Alle, Generelt, Logoer først — resten etter.
+       Hvert selskap har sin egen Generelt og Logoer, så oppsettet blir likt for alle. */
+    const orderCats = list => {
+      const primary = [], rest = [];
+      (list || []).forEach(c => {
+        const base = catLabel(c);
+        if (c === 'Alle' || base === 'Generelt' || base === 'Logoer') primary.push(c); else rest.push(c);
+      });
+      const rank = c => (c === 'Alle' ? 0 : catLabel(c) === 'Generelt' ? 1 : 2);
+      primary.sort((a, b) => rank(a) - rank(b));
+      return { primary, rest };
+    };
     const myLogoCat = (store.imageCats || D.IMAGE_CATS).find(c => isLogoCat(c) && catOwned(c)) || D.LOGO_CAT;
     const myProfileCats = profileCats.filter(catOwned);
 
@@ -3995,7 +4018,10 @@ class Component extends DCLogic {
           } };
       }).filter(g => g.count > 0),
 
-      imgCatFilter: catOpts.map(c => ({ label: catAdminLabel(c), ...pill(c === S.adminCat), on: () => this.setState({ adminCat: c, imgPage: 0 }) })),
+      /* Rekkefølge: «Alle, Generelt, Logoer» på første rad, øvrige mapper på andre rad.
+         Samme oppsett for hvert selskap, siden hvert selskap har sin egen Generelt og Logoer. */
+      imgCatFilter: orderCats(catOpts).primary.map(c => ({ label: catAdminLabel(c), ...pill(c === S.adminCat), on: () => this.setState({ adminCat: c, imgPage: 0 }) })),
+      imgCatFilterRest: orderCats(catOpts).rest.map(c => ({ label: catAdminLabel(c), ...pill(c === S.adminCat), on: () => this.setState({ adminCat: c, imgPage: 0 }) })),
       fillOpen: !!S.fillMenuOpen,
       onToggleFill: () => this.setState({ fillMenuOpen: !this.state.fillMenuOpen }),
       imgPager: {
@@ -4047,7 +4073,20 @@ class Component extends DCLogic {
           /* flyttes bildet til en avslått mappe, skal det ut av rammene det allerede står i */
           onCat: e => { const v = e.target.value; this.withStore(st => { st.images[i].cat = v;
             if ((st.catsNoFill || []).includes(v)) this.stripNoFill(st, [v]); }); },
-          onDel: () => { if (!confirm('Slette «' + im.name + '» fra bildebasen? Slides som bruker det blir stående tomme.')) return;
+          /* to-trinns sletting i selve kortet. Native confirm() kan bli blokkert av
+             nettleseren etter noen dialoger («hindre flere dialoger»), og da forsvant
+             slettingen stille. Nå er bekreftelsen en knapp, som alltid virker. */
+          armed: S.imgDelArm === im.id,
+          delLabel: S.imgDelArm === im.id ? 'Slett?' : '×',
+          delTitle: S.imgDelArm === im.id ? 'Klikk igjen for å slette' : 'Slett bildet',
+          delBg: S.imgDelArm === im.id ? '#FDECEA' : 'transparent',
+          delFg: S.imgDelArm === im.id ? '#A8352C' : '#9A96AC',
+          delBorder: S.imgDelArm === im.id ? '#F3C9C5' : '#E6E4EE',
+          delWidth: S.imgDelArm === im.id ? '58px' : '28px',
+          onDel: () => {
+            if (S.imgDelArm !== im.id) return this.setState({ imgDelArm: im.id });
+            this.setState({ imgDelArm: null });
+            if (i < 0) return;   /* splice(-1,1) ville slettet feil bilde */
             this.withStore(st => {
               st.images.splice(i, 1);
               /* gravstein, ellers seedes bildet inn igjen ved neste versjonsbump */
