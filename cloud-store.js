@@ -11,7 +11,12 @@
 
 const CONFIG_KEY = 'skgr.supabase.config';   // kun tilkobling, ingen pitchdata
 const SHARED_KEYS = ['facts', 'pricing', 'brands', 'senders', 'library',
-                     'templates', 'cases', 'imageCats', 'images', 'catDomains', 'pricingByDomain'];
+                     'templates', 'cases', 'imageCats', 'images', 'catDomains', 'pricingByDomain',
+                     /* Styringsnøkler. De MÅ lagres: gravsteinene husker hva som er slettet, og
+                        versjonstallene stopper re-seedingen. Uten dem kom kodens standardbilder
+                        og -caser tilbake ved neste innlasting, så «slett» så ut til å ikke virke. */
+                     'imagesRemoved', 'imagesVersion', 'casesRemoved', 'casesVersion',
+                     'catsNoFill', 'noFillStamp', 'logoRefiled'];
 
 let _sb = null, _cfg = null, _snapshot = { pitches: {}, shared: {} }, _saveTimer = null;
 let _pending = null, _saving = false, _listeners = new Set();
