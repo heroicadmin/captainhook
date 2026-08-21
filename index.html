@@ -1211,8 +1211,13 @@
               <div style="background:#16131F;border:1px solid #E6E4EE;border-radius:10px;overflow:hidden">
                 <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;background:#FFFFFF;border-bottom:1px solid #E6E4EE">
                   <span style="font-size:10px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#8A85A0">Forhåndsvisning</span>
-                  <span style="flex:1;min-width:0;font-size:11px;color:#A7A3B7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Slik ser sliden ut med standardinnholdet. Plassering redigeres i «Åpne full slide».</span>
+                  <span style="flex:1;min-width:0;font-size:11px;color:#A7A3B7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Tomme felter vises med lorem ipsum. Velg en merkevare for å se malen med merkevarens innhold.</span>
                   <button type="button" onClick="{{ admin.onLibFull }}" style="flex:none;font-size:11px;font-weight:700;border-radius:5px;padding:6px 10px;cursor:pointer;background:var(--accent);border:0;color:var(--accent-ink)">Åpne full slide</button>
+                </div>
+                <div style="display:flex;gap:5px;flex-wrap:wrap;padding:8px 12px;background:#FFFFFF;border-bottom:1px solid #E6E4EE">
+                  <sc-for list="{{ admin.libBrandOpts }}" as="o" hint-placeholder-count="4">
+                    <button type="button" onClick="{{ o.on }}" style="font-size:11px;font-weight:600;border-radius:5px;padding:5px 9px;cursor:pointer;background:{{ o.bg }};border:1px solid {{ o.border }};color:{{ o.fg }}">{{ o.label }}</button>
+                  </sc-for>
                 </div>
                 <div ref="{{ admin.libThumbRef }}" style="position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;background:#16131F">
                   <div data-noi18n="1" style="position:absolute;top:0;left:0;width:1180px;transform-origin:top left;transform:scale(var(--s,.5))">
@@ -3836,6 +3841,33 @@ class Component extends DCLogic {
           ? [pitches ? pitches + (pitches === 1 ? ' slide' : ' slides') : '', templates ? templates + ' i templates' : ''].filter(Boolean).join(' · ')
           : 'ikke i bruk' };
     };
+    /* Forhåndsvisningen i biblioteket skal vise malen, ikke et tomt skall.
+       Tomme tekstfelter fylles med lorem ipsum; er en merkevare valgt på en
+       produktslide brukes merkevarens eget innhold i stedet. */
+    const LOREM = {
+      text: 'Lorem ipsum dolor sit amet',
+      area: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+      list: ['Lorem ipsum dolor sit amet', 'Consectetur adipiscing elit', 'Sed do eiusmod tempor incididunt']
+    };
+    const libPreviewData = en => {
+      const data = JSON.parse(JSON.stringify(en.defaults || {}));
+      const bkey = S.libBrand || '';
+      /* merkevarespesifikk mal: samme kilde som en ny blokk bruker */
+      if (bkey && en.base === 'brand') {
+        const bc = (D.BRAND_CONTENT || {})[bkey];
+        if (bc) Object.assign(data, JSON.parse(JSON.stringify(bc)));
+        data.brand = bkey;
+      }
+      const isEmpty = v => v == null || v === '' || (Array.isArray(v) && !v.length);
+      (en.fields || []).forEach(f => {
+        const key = f[0], kind = f[2];
+        if (!isEmpty(data[key])) return;
+        if (kind === 'text') data[key] = LOREM.text;
+        else if (kind === 'area') data[key] = LOREM.area;
+        else if (kind === 'list') data[key] = [...LOREM.list];
+      });
+      return data;
+    };
     const writeLib = fn => {
       const st = this.clone(this.state.store);
       const en = st.library.find(x => x.type === libSelId);
@@ -4345,8 +4377,13 @@ class Component extends DCLogic {
       },
       libFullNote: libSel ? 'versjon ' + (libSel.rev || 1) + ' · endringer lagres med en gang og gir ny versjon' : '',
       libPreview: libSel ? { id: 'lib-' + libSel.type, type: libSel.type, base: libSel.base, rev: libSel.rev || 1,
-        data: JSON.parse(JSON.stringify(libSel.defaults || {})),
+        data: libPreviewData(libSel),
         layout: JSON.parse(JSON.stringify(libSel.layout || {})) } : null,
+      /* merkevarevelger for forhåndsvisningen: «Lorem ipsum» viser malen som mal,
+         en merkevare fyller den med merkevarens eget innhold (BRAND_CONTENT). */
+      libBrandOpts: [{ v: '', label: 'Lorem ipsum' }, ...visBrandKeys.map(k => ({ v: k, label: BR[k].name }))]
+        .map(o => ({ label: o.label, ...pill(o.v === (S.libBrand || '')), on: () => this.setState({ libBrand: o.v }) })),
+      libBrandIsBrandSlide: !!(libSel && libSel.base === 'brand'),
       libThumbRef: this.thumbRef,
       /* flytting i biblioteket er standardplasseringen. Hele økten teller som én endring:
          versjonen bumpes når fullskjermvisningen lukkes, ikke for hver lille dytt. */
