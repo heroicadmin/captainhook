@@ -11,7 +11,7 @@
 
 const CONFIG_KEY = 'skgr.supabase.config';   // kun tilkobling, ingen pitchdata
 const SHARED_KEYS = ['facts', 'pricing', 'brands', 'senders', 'library',
-                     'templates', 'cases', 'imageCats', 'images', 'catDomains'];
+                     'templates', 'cases', 'imageCats', 'images', 'catDomains', 'pricingByDomain'];
 
 let _sb = null, _cfg = null, _snapshot = { pitches: {}, shared: {} }, _saveTimer = null;
 let _pending = null, _saving = false, _listeners = new Set();

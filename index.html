@@ -2828,9 +2828,31 @@ class Component extends DCLogic {
       return { ...sd, logo: this.resolve(sd.logo), contactLine: D.senderContact(sd),
         closingImg: this.resolve(D.galleryImg(sd.closingImg, store.images)) };
     };
+    /* Prismodellen er per selskap. `store.pricing` er grunnmalen; hvert selskap
+       (e-postdomene) kan ha sin egen i `store.pricingByDomain`.
+       VIKTIG: en pitch skal alltid vises med SITT EGET selskaps priser — bestemt av
+       avsenderen på pitchen, ikke av hvem som ser på. Ellers ville en kunde som åpner
+       en Skagerrak-pitch kunne se et annet selskaps nivåer. */
+    const pricingFor = dom => ((store.pricingByDomain || {})[String(dom || '').toLowerCase()]) || store.pricing;
+    const senderDomainOf = mt => {
+      const sd = senders.find(x => x.id === (mt || {}).sender) || senders[0] || {};
+      return String(sd.domain || '').toLowerCase();
+    };
+    /* admin redigerer sitt eget selskaps priser */
+    const myPricing = pricingFor(myDomain);
+    /* rendering følger pitchens selskap */
+    const pitchPricing = pitch ? pricingFor(senderDomainOf(pitch.meta)) : myPricing;
+    /* skriving: kopier grunnmalen inn i eget selskap ved første endring */
+    const writePricing = fn => this.withStore(st => {
+      const dom = String(myDomain || '').toLowerCase();
+      if (!dom) return;
+      if (!st.pricingByDomain) st.pricingByDomain = {};
+      if (!st.pricingByDomain[dom]) st.pricingByDomain[dom] = JSON.parse(JSON.stringify(st.pricing || {}));
+      fn(st.pricingByDomain[dom]);
+    });
     /* sliden skal ikke kjenne casebasen — den får ferdige kopier per prisnivå */
-    const pricingResolved = { ...store.pricing,
-      tiers: (store.pricing.tiers || []).map(ti => ({ ...ti, cases: D.tierCaseSet(ti, store.cases) })) };
+    const pricingResolved = { ...pitchPricing,
+      tiers: (pitchPricing.tiers || []).map(ti => ({ ...ti, cases: D.tierCaseSet(ti, store.cases) })) };
     const system = { brands: brandsResolved, facts: store.facts, pricing: pricingResolved, strings: D.STRINGS,
       skagerrakLogo: this.resolve(D.SKAGERRAK_LOGO), brandContent: D.BRAND_CONTENT, factsVersion: D.VERSION.facts,
       assets: S.assets, sender: senderOf(meta) };
@@ -3065,13 +3087,13 @@ class Component extends DCLogic {
         else if (kind === 'area') F.push({ ...base, isArea: true, value: val ?? '', on: e => set(e.target.value) });
         else if (kind === 'num') F.push({ ...base, isNum: true, value: val ?? 0, on: e => set(+e.target.value) });
         else if (kind === 'brand' || kind === 'tier' || kind === 'market' || kind === 'variant' || kind === 'addons') {
-          if (kind === 'market' && store.pricing.markets.length < 2) return;
+          if (kind === 'market' && (pitchPricing.markets || []).length < 2) return;
           let opts = [];
           if (kind === 'brand') opts = brandOpts;
-          if (kind === 'tier') opts = store.pricing.tiers.map(t => ({ v: t.id, label: t.name }));
-          if (kind === 'market') opts = store.pricing.markets.map(t => ({ v: t.id, label: t.label }));
+          if (kind === 'tier') opts = (pitchPricing.tiers || []).map(t => ({ v: t.id, label: t.name }));
+          if (kind === 'market') opts = (pitchPricing.markets || []).map(t => ({ v: t.id, label: t.label }));
           if (kind === 'variant') opts = [{ v: 'split', label: 'Delt' }, { v: 'compact', label: 'Kompakt' }, { v: 'stacked', label: 'Stablet' }];
-          if (kind === 'addons') opts = store.pricing.addons.map(a => ({ v: a.id, label: a.name }));
+          if (kind === 'addons') opts = (pitchPricing.addons || []).map(a => ({ v: a.id, label: a.name }));
           F.push({ ...base, isSelect: true, options: opts.map(o => {
             const active = kind === 'addons' ? (val || []).includes(o.v) : val === o.v;
             return { label: o.label, ...pill(active), on: () => {
@@ -3084,7 +3106,7 @@ class Component extends DCLogic {
               });
               if (kind !== 'addons') return set(o.v);
               let list = [...(val || [])];
-              const req = id => (store.pricing.addons.find(x => x.id === id) || {}).requires;
+              const req = id => ((pitchPricing.addons || []).find(x => x.id === id) || {}).requires;
               if (list.includes(o.v)) list = list.filter(x => x !== o.v && req(x) !== o.v);
               else { list.push(o.v); const r = req(o.v); if (r && !list.includes(r)) list.push(r); }
               set(list);
@@ -3933,7 +3955,7 @@ class Component extends DCLogic {
         ['cases', 'Caser', 'Casebasen, merket per prisnivå', 'Salg og marked', (store.cases || []).length],
         ['senders', 'Avsender', 'Hvem pitchen kommer fra', 'Salgsledelse', senders.length],
         ['brand', 'Merkevare', 'Logoer og produktfarger', 'Design', Object.keys(BR).length],
-        ['pricing', 'Prismodell', 'Trapp, rabatter og lisens', 'Salgsledelse', store.pricing.tiers.length],
+        ['pricing', 'Prismodell', 'Trapp, rabatter og lisens', 'Salgsledelse', (myPricing.tiers || []).length],
         ['access', 'Deling og sporing', 'Passord, lenke og tall per pitch', 'Salgsledelse', store.pitches.length]
       ].map(([v, label, desc, owner, count]) => ({
         label, desc, owner, count, on: () => this.setState({ adminTab: v }),
@@ -4199,7 +4221,7 @@ class Component extends DCLogic {
       caseRows: visibleCases.map(c => ({
         title: c.title || 'Uten tittel', kicker: c.kicker || '',
         ...pill(c.id === caseSelId),
-        tiers: (c.tiers || []).length ? (c.tiers || []).map(id => (store.pricing.tiers.find(t => t.id === id) || {}).name || id).join(' · ') : 'ingen nivåer',
+        tiers: (c.tiers || []).length ? (c.tiers || []).map(id => ((myPricing.tiers || []).find(t => t.id === id) || {}).name || id).join(' · ') : 'ingen nivåer',
         hidden: !!c.hidden,
         on: () => this.setState({ caseSel: c.id })
       })),
@@ -4246,13 +4268,13 @@ class Component extends DCLogic {
         this.withStore(st => {
           st.cases = st.cases.filter(c => c.id !== caseSel.id);
           st.casesRemoved = [...(st.casesRemoved || []), caseSel.id];
-          (st.pricing.tiers || []).forEach(ti => { ti.caseIds = (ti.caseIds || []).filter(x => x !== caseSel.id); });
+          (((st.pricingByDomain || {})[String(myDomain || '').toLowerCase()] || st.pricing).tiers || []).forEach(ti => { ti.caseIds = (ti.caseIds || []).filter(x => x !== caseSel.id); });
           (st.templates || []).forEach(t => { t.blocks = D.tplBlocks(t).map(r => r.caseId === caseSel.id ? { ...r, caseId: '' } : r); t.brands = {}; });
         });
         this.setState({ caseSel: null });
       },
       /* merking: hvilke prisnivåer casen kan brukes på */
-      caseTierTags: (store.pricing.tiers || []).map(ti => ({
+      caseTierTags: (myPricing.tiers || []).map(ti => ({
         label: ti.name, ...pill(caseSel ? (caseSel.tiers || []).includes(ti.id) : false),
         on: () => writeCase(c => {
           const list = c.tiers || [];
@@ -4260,12 +4282,13 @@ class Component extends DCLogic {
         })
       })),
       /* rekkefølgen per prisnivå, maks tre */
-      tierCaseRows: (store.pricing.tiers || []).map((ti, ti_i) => {
+      tierCaseRows: (myPricing.tiers || []).map((ti, ti_i) => {
         const avail = D.casesForTier(store.cases, ti.id);
         const picked = (ti.caseIds || []).map(id => D.caseById(store.cases, id)).filter(Boolean);
         const shown = picked.length ? picked : avail.slice(0, D.MAX_TIER_CASES);
-        const writeTier = fn => this.withStore(st => {
-          const x = st.pricing.tiers[ti_i];
+        const writeTier = fn => writePricing(pr => {
+          const x = (pr.tiers || [])[ti_i];
+          if (!x) return;
           x.caseIds = x.caseIds && x.caseIds.length ? [...x.caseIds] : shown.map(c => c.id);
           fn(x);
         });
@@ -4284,7 +4307,7 @@ class Component extends DCLogic {
           addOptions: [{ v: '', label: 'Legg til case…' },
             ...avail.filter(c => !shown.some(x => x.id === c.id)).map(c => ({ v: c.id, label: c.title }))],
           onAdd: e => { const id = e.target.value; if (!id) return; writeTier(x => { if (x.caseIds.length < D.MAX_TIER_CASES) x.caseIds.push(id); }); },
-          onReset: () => this.withStore(st => { st.pricing.tiers[ti_i].caseIds = []; })
+          onReset: () => writePricing(pr => { if ((pr.tiers || [])[ti_i]) pr.tiers[ti_i].caseIds = []; })
         };
       }),
 
@@ -4468,21 +4491,13 @@ class Component extends DCLogic {
         if (BR[key]) return alert('Merkevaren finnes allerede.');
         this.upload(ref => this.withStore(st => { st.brands[key] = { name, color: '#7C5CFF', logo: ref, scale: 1, domain: myDomain }; }), { maxEdge: 900 });
       },
-      tiers: store.pricing.tiers.map((t, i) => {
-        const set = patch => { const st = this.clone(store); Object.assign(st.pricing.tiers[i], patch); this.save(st); };
+      tiers: (myPricing.tiers || []).map((t, i) => {
+        const set = patch => writePricing(pr => { if ((pr.tiers || [])[i]) Object.assign(pr.tiers[i], patch); });
         return { name: t.name, price: t.price, reach: t.reach, emv: t.emv,
           cpm: nf(t.reach ? t.price / (t.reach / 1000) : 0) + ' kr',
           onName: e => set({ name: e.target.value }),
           onPrice: e => set({ price: +e.target.value }), onReach: e => set({ reach: +e.target.value }), onEmv: e => set({ emv: +e.target.value }) };
       }),
-      addons: store.pricing.addons.map((a, i) => ({ name: a.name, price: a.price, flag: a.provisional ? 'Foreløpig' : '',
-        onPrice: e => { const st = this.clone(store); st.pricing.addons[i].price = +e.target.value; this.save(st); } })),
-      rates: [
-        ...store.pricing.years.map(y => ({ label: 'Avtalelengde ' + y.n + ' år', value: (y.discount * 100).toFixed(0) + ' % rabatt' })),
-        ...store.pricing.markets.map(m => ({ label: m.label, value: '× ' + m.price.toFixed(2) + ' pris · × ' + m.reach.toFixed(2) + ' rekkevidde' })),
-        { label: 'Ekstra aktivering', value: nf(store.pricing.activation.price) + ' kr' },
-        { label: 'Volumrabatt fra nr. ' + store.pricing.activation.volumeBreakAt, value: (store.pricing.activation.volumeDiscount * 100).toFixed(0) + ' %' }
-      ]
     };
 
     /* ---------- BILDEVELGER ---------- */
