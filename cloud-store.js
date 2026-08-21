@@ -126,7 +126,7 @@ export async function signOut() {
 export async function loadStore() {
   const sb = await client();
   const [pitchRes, sharedRes] = await Promise.all([
-    sb.from('pitches').select('id, slug, client, title, status, data, owner_id, expires_at, view_password, updated_at')
+    sb.from('pitches').select('id, slug, client, title, status, data, owner_id, expires_at, view_password, company, updated_at')
       .order('updated_at', { ascending: false }),
     sb.from('shared_data').select('key, value')
   ]);
@@ -142,6 +142,9 @@ export async function loadStore() {
     p.hasPassword = !!row.view_password;
     p.expiresAt = row.expires_at || '';
     p.ownerId = row.owner_id || null;
+    /* hvilket selskap pitchen tilhører (settes av databasen ved opprettelse,
+       kan flyttes av superadmin). Styrer hva hver bruker ser. */
+    p.company = row.company || '';
     store.pitches.push(p);
     _snapshot.pitches[row.id] = JSON.stringify(stripLocal(p));
   });
@@ -155,7 +158,7 @@ export async function loadStore() {
 }
 
 function stripLocal(p) {
-  const { hasPassword, expiresAt, ownerId, ...rest } = p;
+  const { hasPassword, expiresAt, ownerId, company, ...rest } = p;
   return rest;
 }
 
@@ -194,6 +197,7 @@ export async function flush() {
         status: meta.status || 'kladd',
         data: clean,
         owner_id: p.ownerId || uid,
+        ...(p.company ? { company: p.company } : {}),
         updated_at: new Date().toISOString()
       });
       _snapshot.pitches[p.id] = json;

@@ -326,3 +326,53 @@ create policy "team update assets" on storage.objects
 drop policy if exists "team delete assets" on storage.objects;
 create policy "team delete assets" on storage.objects
   for delete to authenticated using (bucket_id = 'pitch-assets');
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- Selskaps-isolasjon av pitcher (lagt til 2026-08-22)
+-- En pitch tilhører selskapet til den som lagde den. Superadmin ser alt og kan
+-- flytte en pitch. Klientvisningen går gjennom SECURITY DEFINER-funksjonene
+-- (pitch_gate / pitch_public), så anonyme klientlenker påvirkes ikke av dette.
+-- ─────────────────────────────────────────────────────────────────────────────
+
+alter table public.pitches  add column if not exists company text;
+alter table public.profiles add column if not exists is_superadmin boolean not null default false;
+
+-- e-postdomenet til den innloggede
+create or replace function public.my_domain() returns text
+  language sql stable as $$
+  select lower(split_part(coalesce(auth.jwt() ->> 'email', ''), '@', 2))
+$$;
+
+-- security definer: må kunne lese profiles uten å gå i RLS-loop
+create or replace function public.is_superadmin() returns boolean
+  language sql stable security definer set search_path = public as $$
+  select coalesce((select is_superadmin from public.profiles where id = auth.uid()), false)
+$$;
+
+-- nye pitcher merkes med selskapet til den som lager dem, uten at klienten må sende det
+create or replace function public.pitch_set_company() returns trigger
+  language plpgsql security definer set search_path = public as $$
+begin
+  if new.company is null or new.company = '' then
+    new.company := lower(split_part(coalesce(auth.jwt() ->> 'email', ''), '@', 2));
+  end if;
+  return new;
+end
+$$;
+
+drop trigger if exists pitch_set_company on public.pitches;
+create trigger pitch_set_company before insert on public.pitches
+  for each row execute function public.pitch_set_company();
+
+-- etterfyll eksisterende rader fra eierens domene
+update public.pitches p
+   set company = lower(split_part(u.email, '@', 2))
+  from auth.users u
+ where u.id = p.owner_id and (p.company is null or p.company = '');
+
+-- erstatter "team all pitches" (using true) — den lot alle innloggede lese alt
+drop policy if exists "team all pitches" on public.pitches;
+drop policy if exists "company pitches" on public.pitches;
+create policy "company pitches" on public.pitches for all to authenticated
+  using      (public.is_superadmin() or lower(coalesce(company, '')) = public.my_domain())
+  with check (public.is_superadmin() or lower(coalesce(company, '')) = public.my_domain());

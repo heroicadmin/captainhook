@@ -1740,6 +1740,16 @@
               <p style="font-size:12px;line-height:1.6;color:#6E6883;margin:0 0 13px">
                 Klienten åpner lenken uten innlogging, men må skrive passordet. Tomt felt fjerner passordet.
               </p>
+              <sc-if value="{{ admin.shareIsSuperadmin }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;background:#F8F7FB;border:1px solid #E6E4EE;border-radius:7px;padding:9px 11px;margin-bottom:13px">
+                  <span style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#0E9E8F;background:#E9F6F4;border:1px solid #B7E3DB;border-radius:4px;padding:2px 6px;flex:none">Superadmin</span>
+                  <span style="font-size:11.5px;color:#55506B;flex:none">Tilhører</span>
+                  <sc-for list="{{ admin.shareCompanyOpts }}" as="c" hint-placeholder-count="2">
+                    <button type="button" onClick="{{ c.on }}" style="font-size:11.5px;font-weight:600;border-radius:5px;padding:5px 10px;cursor:pointer;background:{{ c.bg }};border:1px solid {{ c.border }};color:{{ c.fg }}">{{ c.label }}</button>
+                  </sc-for>
+                  <span style="flex:1;min-width:120px;font-size:11px;color:#8A85A0;line-height:1.45">Flytter pitchen til et annet selskap. Bare de med det domenet ser den etterpå.</span>
+                </div>
+              </sc-if>
               <div style="display:flex;gap:7px;flex-wrap:wrap;align-items:center">
                 <input type="text" value="{{ admin.share.pw }}" onInput="{{ admin.share.onPw }}" placeholder="passord for denne pitchen" style="flex:1;min-width:180px;background:#F7F6FA;border:1px solid #D5D2E0;border-radius:6px;color:#322D45;font-size:12.5px;padding:9px 11px" />
                 <input type="date" value="{{ admin.share.expiry }}" onInput="{{ admin.share.onExpiry }}" title="Lenken slutter å virke etter denne datoen" style="flex:none;background:#F7F6FA;border:1px solid #D5D2E0;border-radius:6px;color:#322D45;font-size:12.5px;padding:9px 11px" />
@@ -2981,13 +2991,17 @@ class Component extends DCLogic {
     };
     /* admin redigerer sitt eget selskaps priser */
     const myPricing = pricingFor(myDomain);
-    /* En pitch hører til selskapet som står som avsender. Alle lister, tellere og
-       snarveier skal bare vise egne pitcher — ellers ville selskap 1 sett navnene på
+    /* En pitch tilhører selskapet til den som lagde den — feltet `company` settes av
+       databasen ved opprettelse, og kan flyttes av superadmin. Alle lister, tellere og
+       snarveier viser bare egne pitcher, ellers ville selskap 1 sett navnene på
        selskap 2 sine kunder i «Fortsett der du var», arkivet og Deling og sporing.
-       (Redigering/oppslag går fortsatt mot hele lista, se currentPitch.) */
+       Superadmin ser alt. Databasen håndhever det samme via RLS, så dette er
+       ryddighet i grensesnittet — ikke det som beskytter dataene. */
+    const pitchCompanyOf = p => String((p || {}).company || '').toLowerCase();
     const myPitches = (store.pitches || []).filter(p => {
-      const d = senderDomainOf(p.meta);
-      return !d || !myDomain || d === myDomain;
+      if (isSuperadmin) return true;
+      const c = pitchCompanyOf(p);
+      return !c || !myDomain || c === myDomain;
     });
     /* rendering følger pitchens selskap */
     const pitchPricing = pitch ? pricingFor(senderDomainOf(pitch.meta)) : myPricing;
@@ -4129,6 +4143,20 @@ class Component extends DCLogic {
       isImages: at === 'images', isSenders: at === 'senders', isCases: at === 'cases', isAccess: at === 'access',
 
       shareEmpty: myPitches.length === 0,
+      /* Superadmin kan flytte en pitch til et annet selskap. Alle andre ser bare hvem den
+         tilhører. Selskapene utledes av domenene som faktisk er i bruk. */
+      shareIsSuperadmin: isSuperadmin,
+      shareCompany: adminSharePitch ? (pitchCompanyOf(adminSharePitch) || '—') : '',
+      shareCompanyOpts: (() => {
+        const doms = new Set();
+        (senders || []).forEach(sd => { if (sd.domain) doms.add(String(sd.domain).toLowerCase()); });
+        Object.keys(store.pricingByDomain || {}).forEach(d => doms.add(String(d).toLowerCase()));
+        if (myDomain) doms.add(myDomain);
+        const cur = adminSharePitch ? pitchCompanyOf(adminSharePitch) : '';
+        return [...doms].sort().map(d => ({ label: d, ...pill(d === cur),
+          on: () => { if (!adminSharePitch) return;
+            this.withStore(st => { const t = (st.pitches || []).find(x => x.id === adminSharePitch.id); if (t) t.company = d; }); } }));
+      })(),
       shareHasSel: !!adminSharePitch,
       shareClient: adminSharePitch ? adminSharePitch.meta.client : '',
       shareSlug: adminSharePitch ? '/' + (adminSharePitch.meta.slug || adminSharePitch.id) : '',
