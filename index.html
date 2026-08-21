@@ -3521,6 +3521,17 @@ class Component extends DCLogic {
         }
       }
 
+      /* Produktprofil og Produktvitrine er samme base med to utforminger */
+      if ((block.base || block.type) === 'brand') {
+        const va = block.data.variant === 'scene' ? 'scene' : 'profile';
+        F.push({ label: 'Utforming', isText: false, isArea: false, isNum: false, isSelect: true,
+          isList: false, isStats: false, isRepeat: false, canAdd: true, items: [], factOptions: [],
+          options: [
+            { label: 'Profil', ...pill(va === 'profile'), on: () => this.editData(['variant'], '') },
+            { label: 'Vitrine', ...pill(va === 'scene'), on: () => this.editData(['variant'], 'scene') }
+          ] });
+      }
+
       if (block.type === 'brand') {
         const hi = !!block.data.hideImg;
         F.push({ label: 'Bilderamme', isText: false, isArea: false, isNum: false, isSelect: true,

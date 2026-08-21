@@ -2312,6 +2312,9 @@ class Component extends DCLogic {
     /* base er utformingen — egendefinerte slides i biblioteket peker på en av disse */
     const baseType = blk.base || blk.type;
     types.forEach(k => (is[k] = baseType === k));
+    /* Produktvitrine er en variant av Produktprofil: samme base ('brand'), men
+       scene-utformingen. Slik finnes produktsliden som én type med to utforminger. */
+    if (baseType === 'brand' && s.variant === 'scene') { is.brand = false; is.productscene = true; }
 
     const bk = brands[s.brand] || brands.gamer || { name: '', color: '#888', logo: '', scale: 1 };
     const h = (base, sc) => (base * (sc || 1)).toFixed(2) + 'cqw';

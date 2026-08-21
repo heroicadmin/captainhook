@@ -543,13 +543,14 @@ export const LIBRARY = [
       ],
       ctaHead:'Du har et personlig abonnement', ctaText:'Visste du at du kan spare penger med et gruppeabonnement?' } },
 
-  { type:'productscene', cat:'Økosystem', name:'Produktvitrine', desc:'Produktprofil med partnerkryss og enhetsscene — for produkter med et tydelig partnertilbud.',
+  /* Variant av Produktprofil: samme base ('brand'), scene-utforming via defaults.variant */
+  { type:'productscene', base:'brand', cat:'Økosystem', name:'Produktvitrine', desc:'Variant av Produktprofil — partnerkryss og enhetsscene, for produkter med et tydelig partnertilbud.',
     fields:[['brand','Merkevare','brand'],['title','Tittel','text'],['text','Ingress','area'],['stats','Tall','stats'],
             ['partners','Partnere (kryss)','list'],['text2','Andre avsnitt','area'],['note','Linje under avsnitt','text'],
             ['demoTitle','Demografi — tittel','text'],['demoBullets','Demografi — punkter','list'],['demoNote','Demografi — kildenote','text'],
             ['shotUrl','URL i ramme','text'],['img','Bilde 1 (browser)','image'],['imgHint','Bildeanvisning 1','text'],
             ['img2','Bilde 2 (mobil)','image'],['imgHint2','Bildeanvisning 2','text']],
-    defaults:{ brand:'ggarena', title:'GG Arena',
+    defaults:{ variant:'scene', brand:'ggarena', title:'GG Arena',
       text:'Built on Skagerrak platform technology, Maelstrom, GG Arena is the home to Scandinavian esports and competitive gaming, giving amateur hosts to professional tournament operators the tools to operate cross-platform tournaments with ease.',
       stats:[{value:'52.000',label:'Average Monthly Users'},{value:'100%',label:'Partner Share of Voice'},{value:'0%',label:'Random Advertisers'},{value:'95%',label:'PC / Desktop'}],
       partners:['Loyalty Club','Platform','Product Placement','Activities','Tournaments','League','In-game Ads'],
