@@ -47,7 +47,8 @@ Uten dette virker ikke passordtilbakestilling og e-postlenker fra det nye domene
 
 ## 5. Lenkene
 
-- Selgerne: `https://pitch.limitbreak.no/` → arkivet, logg inn med egen konto.
+- Selgerne: `https://pitch.limitbreak.no/` → landingssiden (logg inn med egen konto).
+  Arkivet/dashbordet ligger på `https://pitch.limitbreak.no/#/arkiv`.
 - Klienten: `https://pitch.limitbreak.no/#/p/<slug>` → passordporten, deretter pitchen.
 - Oppsett og flytting: `https://pitch.limitbreak.no/Sky-oppsett.dc.html`
 

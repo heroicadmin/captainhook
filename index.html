@@ -265,7 +265,7 @@
           <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;text-align:right">
             <a href="{{ view.mailto }}" style="font-size:13px;font-weight:700;color:var(--accent-ink);background:var(--accent);border-radius:6px;padding:11px 18px;transition:filter .14s" style-hover="filter:brightness(1.1)">Ta kontakt</a>
             <span style="font-size:11.5px;color:#4A4459;letter-spacing:.06em">{{ view.meta.client }} · {{ view.meta.created }}</span>
-            <a href="#/" style="font-size:11.5px;color:#6E6883">Åpne i Pitch Studio</a>
+            <a href="#/arkiv" style="font-size:11.5px;color:#6E6883">Åpne i Pitch Studio</a>
           </div>
         </div>
       </footer>
@@ -288,7 +288,7 @@
       <span style="font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#322D45">Pitch<span style="color:#0E9E8F">&nbsp;Studio</span></span>
     </a>
     <nav style="display:flex;gap:4px;margin-left:10px">
-      <a href="#/" style="font-size:12.5px;font-weight:600;padding:7px 12px;border-radius:6px;background:{{ nav.archiveBg }};color:{{ nav.archiveFg }}">Dashboard</a>
+      <a href="#/arkiv" style="font-size:12.5px;font-weight:600;padding:7px 12px;border-radius:6px;background:{{ nav.archiveBg }};color:{{ nav.archiveFg }}">Dashboard</a>
       <a href="#/new" style="font-size:12.5px;font-weight:600;padding:7px 12px;border-radius:6px;background:{{ nav.newBg }};color:{{ nav.newFg }}">Ny pitch</a>
       <a href="#/admin" style="font-size:12.5px;font-weight:600;padding:7px 12px;border-radius:6px;background:{{ nav.adminBg }};color:{{ nav.adminFg }}">Admin</a>
     </nav>
@@ -346,8 +346,119 @@
     </div>
   </sc-if>
 
+  <!-- ══════════════ LANDING ══════════════ -->
+  <sc-if value="{{ route.isLanding }}" hint-placeholder-val="{{ true }}">
+    <div style="animation:{{ routeAnim }}">
+
+      <!-- hero -->
+      <div style="position:relative;overflow:hidden;background:#14121D;color:#FFFFFF">
+        <span style="position:absolute;top:-140px;right:-90px;width:460px;height:460px;border-radius:50%;background:radial-gradient(circle,rgba(14,158,143,.30),transparent 68%);pointer-events:none"></span>
+        <span style="position:absolute;bottom:-190px;left:-120px;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,rgba(20,52,203,.22),transparent 70%);pointer-events:none"></span>
+        <div style="position:relative;max-width:1180px;margin:0 auto;padding:74px 24px 66px">
+          <div style="display:flex;align-items:center;gap:11px;margin-bottom:26px">
+            <svg width="26" height="26" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block;flex:none" aria-hidden="true">
+              <rect x="28" y="10" width="26" height="26" rx="6" fill="#0E9E8F" opacity="0.5"/>
+              <rect x="10" y="22" width="34" height="32" rx="8" fill="#0E9E8F"/>
+              <rect x="17" y="31" width="20" height="5.5" rx="2.75" fill="#FFFFFF"/>
+              <rect x="17" y="41" width="12" height="5.5" rx="2.75" fill="#FFFFFF"/>
+            </svg>
+            <span style="font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#8E88A3">Pitch Studio</span>
+            <sc-if value="{{ landing.hasCompany }}" hint-placeholder-val="{{ false }}">
+              <span style="font-size:10.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#0E9E8F;background:rgba(14,158,143,.13);border:1px solid rgba(14,158,143,.34);border-radius:4px;padding:3px 8px">{{ landing.company }}</span>
+            </sc-if>
+          </div>
+          <h1 style="font-size:clamp(30px,4.4vw,50px);font-weight:800;letter-spacing:-.03em;line-height:1.06;margin:0;max-width:19ch">{{ landing.greeting }}</h1>
+          <p style="font-size:15.5px;line-height:1.65;color:#C9C4D6;margin:16px 0 0;max-width:56ch">
+            Bygg en pitch av ferdige slides, hold tallene på ett sted, og del den med kunden
+            på en egen lenke — med passord og sporing.
+          </p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:30px">
+            <a href="#/new" style="font-size:14px;font-weight:700;color:var(--accent-ink);background:var(--accent);border-radius:8px;padding:13px 22px;transition:filter .14s,box-shadow .14s" style-hover="filter:brightness(1.09);box-shadow:0 14px 30px -14px var(--accent)">+ Ny pitch</a>
+            <a href="#/arkiv" style="font-size:14px;font-weight:600;color:#FFFFFF;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.20);border-radius:8px;padding:13px 22px;transition:background .14s" style-hover="background:rgba(255,255,255,.15)">Åpne arkivet →</a>
+          </div>
+        </div>
+      </div>
+
+      <div style="max-width:1180px;margin:0 auto;padding:34px 24px 80px">
+
+        <!-- status -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:34px">
+          <a href="#/arkiv" style="background:#FFFFFF;border:1px solid #E6E4EE;border-radius:10px;padding:17px 18px;display:block;transition:transform .16s ease,border-color .16s,box-shadow .16s" style-hover="transform:translateY(-2px);border-color:#C8C4D8;box-shadow:0 14px 30px -20px rgba(30,26,48,.45)">
+            <div style="font-size:26px;font-weight:700;letter-spacing:-.03em;line-height:1;color:#16131F;font-variant-numeric:tabular-nums">{{ landing.pitchCount }}</div>
+            <div style="font-size:10.5px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:#8A85A0;margin-top:7px">{{ landing.pitchLabel }} i arkivet</div>
+          </a>
+          <div style="background:#FFFFFF;border:1px solid #E6E4EE;border-radius:10px;padding:17px 18px">
+            <div style="font-size:26px;font-weight:700;letter-spacing:-.03em;line-height:1;color:#16131F;font-variant-numeric:tabular-nums">{{ landing.sentCount }}</div>
+            <div style="font-size:10.5px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:#8A85A0;margin-top:7px">sendt</div>
+          </div>
+          <div style="background:#FFFFFF;border:1px solid #E6E4EE;border-radius:10px;padding:17px 18px">
+            <div style="font-size:26px;font-weight:700;letter-spacing:-.03em;line-height:1;color:#16131F;font-variant-numeric:tabular-nums">{{ landing.draftCount }}</div>
+            <div style="font-size:10.5px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:#8A85A0;margin-top:7px">kladd</div>
+          </div>
+          <div style="background:#FFFFFF;border:1px solid #E6E4EE;border-radius:10px;padding:17px 18px">
+            <div style="font-size:26px;font-weight:700;letter-spacing:-.03em;line-height:1;color:#16131F;font-variant-numeric:tabular-nums">{{ landing.slideCount }}</div>
+            <div style="font-size:10.5px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:#8A85A0;margin-top:7px">slides å bygge av</div>
+          </div>
+          <div style="background:#FFFFFF;border:1px solid #E6E4EE;border-radius:10px;padding:17px 18px">
+            <div style="font-size:26px;font-weight:700;letter-spacing:-.03em;line-height:1;color:#16131F;font-variant-numeric:tabular-nums">{{ landing.brandCount }}</div>
+            <div style="font-size:10.5px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:#8A85A0;margin-top:7px">merkevarer</div>
+          </div>
+        </div>
+
+        <!-- fortsett der du var -->
+        <sc-if value="{{ landing.hasRecent }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:12px">
+            <h2 style="font-size:15px;font-weight:700;letter-spacing:-.01em;margin:0">Fortsett der du var</h2>
+            <span style="flex:1"></span>
+            <a href="#/arkiv" style="font-size:12.5px;font-weight:600;color:#6E6883">Hele arkivet →</a>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:34px">
+            <sc-for list="{{ landing.recent }}" as="r" hint-placeholder-count="3">
+              <a href="{{ r.href }}" style="background:#FFFFFF;border:1px solid #E6E4EE;border-radius:10px;overflow:hidden;display:block;transition:transform .16s ease,border-color .16s,box-shadow .16s" style-hover="transform:translateY(-2px);border-color:#C8C4D8;box-shadow:0 14px 30px -20px rgba(30,26,48,.45)">
+                <div style="height:5px;background:{{ r.accent }}"></div>
+                <div style="padding:15px 16px">
+                  <div style="display:flex;align-items:center;gap:9px;margin-bottom:5px">
+                    <span style="font-size:14px;font-weight:700;color:#16131F;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.client }}</span>
+                    <span style="flex:none;font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;border-radius:4px;padding:3px 6px;background:{{ r.statusBg }};color:{{ r.statusFg }}">{{ r.status }}</span>
+                  </div>
+                  <span style="font-size:11.5px;color:#8A85A0">{{ r.line }}</span>
+                </div>
+              </a>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ landing.isEmpty }}" hint-placeholder-val="{{ false }}">
+          <div style="border:1.5px dashed #D5D2E0;border-radius:12px;padding:44px 24px;text-align:center;margin-bottom:34px">
+            <div style="font-size:15px;font-weight:700;color:#322D45">Ingen pitcher ennå</div>
+            <p style="font-size:13px;line-height:1.6;color:#6E6883;margin:8px 0 18px;max-width:44ch;margin-left:auto;margin-right:auto">
+              Start med en template, bytt ut kunden og tallene, og du har et førsteutkast.
+            </p>
+            <a href="#/new" style="font-size:13px;font-weight:700;color:var(--accent-ink);background:var(--accent);border-radius:7px;padding:11px 18px">+ Lag den første</a>
+          </div>
+        </sc-if>
+
+        <!-- snarveier -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px">
+          <a href="#/admin" style="background:#FFFFFF;border:1px solid #E6E4EE;border-radius:10px;padding:17px 18px;display:block;transition:border-color .16s,transform .16s ease" style-hover="border-color:var(--accent);transform:translateY(-2px)">
+            <div style="font-size:13.5px;font-weight:700;color:#16131F">Admin</div>
+            <div style="font-size:12px;line-height:1.55;color:#6E6883;margin-top:4px">Tall og kilder, slides, bilder, merkevarer, priser — og deling.</div>
+          </a>
+          <a href="Sky-oppsett.dc.html" style="background:#FFFFFF;border:1px solid #E6E4EE;border-radius:10px;padding:17px 18px;display:block;transition:border-color .16s,transform .16s ease" style-hover="border-color:var(--accent);transform:translateY(-2px)">
+            <div style="font-size:13.5px;font-weight:700;color:#16131F">Sky-oppsett</div>
+            <div style="font-size:12px;line-height:1.55;color:#6E6883;margin-top:4px">Tilkobling, innlogging og flytting av data.</div>
+          </a>
+          <div style="background:#FFFFFF;border:1px solid #E6E4EE;border-radius:10px;padding:17px 18px">
+            <div style="font-size:13.5px;font-weight:700;color:#16131F">Slik deler du</div>
+            <div style="font-size:12px;line-height:1.55;color:#6E6883;margin-top:4px">Sett passord under Admin → Deling og sporing, og send lenken <span style="font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#322D45">/#/p/&lt;slug&gt;</span>.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
   <!-- ══════════════ ARCHIVE ══════════════ -->
-  <sc-if value="{{ route.isArchive }}" hint-placeholder-val="{{ true }}">
+  <sc-if value="{{ route.isArchive }}" hint-placeholder-val="{{ false }}">
     <div style="max-width:1180px;width:100%;margin:0 auto;padding:44px 24px 80px;animation:{{ routeAnim }}">
       <div style="display:flex;align-items:flex-end;gap:20px;margin-bottom:8px">
         <h1 style="font-size:30px;font-weight:700;letter-spacing:-.02em;margin:0">Dashboard</h1>
@@ -477,7 +588,7 @@
 
       <div style="display:flex;gap:10px;margin-top:30px;align-items:center">
         <button type="button" onClick="{{ nw.onCreate }}" style="font-size:13px;font-weight:700;color:var(--accent-ink);background:var(--accent);border:0;border-radius:6px;transition:filter .14s,box-shadow .14s;padding:12px 20px;cursor:pointer" style-hover="filter:brightness(1.08);box-shadow:0 10px 22px -12px var(--accent)">Opprett pitch</button>
-        <a href="#/" style="font-size:12.5px;color:#6E6883">Avbryt</a>
+        <a href="#/arkiv" style="font-size:12.5px;color:#6E6883">Avbryt</a>
       </div>
     </div>
   </sc-if>
@@ -2804,7 +2915,10 @@ class Component extends DCLogic {
     const store = S.store;
     if (!D || !store) {
       return { gate: this.gateVals(), share: this.shareVals(null),
-        route: { isApp: true, isArchive: true, isNew: false, isEdit: false, isAdmin: false, isView: false },
+        /* skjelettet før innlasting/innlogging viser landingssiden, ikke arkivet */
+        route: { isApp: true, isArchive: false, isNew: false, isEdit: false, isAdmin: false, isView: false, isLanding: true },
+        landing: { greeting: 'Pitch Studio', company: '', hasCompany: false, pitchCount: '—', pitchLabel: 'pitcher',
+          slideCount: '—', brandCount: '—', sentCount: '—', draftCount: '—', isEmpty: false, hasRecent: false, recent: [] },
         accent: '#1434CB', accentInk: '#fff', plate: '#fff',
         fontHead: "'Inter',system-ui,sans-serif", fontBody: "'Inter',system-ui,sans-serif", sf: { paper: '#1B1826', ink: '#FFFFFF', inkSoft: '#C9C4D6', inkBody: '#E4E1EC', inkMute: '#8E88A3', plate: '#23202F', rule: '#302B3F', mix: '#FFFFFF' },
         picker: { open: false, cats: [], items: [] },
@@ -2816,7 +2930,10 @@ class Component extends DCLogic {
     const isEdit = /^#\/edit\//.test(hash);
     const isNew = hash === '#/new';
     const isAdmin = hash === '#/admin';
-    const isArchive = !isView && !isEdit && !isNew && !isAdmin;
+    /* Rota er en landingsside, ikke arkivet — da lander man ikke rett i dashbordet.
+       Arkivet har egen rute, og alt ukjent faller tilbake til landingssiden. */
+    const isArchive = hash === '#/arkiv';
+    const isLanding = !isView && !isEdit && !isNew && !isAdmin && !isArchive;
     const pitch = this.currentPitch();
     const meta = pitch ? pitch.meta : { accent: '#1434CB', logoPlate: 'light', lang: 'no' };
     const accent = (isNew && S.nw ? S.nw.accent : meta.accent) || '#1434CB';
@@ -2968,6 +3085,7 @@ class Component extends DCLogic {
 
     const navBtn = on => ({ bg: on ? '#F2F0F7' : 'transparent', fg: on ? '#16131F' : '#6E6883' });
     const a1 = navBtn(isArchive), a2 = navBtn(isNew), a3 = navBtn(isAdmin);
+    const a0 = navBtn(isLanding);
 
     const pill = on => ({ bg: on ? 'var(--accent)' : '#F2F0F7', border: on ? 'var(--accent)' : '#D5D2E0', fg: on ? 'var(--accent-ink)' : '#322D45' });
     const statusStyle = st => st === 'sendt' ? { statusBg: 'rgba(20,52,203,.10)', statusFg: '#1434CB' }
@@ -4686,14 +4804,45 @@ class Component extends DCLogic {
       tabAnim: (this._tf ? 'om-fade-ta' : 'om-fade-tb') + ' .3s cubic-bezier(.22,.61,.36,1) both',
       subAnim: (this._sf ? 'om-fade-pa' : 'om-fade-pb') + ' .18s cubic-bezier(.22,.61,.36,1) both',
       panelAnim: (this._pf ? 'om-fade-pa' : 'om-fade-pb') + ' .24s cubic-bezier(.22,.61,.36,1) both',
-      route: { isApp: !isView, isArchive, isNew, isEdit, isAdmin, isView },
+      route: { isApp: !isView, isArchive, isNew, isEdit, isAdmin, isView, isLanding },
+      /* Landingssiden: kort velkomst, snarveier og litt ekte status — ikke bare pynt.
+         Navn hentes av e-posten, tallene av det brukeren faktisk har tilgang til. */
+      landing: (() => {
+        const who = String(S.who || '');
+        const first = (who.split('@')[0] || '').split(/[._-]/)[0];
+        const hour = new Date().getHours();
+        const mine = store.pitches || [];
+        return {
+          greeting: (hour < 5 ? 'God natt' : hour < 10 ? 'God morgen' : hour < 18 ? 'Hei' : 'God kveld')
+            + (first ? ', ' + first.charAt(0).toUpperCase() + first.slice(1) : ''),
+          company: myDomain || '',
+          hasCompany: !!myDomain,
+          pitchCount: String(mine.length),
+          pitchLabel: mine.length === 1 ? 'pitch' : 'pitcher',
+          slideCount: String(LIBVIS.length),
+          brandCount: String(visBrandKeys.length),
+          sentCount: String(mine.filter(p => (p.meta || {}).status === 'sendt').length),
+          draftCount: String(mine.filter(p => ((p.meta || {}).status || 'kladd') === 'kladd').length),
+          isEmpty: mine.length === 0,
+          hasRecent: mine.length > 0,
+          recent: mine.slice(0, 3).map(p => ({
+            client: p.meta.client || 'Uten navn',
+            line: (p.blocks || []).length + ' blokker · ' + (p.meta.created || ''),
+            status: p.meta.status || 'kladd',
+            ...statusStyle(p.meta.status),
+            accent: p.meta.accent || '#1434CB',
+            href: '#/edit/' + p.id
+          }))
+        };
+      })(),
       superadmin: isSuperadmin,
       ownerOpen: isSuperadmin && !!S.ownerPanelOpen,
       onOwnerToggle: () => this.setState({ ownerPanelOpen: !this.state.ownerPanelOpen }),
       onOwnerClose: () => this.setState({ ownerPanelOpen: false }),
       accent, accentInk, plate, system,
       fontHead: fontDef.headStack, fontBody: fontDef.bodyStack, sf,
-      nav: { archiveBg: a1.bg, archiveFg: a1.fg, newBg: a2.bg, newFg: a2.fg, adminBg: a3.bg, adminFg: a3.fg },
+      nav: { archiveBg: a1.bg, archiveFg: a1.fg, newBg: a2.bg, newFg: a2.fg, adminBg: a3.bg, adminFg: a3.fg,
+        homeBg: a0.bg, homeFg: a0.fg },
       ui: { langs: (this.I ? this.I.LANGS : [{ id: 'no', label: 'NO' }, { id: 'en', label: 'EN' }]).map(l => ({
         label: l.label,
         bg: S.uiLang === l.id ? '#16131F' : 'transparent',
