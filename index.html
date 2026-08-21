@@ -1512,7 +1512,12 @@
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;animation:{{ subAnim }}">
           <sc-for list="{{ admin.images }}" as="im" hint-placeholder-count="8">
             <div style="background:#FFFFFF;border:1px solid #E6E4EE;border-radius:10px;overflow:hidden;display:flex;flex-direction:column;transition:transform .16s ease,box-shadow .16s ease,border-color .16s" style-hover="transform:translateY(-2px);border-color:#C8C4D8;box-shadow:0 14px 30px -18px rgba(30,26,48,.45)">
-              <div style="height:124px;background-color:#ECEAF3;background-size:cover;background-position:center;background-image:{{ im.thumb }}"></div>
+              <sc-if value="{{ im.isMark }}" hint-placeholder-val="{{ false }}">
+                <div title="Delt flate: hvite og mørke logoer synes begge" style="height:142px;background-color:#12101A;background-image:{{ im.thumb }},linear-gradient(90deg,#12101A 0 50%,#F2F0F7 50% 100%);background-size:contain,100% 100%;background-position:center,center;background-repeat:no-repeat,no-repeat;padding:10px;background-origin:content-box,border-box"></div>
+              </sc-if>
+              <sc-if value="{{ im.isPhoto }}" hint-placeholder-val="{{ true }}">
+                <div style="height:142px;background-color:#1B1826;background-image:{{ im.thumb }};background-size:contain;background-position:center;background-repeat:no-repeat"></div>
+              </sc-if>
               <div style="padding:10px;display:flex;flex-direction:column;gap:6px">
                 <input type="text" value="{{ im.name }}" onInput="{{ im.onName }}" style="width:100%;background:#F2F0F7;border:1px solid #E6E4EE;border-radius:5px;color:#16131F;font-size:12px;padding:6px 8px">
                 <div style="display:flex;gap:5px">
@@ -1791,7 +1796,12 @@
       <div style="flex:1;min-height:0;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;align-content:start">
         <sc-for list="{{ picker.items }}" as="im" hint-placeholder-count="8">
           <button type="button" onClick="{{ im.on }}" style="text-align:left;padding:0;cursor:pointer;background:#FFFFFF;border:1px solid {{ im.border }};border-radius:8px;overflow:hidden;transition:transform .16s ease,border-color .16s,box-shadow .16s" style-hover="transform:translateY(-3px);border-color:var(--accent);box-shadow:0 16px 30px -18px rgba(30,26,48,.5)">
-            <span style="display:block;height:104px;background-color:#ECEAF3;background-size:cover;background-position:center;background-image:{{ im.thumb }}"></span>
+            <sc-if value="{{ im.isMark }}" hint-placeholder-val="{{ false }}">
+              <span style="display:block;height:118px;background-color:#12101A;background-image:{{ im.thumb }},linear-gradient(90deg,#12101A 0 50%,#F2F0F7 50% 100%);background-size:contain,100% 100%;background-position:center,center;background-repeat:no-repeat,no-repeat;padding:9px;background-origin:content-box,border-box"></span>
+            </sc-if>
+            <sc-if value="{{ im.isPhoto }}" hint-placeholder-val="{{ true }}">
+              <span style="display:block;height:118px;background-color:#1B1826;background-image:{{ im.thumb }};background-size:contain;background-position:center;background-repeat:no-repeat"></span>
+            </sc-if>
             <span style="display:flex;gap:6px;padding:8px 9px;font-size:11.5px;color:#322D45">
               <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ im.name }}</span>
               <span style="color:#A7A3B7">{{ im.cat }}</span>
@@ -4070,7 +4080,13 @@ class Component extends DCLogic {
       images: imgPageList.map(im => {
         const i = (store.images || []).findIndex(x => x.id === im.id);
         const used = store.pitches.reduce((n, p) => n + p.blocks.filter(b => b.data.img === im.src).length, 0);
+        /* Logoer vises mot en delt flate (mørk | lys), slik at både hvite og svarte merker
+           synes. Filendelsen sier ingenting om gjennomsiktighet — mange foto er også PNG —
+           så det er logomappen som avgjør. Alt annet får mørk bakgrunn, der lyse motiver
+           også synes, og vises uten beskjæring. */
+        const _isMark = isLogoCat(im.cat);
         return { name: im.name, cat: im.cat, thumb: this.cssUrl(im.src),
+          isMark: _isMark, isPhoto: !_isMark,
           use: used ? 'brukt ' + used + (used === 1 ? ' gang' : ' ganger') : 'ikke i bruk',
           onName: e => { const v = e.target.value; this.withStore(st => { st.images[i].name = v; }); },
           /* flyttes bildet til en avslått mappe, skal det ut av rammene det allerede står i */
@@ -4594,8 +4610,12 @@ class Component extends DCLogic {
         : pk && pk.mode === 'sender' ? 'Bildet brukes på takk-sliden for denne avsenderen'
         : 'Bildet settes på sliden du redigerer',
       cats: pickerCatOpts.map(c => ({ label: catLabel(c), ...pill(c === effPickerCat), on: () => this.setState({ pickerCat: c }) })),
-      items: pickList.map(im => ({ name: im.name, cat: catLabel(im.cat), thumb: this.cssUrl(im.src),
-        border: '#E6E4EE', on: () => applyPick(im.src) })),
+      items: pickList.map(im => {
+        const mark = isLogoCat(im.cat);
+        return { name: im.name, cat: catLabel(im.cat), thumb: this.cssUrl(im.src),
+          isMark: mark, isPhoto: !mark,
+          border: '#E6E4EE', on: () => applyPick(im.src) };
+      }),
       uploadHint: 'PNG med gjennomsiktig bakgrunn ser best ut på veggen',
       onUpload: () => this.uploadMany(recs => {
         const cat = effPickerCat !== 'Alle' ? effPickerCat : (store.imageCats || [])[0] || 'Generelt';
