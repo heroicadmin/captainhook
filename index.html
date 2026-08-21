@@ -2981,6 +2981,14 @@ class Component extends DCLogic {
     };
     /* admin redigerer sitt eget selskaps priser */
     const myPricing = pricingFor(myDomain);
+    /* En pitch hører til selskapet som står som avsender. Alle lister, tellere og
+       snarveier skal bare vise egne pitcher — ellers ville selskap 1 sett navnene på
+       selskap 2 sine kunder i «Fortsett der du var», arkivet og Deling og sporing.
+       (Redigering/oppslag går fortsatt mot hele lista, se currentPitch.) */
+    const myPitches = (store.pitches || []).filter(p => {
+      const d = senderDomainOf(p.meta);
+      return !d || !myDomain || d === myDomain;
+    });
     /* rendering følger pitchens selskap */
     const pitchPricing = pitch ? pricingFor(senderDomainOf(pitch.meta)) : myPricing;
     /* skriving: kopier grunnmalen inn i eget selskap ved første endring */
@@ -3107,13 +3115,13 @@ class Component extends DCLogic {
        Fanen er en visning, ikke en egenskap: «Alle» viser fortsatt hele arkivet. */
     const langOf = p => (p.meta.lang === 'en' ? 'en' : 'no');
     const arcTab = S.arcTab || 'all';
-    const shown = store.pitches.filter(p => arcTab === 'all' || langOf(p) === arcTab);
+    const shown = myPitches.filter(p => arcTab === 'all' || langOf(p) === arcTab);
     const archive = {
-      empty: store.pitches.length === 0,
-      noneInTab: store.pitches.length > 0 && shown.length === 0,
+      empty: myPitches.length === 0,
+      noneInTab: myPitches.length > 0 && shown.length === 0,
       tabs: [['all', 'Alle'], ['no', 'Norsk'], ['en', 'English']].map(([v, label]) => {
         const on = arcTab === v;
-        return { label, count: v === 'all' ? store.pitches.length : store.pitches.filter(p => langOf(p) === v).length,
+        return { label, count: v === 'all' ? myPitches.length : myPitches.filter(p => langOf(p) === v).length,
           fg: on ? '#16131F' : '#6E6883', rule: on ? 'inset 0 -2px 0 var(--accent)' : 'none',
           pillBg: on ? 'var(--accent)' : '#ECEAF3', pillFg: on ? 'var(--accent-ink)' : '#6E6883',
           on: () => this.setState({ arcTab: v }) };
@@ -3963,7 +3971,7 @@ class Component extends DCLogic {
     const FGROUPS = [['gamer', 'Gamer.no', '#F05A22'], ['komplett', 'Komplettligaen', '#FFB81C'], ['bl', 'Bedriftsligaen', '#E9376E'], ['social', 'Sosiale kanaler', '#7C5CFF'], ['ads', 'Annonsering', '#E8622A']];
 
     const factUse = {};
-    store.pitches.forEach(p => p.blocks.forEach(b => (b.data.stats || []).forEach(s => { if (s && s.fact) factUse[s.fact] = (factUse[s.fact] || 0) + 1; })));
+    myPitches.forEach(p => p.blocks.forEach(b => (b.data.stats || []).forEach(s => { if (s && s.fact) factUse[s.fact] = (factUse[s.fact] || 0) + 1; })));
 
     const touchFact = (k, patch) => {
       const st = this.clone(store); const prev = store.facts[k];
@@ -4024,7 +4032,7 @@ class Component extends DCLogic {
       fn(c);
       this.save(st);
     };
-    const caseUse = id => store.pitches.reduce((n, p) => n
+    const caseUse = id => myPitches.reduce((n, p) => n
       + p.blocks.filter(b => b.data.case === id || (Array.isArray(b.data.cases) && b.data.cases.some(x => x && x.from === id))).length, 0);
 
     /* ---------- slide-biblioteket ---------- */
@@ -4033,7 +4041,7 @@ class Component extends DCLogic {
     const libSelId = (LIBVIS.some(b => b.type === S.libSel) ? S.libSel : (LIBVIS[0] || {}).type);
     const libSel = LIBALL.find(b => b.type === libSelId) || null;
     const libUse = ty => {
-      const pitches = store.pitches.reduce((n, p) => n + p.blocks.filter(b => b.type === ty).length, 0);
+      const pitches = myPitches.reduce((n, p) => n + p.blocks.filter(b => b.type === ty).length, 0);
       const templates = (store.templates || []).reduce((n, t) => n + D.tplBlocks(t).filter(r => r.type === ty).length, 0);
       return { pitches, templates,
         label: pitches || templates
@@ -4083,7 +4091,7 @@ class Component extends DCLogic {
       en.rev = (en.rev || 1) + 1;
     });
     /* pitcher som ligger på en eldre versjon av en slide */
-    const libStale = store.pitches.map(p => {
+    const libStale = myPitches.map(p => {
       const blocks = (p.blocks || []).filter(b => {
         const def = LIB(b.type);
         return def && (b.rev || 1) !== (def.rev || 1);
@@ -4097,8 +4105,8 @@ class Component extends DCLogic {
     }).filter(Boolean);
 
     /* Deling og sporing bor i admin: velg en pitch i lista, få full panel (passord, lenke, tall). */
-    const adminShareId = S.adminShareId || (store.pitches[0] || {}).id || null;
-    const adminSharePitch = (store.pitches || []).find(p => p.id === adminShareId) || null;
+    const adminShareId = (myPitches.some(p => p.id === S.adminShareId) ? S.adminShareId : (myPitches[0] || {}).id || null);
+    const adminSharePitch = myPitches.find(p => p.id === adminShareId) || null;
 
     const admin = {
       nav: [
@@ -4110,7 +4118,7 @@ class Component extends DCLogic {
         ['senders', 'Avsender', 'Hvem pitchen kommer fra', 'Salgsledelse', senders.length],
         ['brand', 'Merkevare', 'Logoer og produktfarger', 'Design', Object.keys(BR).length],
         ['pricing', 'Prismodell', 'Trapp, rabatter og lisens', 'Salgsledelse', (myPricing.tiers || []).length],
-        ['access', 'Deling og sporing', 'Passord, lenke og tall per pitch', 'Salgsledelse', store.pitches.length]
+        ['access', 'Deling og sporing', 'Passord, lenke og tall per pitch', 'Salgsledelse', myPitches.length]
       ].map(([v, label, desc, owner, count]) => ({
         label, desc, owner, count, on: () => this.setState({ adminTab: v }),
         bg: at === v ? 'color-mix(in srgb, var(--accent) 12%, #FFFFFF)' : '#FFFFFF',
@@ -4120,12 +4128,12 @@ class Component extends DCLogic {
       isFacts: at === 'facts', isLibrary: at === 'library', isTemplates: at === 'templates', isBrand: at === 'brand', isPricing: at === 'pricing',
       isImages: at === 'images', isSenders: at === 'senders', isCases: at === 'cases', isAccess: at === 'access',
 
-      shareEmpty: store.pitches.length === 0,
+      shareEmpty: myPitches.length === 0,
       shareHasSel: !!adminSharePitch,
       shareClient: adminSharePitch ? adminSharePitch.meta.client : '',
       shareSlug: adminSharePitch ? '/' + (adminSharePitch.meta.slug || adminSharePitch.id) : '',
       share: this.shareVals(adminSharePitch),
-      sharePitches: store.pitches.map(p => ({
+      sharePitches: myPitches.map(p => ({
         client: p.meta.client,
         lockLabel: p.hasPassword ? 'Passord' : 'Åpen lenke',
         lockFg: p.hasPassword ? '#0B7A6F' : '#8A6D2F',
@@ -4197,7 +4205,7 @@ class Component extends DCLogic {
       imagesEmpty: imgList.length === 0,
       images: imgPageList.map(im => {
         const i = (store.images || []).findIndex(x => x.id === im.id);
-        const used = store.pitches.reduce((n, p) => n + p.blocks.filter(b => b.data.img === im.src).length, 0);
+        const used = myPitches.reduce((n, p) => n + p.blocks.filter(b => b.data.img === im.src).length, 0);
         /* Logoer vises mot en delt flate (mørk | lys), slik at både hvite og svarte merker
            synes. Filendelsen sier ingenting om gjennomsiktighet — mange foto er også PNG —
            så det er logomappen som avgjør. Alt annet får mørk bakgrunn, der lyse motiver
@@ -4248,7 +4256,7 @@ class Component extends DCLogic {
         this.withStore(st => { st.imageCats.push(n); }); this.setState({ adminCat: n }); },
 
       senders: senders.map((sd, i) => {
-        const used = store.pitches.filter(p => (p.meta.sender || senders[0].id) === sd.id).length;
+        const used = myPitches.filter(p => (p.meta.sender || senders[0].id) === sd.id).length;
         return { name: sd.name, contact: sd.contact || '', email: sd.email || '', phone: sd.phone || '',
           contactLine: D.senderContact(sd) || 'Ingen kontaktinfo — takk-sliden står tom', logoThumb: this.cssUrl(sd.logo),
           closingThumb: this.cssUrl(D.galleryImg(sd.closingImg, store.images)),
@@ -4627,13 +4635,13 @@ class Component extends DCLogic {
       libNoLayout: !!(libSel && !D.canMove(libSel.base)),
       libHasLayout: !!(libSel && D.layoutCount(libSel.layout)),
       libLayoutLabel: 'Tilbakestill alle (' + (libSel ? D.layoutCount(libSel.layout) : 0) + ')',
-      libPreviewMeta: resolvedMeta(((store.pitches || [])[0] || {}).meta
+      libPreviewMeta: resolvedMeta((myPitches[0] || {}).meta
         || { client: 'Eksempelkunde', slug: 'eksempel', accent: '#1434CB', sender: (senders[0] || {}).id }),
       libStale: libStale,
       libStaleEmpty: libStale.length === 0,
       brands: Object.keys(BR).map(k => {
         const br = BR[k];
-        const used = store.pitches.reduce((n, p) => n + p.blocks.filter(b => b.data.brand === k).length, 0);
+        const used = myPitches.reduce((n, p) => n + p.blocks.filter(b => b.data.brand === k).length, 0);
         const set = patch => this.withStore(st => { Object.assign(st.brands[k], patch); });
         return { name: br.name, color: br.color, scale: br.scale || 1, note: br.note || '', thumb: this.cssUrl(br.logo),
           iconThumb: this.cssUrl(br.icon), hasIcon: !!br.icon,
@@ -4811,7 +4819,7 @@ class Component extends DCLogic {
         const who = String(S.who || '');
         const first = (who.split('@')[0] || '').split(/[._-]/)[0];
         const hour = new Date().getHours();
-        const mine = store.pitches || [];
+        const mine = myPitches;
         return {
           greeting: (hour < 5 ? 'God natt' : hour < 10 ? 'God morgen' : hour < 18 ? 'Hei' : 'God kveld')
             + (first ? ', ' + first.charAt(0).toUpperCase() + first.slice(1) : ''),
