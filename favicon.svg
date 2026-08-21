@@ -1,11 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <!-- Pitch Studio: stacked slides. Forenklet mot logoen så den leses ned til 16 px. -->
-  <rect width="64" height="64" rx="14" fill="#16131F"/>
-  <!-- bakre slide -->
-  <rect x="24" y="11" width="29" height="29" rx="7" fill="#0E9E8F" opacity="0.42"/>
-  <!-- fremre slide -->
-  <rect x="11" y="24" width="29" height="29" rx="7" fill="#0E9E8F"/>
-  <!-- tekstlinjer -->
-  <rect x="17.5" y="32.5" width="16" height="4" rx="2" fill="#FFFFFF"/>
-  <rect x="17.5" y="41" width="10" height="4" rx="2" fill="#FFFFFF" opacity="0.7"/>
+  <!-- Pitch Studio — samme «stablede slides» som logoen i toppen,
+       men med større front og fulle linjer så merket leses ned til 16 px. -->
+  <rect width="64" height="64" rx="13" fill="#16131F"/>
+  <rect x="28" y="10" width="26" height="26" rx="6" fill="#0E9E8F" opacity="0.5"/>
+  <rect x="10" y="22" width="34" height="32" rx="8" fill="#0E9E8F"/>
+  <rect x="17" y="31" width="20" height="5.5" rx="2.75" fill="#FFFFFF"/>
+  <rect x="17" y="41" width="12" height="5.5" rx="2.75" fill="#FFFFFF"/>
 </svg>
