@@ -193,6 +193,14 @@
 
 <div data-i18n-root="1" style="min-height:100vh;background:#EEEDF4">
 
+<!-- felles autocomplete-kilde for selskaps-/eierfelt -->
+<datalist id="dl-domains">
+  <sc-for list="{{ domainOptions }}" as="d" hint-placeholder-count="2">
+    <option value="{{ d.v }}"></option>
+  </sc-for>
+</datalist>
+
+
 <!-- ══════════════ PUBLIC PITCH VIEW ══════════════ -->
 <sc-if value="{{ route.isView }}" hint-placeholder-val="{{ false }}">
   <div style="--accent:{{ accent }};--accent-ink:{{ accentInk }};--plate:{{ plate }};--font-head:{{ fontHead }};--font-body:{{ fontBody }};--paper:{{ sf.paper }};--ink:{{ sf.ink }};--ink-soft:{{ sf.inkSoft }};--ink-body:{{ sf.inkBody }};--ink-mute:{{ sf.inkMute }};--plate2:{{ sf.plate }};--rule:{{ sf.rule }};--mix:{{ sf.mix }};background:{{ sf.paper }};color:{{ sf.ink }}">
@@ -320,13 +328,14 @@
           <span style="flex:1"></span>
           <button type="button" onClick="{{ onOwnerClose }}" style="border:0;background:transparent;color:#6E6883;cursor:pointer;font-size:18px">×</button>
         </div>
-        <p style="font-size:12px;line-height:1.55;color:#6E6883;margin:0 0 15px">Sett hvilket e-postdomene som eier hva. Bare innloggede med det domenet ser det i velgerne. Tomt = åpent for alle.</p>
+        <p style="font-size:12px;line-height:1.55;color:#6E6883;margin:0 0 12px">Sett hvilket e-postdomene som eier hva. Bare innloggede med det domenet ser det i velgerne. Tomt = åpent for alle.</p>
+        <input type="search" value="{{ admin.ownerQuery }}" onInput="{{ admin.onOwnerQuery }}" placeholder="Søk i mapper og slides…" autocomplete="off" style="width:100%;background:#F7F6FA;border:1px solid #D5D2E0;border-radius:7px;color:#16131F;font-size:13px;padding:9px 11px;margin-bottom:15px">
         <div style="font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#8A85A0;margin:0 0 8px">Bildemapper</div>
         <div style="display:flex;flex-direction:column;gap:8px">
           <sc-for list="{{ admin.catOwners }}" as="c" hint-placeholder-count="6">
             <div style="display:flex;align-items:center;gap:10px">
               <span style="flex:1;min-width:0;font-size:13px;font-weight:600;color:#16131F;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ c.name }}</span>
-              <input type="text" value="{{ c.domain }}" onInput="{{ c.onDomain }}" placeholder="alle" style="width:200px;flex:none;background:#F7F6FA;border:1px solid #D5D2E0;border-radius:6px;color:#16131F;font-size:12.5px;padding:8px 10px">
+              <input type="text" value="{{ c.domain }}" onInput="{{ c.onDomain }}" list="dl-domains" autocomplete="off" placeholder="alle" style="width:200px;flex:none;background:#F7F6FA;border:1px solid #D5D2E0;border-radius:6px;color:#16131F;font-size:12.5px;padding:8px 10px">
             </div>
           </sc-for>
         </div>
@@ -338,7 +347,7 @@
                 <span style="font-size:12.5px;font-weight:600;color:#16131F;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ b.name }}</span>
                 <span style="font-size:10px;color:#A7A3B7">{{ b.cat }}</span>
               </span>
-              <input type="text" value="{{ b.domain }}" onInput="{{ b.onDomain }}" placeholder="alle" style="width:200px;flex:none;background:#F7F6FA;border:1px solid #D5D2E0;border-radius:6px;color:#16131F;font-size:12.5px;padding:7px 10px">
+              <input type="text" value="{{ b.domain }}" onInput="{{ b.onDomain }}" list="dl-domains" autocomplete="off" placeholder="alle" style="width:200px;flex:none;background:#F7F6FA;border:1px solid #D5D2E0;border-radius:6px;color:#16131F;font-size:12.5px;padding:7px 10px">
             </div>
           </sc-for>
         </div>
@@ -1310,6 +1319,7 @@
               <span style="flex:1"></span>
               <button type="button" onClick="{{ admin.onLibNew }}" style="font-size:11.5px;font-weight:600;border-radius:5px;padding:6px 10px;cursor:pointer;background:#322D45;border:1px solid #322D45;color:#FFFFFF">+ Ny slide</button>
             </div>
+            <input type="search" value="{{ admin.libQuery }}" onInput="{{ admin.onLibQuery }}" placeholder="Søk i slides…" autocomplete="off" style="width:100%;background:#F7F6FA;border:1px solid #D5D2E0;border-radius:6px;color:#16131F;font-size:12.5px;padding:8px 10px;margin-bottom:11px">
             <sc-for list="{{ admin.libGroups }}" as="g" hint-placeholder-count="6">
               <div style="margin-bottom:14px">
                 <div style="font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:{{ g.color }};margin-bottom:7px">{{ g.cat }}</div>
@@ -1573,7 +1583,7 @@
                 <input type="text" value="{{ br.note }}" onInput="{{ br.onNote }}" placeholder="Merknad — hva som er lett å gjøre feil" style="width:100%;background:#F2F0F7;border:1px solid #E6E4EE;border-radius:5px;color:#55506B;font-size:11.5px;padding:7px 9px">
                 <div style="display:flex;gap:8px;align-items:center">
                   <label style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#55506B;white-space:nowrap">Eier · domene</label>
-                  <input type="text" value="{{ br.domain }}" onInput="{{ br.onDomain }}" placeholder="alle" title="Bare innloggede med dette e-postdomenet ser merkevaren når de velger. Tomt = alle." style="flex:1;min-width:0;background:#F2F0F7;border:1px solid #E6E4EE;border-radius:5px;color:#16131F;font-size:12px;padding:7px 9px">
+                  <input type="text" value="{{ br.domain }}" onInput="{{ br.onDomain }}" list="dl-domains" autocomplete="off" placeholder="alle" title="Bare innloggede med dette e-postdomenet ser merkevaren når de velger. Tomt = alle." style="flex:1;min-width:0;background:#F2F0F7;border:1px solid #E6E4EE;border-radius:5px;color:#16131F;font-size:12px;padding:7px 9px">
                 </div>
                 <div style="display:flex;gap:8px;align-items:center">
                   <label style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#55506B">Optisk skala</label>
@@ -1672,7 +1682,7 @@
                 <input type="text" value="{{ sd.contact }}" onInput="{{ sd.onContact }}" placeholder="Nettsted eller annet" style="width:100%;background:#F2F0F7;border:1px solid #E6E4EE;border-radius:5px;color:#322D45;font-size:12px;padding:7px 9px">
                 <div style="display:flex;align-items:center;gap:7px">
                   <label style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#8A85A0;white-space:nowrap">Eier · domene</label>
-                  <input type="text" value="{{ sd.domain }}" onInput="{{ sd.onDomain }}" placeholder="alle" title="Bare innloggede med dette e-postdomenet kan velge denne avsenderen. Tomt = alle." style="flex:1;min-width:0;background:#F2F0F7;border:1px solid #E6E4EE;border-radius:5px;color:#16131F;font-size:12px;padding:7px 9px">
+                  <input type="text" value="{{ sd.domain }}" onInput="{{ sd.onDomain }}" list="dl-domains" autocomplete="off" placeholder="alle" title="Bare innloggede med dette e-postdomenet kan velge denne avsenderen. Tomt = alle." style="flex:1;min-width:0;background:#F2F0F7;border:1px solid #E6E4EE;border-radius:5px;color:#16131F;font-size:12px;padding:7px 9px">
                 </div>
                 <span style="font-size:10.5px;line-height:1.45;color:#8A85A0">Kontaktlinje på takk-sliden: <span style="color:#322D45">{{ sd.contactLine }}</span></span>
                 <div style="display:flex;align-items:center;gap:7px;background:#F8F7FB;border:1px solid #E6E4EE;border-radius:5px;padding:6px 7px">
@@ -2469,7 +2479,7 @@ class Component extends DCLogic {
     const demo = D.makePitch({ client: 'Komplett', slug: 'komplett', accent: '#1434CB', status: 'sendt', sender: 'skagerrak', imageProfile: 'Hardcore Esport' }, 'master', D.IMAGES, D.seedLibrary(), D.CASES);
     D.applyImageProfile(demo, D.IMAGES, 'Hardcore Esport', false, D.seedLibrary());
     demo.blocks.forEach(b => {
-      if (b.type === 'cover') { b.data.kicker = 'Skagerrak Technologies × Komplett'; }
+      if (b.type === 'cover') { b.data.kicker = 'Skagerrak × Komplett'; }
       if (b.type === 'next') b.data.steps[0].who = 'Komplett';
     });
     return {
@@ -2973,7 +2983,7 @@ class Component extends DCLogic {
     const senderOwned = sd => { const d = ((sd || {}).domain || '').toLowerCase(); return !d || d === myDomain; };
     const ownSenders = senders.filter(senderOwned);
     const senderOf = mt => {
-      const sd = senders.find(x => x.id === (mt || {}).sender) || senders[0] || { name: 'Skagerrak Technologies', logo: D.SKAGERRAK_LOGO };
+      const sd = senders.find(x => x.id === (mt || {}).sender) || senders[0] || { name: 'Skagerrak', logo: D.SKAGERRAK_LOGO };
       /* bildet til takk-sliden ligger som en id i bildebasen — slås opp der, ikke lagres som sti */
       return { ...sd, logo: this.resolve(sd.logo), contactLine: D.senderContact(sd),
         closingImg: this.resolve(D.galleryImg(sd.closingImg, store.images)) };
@@ -3196,7 +3206,7 @@ class Component extends DCLogic {
         /* templaten kan ha sin egen kicker på forsiden — den skal ikke overskrives av avsenderlinja */
         const tplKicker = (D.tplBlocks(tpl).find(r => r.type === 'cover') || {}).data;
         if (!(tplKicker && tplKicker.kicker))
-          p.blocks.forEach(b => { if (b.type === 'cover') b.data.kicker = 'Skagerrak Technologies × ' + (cur.client || 'Kunde'); });
+          p.blocks.forEach(b => { if (b.type === 'cover') b.data.kicker = 'Skagerrak × ' + (cur.client || 'Kunde'); });
         if ((tpl.lang || 'no') === 'en') p.meta.subtitle = 'Partnership proposal 2026';
         st.pitches.unshift(p); this.save(st);
         this.setState({ nw: this.freshNew(D), sel: 0 });
@@ -4214,8 +4224,15 @@ class Component extends DCLogic {
             st.noFillStamp = list.join('|');
           }) };
       }),
+      /* fritekstsøk i eierskapspanelet — 44 rader er for mange å skumme */
+      ownerQuery: S.ownerQ || '',
+      onOwnerQuery: e => this.setState({ ownerQ: e.target.value }),
       /* eierskap per slide i biblioteket: tom = felles, ellers bare det domenet */
-      libOwners: LIBALL.map(b => ({
+      libOwners: LIBALL.filter(b => {
+        const q = String(S.ownerQ || '').trim().toLowerCase();
+        if (!q) return true;
+        return [b.name, b.cat, b.type, b.domain].some(v => String(v || '').toLowerCase().includes(q));
+      }).map(b => ({
         name: b.name, cat: b.cat || '',
         domain: b.domain || '',
         onDomain: e => { const v = e.target.value.trim().toLowerCase();
@@ -4223,7 +4240,11 @@ class Component extends DCLogic {
             if (!en) return; if (v) en.domain = v; else delete en.domain; }); }
       })),
       /* eierskap per mappe: bare innloggede med dette domenet ser mappen når de velger bilder */
-      catOwners: (store.imageCats || D.IMAGE_CATS).map(c => ({
+      catOwners: (store.imageCats || D.IMAGE_CATS).filter(c => {
+        const q = String(S.ownerQ || '').trim().toLowerCase();
+        if (!q) return true;
+        return [catLabel(c), c, catDomains[c]].some(v => String(v || '').toLowerCase().includes(q));
+      }).map(c => ({
         name: catAdminLabel(c),
         domain: catDomains[c] || '',
         onDomain: e => { const v = e.target.value.trim().toLowerCase();
@@ -4524,9 +4545,15 @@ class Component extends DCLogic {
 
       /* ---------- SLIDE-BIBLIOTEKET ---------- */
       libSel: libSel,
+      libQuery: S.libQ || '',
+      onLibQuery: e => this.setState({ libQ: e.target.value }),
       libGroups: D.libCats(store.library).map(cat => ({
         cat, color: catColor[cat] || '#9A96AC',
-        rows: LIBVIS.filter(b => b.cat === cat).map(b => ({
+        rows: LIBVIS.filter(b => b.cat === cat).filter(b => {
+          const q = String(S.libQ || '').trim().toLowerCase();
+          if (!q) return true;
+          return [b.name, b.type, b.desc, b.cat].some(v => String(v || '').toLowerCase().includes(q));
+        }).map(b => ({
           name: b.name, type: b.type, ...pill(b.type === libSelId),
           use: libUse(b.type).label,
           on: () => this.setState({ libSel: b.type })
@@ -4871,6 +4898,20 @@ class Component extends DCLogic {
         };
       })(),
       superadmin: isSuperadmin,
+      /* Alle selskapsdomener som finnes i basen — brukes til autocomplete i eierfeltene,
+         slik at man ikke må huske «skagerrak.tech» utenat og risikere en skrivefeil
+         som stille gjør noe usynlig for alle. */
+      domainOptions: (() => {
+        const d = new Set();
+        (senders || []).forEach(x => { if (x && x.domain) d.add(String(x.domain).toLowerCase()); });
+        Object.values(store.catDomains || {}).forEach(v => { if (v) d.add(String(v).toLowerCase()); });
+        Object.keys(BR).forEach(k => { if (BR[k] && BR[k].domain) d.add(String(BR[k].domain).toLowerCase()); });
+        (store.library || []).forEach(en => { if (en && en.domain) d.add(String(en.domain).toLowerCase()); });
+        Object.keys(store.pricingByDomain || {}).forEach(k => d.add(String(k).toLowerCase()));
+        (store.pitches || []).forEach(pp => { if (pp && pp.company) d.add(String(pp.company).toLowerCase()); });
+        if (myDomain) d.add(myDomain);
+        return [...d].filter(Boolean).sort().map(v => ({ v }));
+      })(),
       ownerOpen: isSuperadmin && !!S.ownerPanelOpen,
       onOwnerToggle: () => this.setState({ ownerPanelOpen: !this.state.ownerPanelOpen }),
       onOwnerClose: () => this.setState({ ownerPanelOpen: false }),

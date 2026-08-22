@@ -2671,7 +2671,7 @@ class Component extends DCLogic {
       senderLogo: (s.brand && brands[s.brand] ? (brands[s.brand].icon || brands[s.brand].logo) : '')
         || (S.sender && S.sender.logo) || S.skagerrakLogo || 'logos/skagerrak.png',
       senderName: (s.brand && brands[s.brand] ? brands[s.brand].name : '')
-        || (S.sender && S.sender.name) || 'Skagerrak Technologies',
+        || (S.sender && S.sender.name) || 'Skagerrak',
       /* kontaktlinja eies av avsenderen — blokka overstyrer bare når den er fylt ut */
       contactLine: s.contact || (S.sender && S.sender.contactLine) || '',
       imgSrc, hasImg: !!imgSrc, noImg: !imgSrc, photoVeil,
@@ -2848,7 +2848,7 @@ class Component extends DCLogic {
       mrows: rowsOf(s.rows, 1.9).map(r => ({ ...r, cells: (r.v || []).map(v => v
         ? { mark: '✓', bg: 'color-mix(in srgb, var(--accent,#1434CB) 18%, transparent)', fg: 'var(--accent,#1434CB)' }
         : { mark: '–', bg: 'transparent', fg: 'var(--ink-mute,#8E88A3)' }) })),
-      umbParent: s.parent || 'Skagerrak Technologies',
+      umbParent: s.parent || 'Skagerrak',
       skagerrakLogo: S.skagerrakLogo || '',
       hasSkagerrakLogo: !!S.skagerrakLogo,
       noSkagerrakLogo: !S.skagerrakLogo,

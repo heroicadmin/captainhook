@@ -20,7 +20,7 @@ export const SKAGERRAK_LOGO = 'logos/skagerrak.png';
 
 /* Avsender: hvem pitchen kommer fra. Ikke alltid Skagerrak. */
 export const SENDERS = [
-  { id:'skagerrak', name:'Skagerrak Technologies', logo:'logos/skagerrak.png',
+  { id:'skagerrak', name:'Skagerrak', logo:'logos/skagerrak.png',
     email:'sindre@heroic.gg', phone:'', contact:'skagerrak.tech' }
 ];
 
@@ -269,7 +269,7 @@ export const STRINGS = {
 export const LIBRARY = [
   { type:'cover', cat:'Åpning', name:'Forside', desc:'Kundens logo stort på arrangementsbilde. Alltid slide 1.',
     fields:[['kicker','Kicker','text'],['title','Tittel','area'],['sub','Underlinje','area'],['note','Merknad','text'],['img','Bilde','image'],['imgHint','Bildeanvisning','text']],
-    defaults:{ kicker:'Skagerrak Technologies × Kunde', title:'Top of mind i skandinavisk e-sport og gamingkultur', sub:'', note:'', imgHint:'Arrangementsbilde — publikum på playoffs' } },
+    defaults:{ kicker:'Skagerrak × Kunde', title:'Top of mind i skandinavisk e-sport og gamingkultur', sub:'', note:'', imgHint:'Arrangementsbilde — publikum på playoffs' } },
 
   { type:'umbrella', cat:'Økosystem', name:'Paraplyen', desc:'Hva kunden faktisk snakker med. Bør alltid være slide 2.',
     fields:[['eyebrow','Eyebrow','text'],['title','Tittel','text'],['intro','Ingress','area'],['parent','Toppnivå','text'],['brands','Merkevarer','umb'],['subs','Undermerker','subs']],
@@ -278,7 +278,7 @@ export const LIBRARY = [
       brands:[ {key:'gamer',lead:'Norges ledende',rest:'nettsted for spill, teknologi og spillkultur'},
                {key:'komplett',lead:'Europas største',rest:'nasjonale liga i e-sport'},
                {key:'bl',lead:'Nordens største',rest:'bedriftsliga innen gaming og sjakk'} ],
-      parent:'Skagerrak Technologies',
+      parent:'Skagerrak',
       subs:[
         {label:'Fragtrial', detail:['Turneringsverktøyet vi lisensierer ut til andre arrangører','Brukes av eksterne ligaer i og utenfor Norden','Egen inntektsstrøm uavhengig av mediesalg']},
         {label:'Maelstrom', detail:['Vårt eget innholdshus for produksjon av video og broadcast','Produserer sendingene til Komplettligaen og Bedriftsligaen','Tilgjengelig for partnerprodusert innhold']},
@@ -289,7 +289,7 @@ export const LIBRARY = [
 
   { type:'statement', cat:'Åpning', name:'Påstand', desc:'Ett premiss, stort, på tom flate. Bryter rytmen før tallene.',
     fields:[['eyebrow','Eyebrow','text'],['text','Påstand','area'],['attribution','Avsender','text']],
-    defaults:{ eyebrow:'Premisset', text:'Gaming er ikke en kanal. Det er stedet publikummet ditt allerede tilbringer fritiden sin.', attribution:'Skagerrak Technologies' } },
+    defaults:{ eyebrow:'Premisset', text:'Gaming er ikke en kanal. Det er stedet publikummet ditt allerede tilbringer fritiden sin.', attribution:'Skagerrak' } },
 
   { type:'brand', cat:'Økosystem', name:'Produktprofil', desc:'Én per merkevare kunden faktisk skal kjøpe. Aldri flere.',
     fields:[['brand','Merkevare','brand'],['eyebrow','Eyebrow','text'],['body','Punkter','list'],['stats','Tall','stats'],['shotUrl','URL i ramme','text'],['img','Bilde','image'],['imgHint','Bildeanvisning','text'],['source','Kilde','area']],
@@ -489,8 +489,8 @@ export const LIBRARY = [
             ['logos2','Logoer — høyre side av delestreken','logorow'],
             ['body','Punkter — ett per linje, **fet** for utheving','area']],
     defaults:{ imgHint:'Foto — lag i konkurranse, wide',
-      logo1Name:'Good Game', logos2:[{ img:'', name:'Skagerrak Technologies' }],
-      body:'Norges to ledende innen gaming teknologi- og sportsunderholdning slås sammen til en fullkommen tilbyder\nMenneskene bak Skagerrak Technologies bak tidligere store e-sportvirksomheter som Nordavind DNB & 00Nation\nEtablert et nytt cap table bestående av ressursterke aktører som Tor Olav Trøim, Smedvig-familien, Harald Strømme, Johan Brand og Polaris Media\nFull overhaling kommersielt og redaksjonelt med lansering av nye produkter, tjenester og flater for å styrke tilbudsspekteret til partnere\nEtablert internt byrå som utelukkende skal støtte samarbeidspartnere, sponsorer og merkevareaktiveringer' } },
+      logo1Name:'Good Game', logos2:[{ img:'', name:'Skagerrak' }],
+      body:'Norges to ledende innen gaming teknologi- og sportsunderholdning slås sammen til en fullkommen tilbyder\nMenneskene bak Skagerrak bak tidligere store e-sportvirksomheter som Nordavind DNB & 00Nation\nEtablert et nytt cap table bestående av ressursterke aktører som Tor Olav Trøim, Smedvig-familien, Harald Strømme, Johan Brand og Polaris Media\nFull overhaling kommersielt og redaksjonelt med lansering av nye produkter, tjenester og flater for å styrke tilbudsspekteret til partnere\nEtablert internt byrå som utelukkende skal støtte samarbeidspartnere, sponsorer og merkevareaktiveringer' } },
 
   { type:'formation', cat:'Bevis', name:'Etablering', desc:'Fullbredde-foto med logorekke og overskrift, mørkt panel med kundelogo. Til lanserings- og sammenslåingsslides.',
     fields:[['img','Bakgrunnsbilde','image'],['imgHint','Bildeanvisning','text'],
