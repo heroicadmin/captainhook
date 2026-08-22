@@ -4173,8 +4173,8 @@ class Component extends DCLogic {
         ['templates', 'Templates', 'Ferdige stabler av blokker', 'Salgsledelse', store.templates.length],
         ['images', 'Bilder', 'Bildebase med kategorier', 'Design', (store.images || []).length],
         ['cases', 'Caser', 'Casebasen, merket per prisnivå', 'Salg og marked', (store.cases || []).length],
-        ['senders', 'Avsender', 'Hvem pitchen kommer fra', 'Salgsledelse', senders.length],
-        ['brand', 'Merkevare', 'Logoer og produktfarger', 'Design', Object.keys(BR).length],
+        ['senders', 'Avsender', 'Hvem pitchen kommer fra', 'Salgsledelse', (viewAs ? ownSenders : senders).length],
+        ['brand', 'Merkevare', 'Logoer og produktfarger', 'Design', Object.keys(BR).filter(k => !viewAs || brandOwned(k)).length],
         ['pricing', 'Prismodell', 'Trapp, rabatter og lisens', 'Salgsledelse', (myPricing.tiers || []).length],
         ['access', 'Deling og sporing', 'Passord, lenke og tall per pitch', 'Salgsledelse', myPitches.length]
       ].map(([v, label, desc, owner, count]) => ({
@@ -4338,7 +4338,7 @@ class Component extends DCLogic {
         if ((store.imageCats || []).includes(n)) return alert('Kategorien finnes allerede.');
         this.withStore(st => { st.imageCats.push(n); }); this.setState({ adminCat: n }); },
 
-      senders: senders.map((sd, i) => {
+      senders: senders.map((sd, i) => ({ sd, i })).filter(x => !viewAs || senderOwned(x.sd)).map(({ sd, i }) => {
         const used = myPitches.filter(p => (p.meta.sender || senders[0].id) === sd.id).length;
         return { name: sd.name, contact: sd.contact || '', email: sd.email || '', phone: sd.phone || '',
           contactLine: D.senderContact(sd) || 'Ingen kontaktinfo — takk-sliden står tom', logoThumb: this.cssUrl(sd.logo),
@@ -4728,7 +4728,9 @@ class Component extends DCLogic {
         || { client: 'Eksempelkunde', slug: 'eksempel', accent: '#1434CB', sender: (senders[0] || {}).id }),
       libStale: libStale,
       libStaleEmpty: libStale.length === 0,
-      brands: Object.keys(BR).map(k => {
+      /* Under «se som» skal listene speile det selskapet faktisk ser. Uten override
+         viser superadmin alt, slik at eierskap kan forvaltes. */
+      brands: Object.keys(BR).filter(k => !viewAs || brandOwned(k)).map(k => {
         const br = BR[k];
         const used = myPitches.reduce((n, p) => n + p.blocks.filter(b => b.data.brand === k).length, 0);
         const set = patch => this.withStore(st => { Object.assign(st.brands[k], patch); });
