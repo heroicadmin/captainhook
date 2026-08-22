@@ -302,6 +302,13 @@
     </nav>
     <span style="flex:1"></span>
     <span style="font-size:11px;color:#9A96AC;letter-spacing:.06em">facts {{ system.factsVersion }}</span>
+    <sc-if value="{{ viewAs.active }}" hint-placeholder-val="{{ false }}">
+      <span style="display:flex;align-items:center;gap:7px;background:#FFF7E6;border:1px solid #F0D9A8;border-radius:6px;padding:4px 8px;font-size:11.5px;color:#8A6D2F">
+        <span style="font-weight:700">Ser som</span>
+        <span style="font-family:ui-monospace,Menlo,monospace">{{ viewAs.label }}</span>
+        <button type="button" onClick="{{ viewAs.onReset }}" title="Tilbake til superadmin-visning" style="border:1px solid #E4CE9B;background:#FFFFFF;color:#8A6D2F;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;cursor:pointer">Avslutt</button>
+      </span>
+    </sc-if>
     <sc-if value="{{ cloud.hasErr }}" hint-placeholder-val="{{ false }}">
       <span title="{{ cloud.err }}" style="display:flex;align-items:center;gap:7px;max-width:340px;background:#FDECEA;border:1px solid #F3C9C5;border-radius:6px;padding:5px 9px;font-size:11.5px;color:#A8352C">
         <span style="flex:none;font-weight:700">Ikke lagret</span>
@@ -1144,8 +1151,26 @@
   <!-- ══════════════ ADMIN ══════════════ -->
   <sc-if value="{{ route.isAdmin }}" hint-placeholder-val="{{ false }}">
     <div style="max-width:1180px;width:100%;margin:0 auto;padding:40px 24px 80px;animation:{{ routeAnim }}">
-      <h1 style="font-size:30px;font-weight:700;letter-spacing:-.02em;margin:0 0 6px">Admin</h1>
-      <p style="font-size:13.5px;line-height:1.6;color:#55506B;max-width:70ch;margin:0 0 28px">Åtte datalag med tydelig eierskap. Alt her er delt: en endring slår gjennom i alle pitcher som ikke har låst opp feltet.</p>
+      <div style="display:flex;align-items:flex-start;gap:18px;flex-wrap:wrap">
+        <div style="flex:1;min-width:280px">
+          <h1 style="font-size:30px;font-weight:700;letter-spacing:-.02em;margin:0 0 6px">Admin</h1>
+          <p style="font-size:13.5px;line-height:1.6;color:#55506B;max-width:70ch;margin:0 0 28px">Åtte datalag med tydelig eierskap. Alt her er delt: en endring slår gjennom i alle pitcher som ikke har låst opp feltet.</p>
+        </div>
+        <sc-if value="{{ superadmin }}" hint-placeholder-val="{{ false }}">
+          <div style="flex:none;background:#FFFFFF;border:1px solid #E6E4EE;border-radius:10px;padding:12px 14px;min-width:236px">
+            <div style="display:flex;align-items:center;gap:7px;margin-bottom:7px">
+              <span style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#0E9E8F;background:#E9F6F4;border:1px solid #B7E3DB;border-radius:4px;padding:2px 6px">Superadmin</span>
+              <span style="font-size:10px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:#8A85A0">Se som</span>
+            </div>
+            <select value="{{ viewAs.current }}" onChange="{{ viewAs.onPick }}" style="width:100%;background:#F7F6FA;border:1px solid #D5D2E0;border-radius:6px;color:#16131F;font-size:13px;font-weight:600;padding:8px 10px;cursor:pointer">
+              <sc-for list="{{ viewAs.options }}" as="o" hint-placeholder-count="3">
+                <option value="{{ o.v }}">{{ o.label }}</option>
+              </sc-for>
+            </select>
+            <div style="font-size:11px;line-height:1.45;color:#8A85A0;margin-top:7px">Viser merkevarer, mapper, avsendere, caser, slides, priser og pitcher slik det valgte selskapet ser dem.</div>
+          </div>
+        </sc-if>
+      </div>
       <div style="display:grid;grid-template-columns:252px 1fr;gap:34px;align-items:start">
         <nav style="display:flex;flex-direction:column;gap:6px;position:sticky;top:74px">
           <sc-for list="{{ admin.nav }}" as="t" hint-placeholder-count="5">
@@ -2934,6 +2959,9 @@ class Component extends DCLogic {
     const store = S.store;
     if (!D || !store) {
       return { gate: this.gateVals(), share: this.shareVals(null),
+        superadmin: false,
+        viewAs: { active: false, current: '', label: '—', options: [], onPick: () => {}, onReset: () => {} },
+        domainOptions: [],
         /* skjelettet før innlasting/innlogging viser landingssiden, ikke arkivet */
         route: { isApp: true, isArchive: false, isNew: false, isEdit: false, isAdmin: false, isView: false, isLanding: true },
         landing: { greeting: 'Pitch Studio', company: '', hasCompany: false, pitchCount: '—', pitchLabel: 'pitcher',
@@ -2972,9 +3000,15 @@ class Component extends DCLogic {
     /* Merkevarer eies av et selskap, angitt med e-postdomenet i brand.domain.
        En innlogget bruker velger bare fra merkevarene sitt eget domene eier;
        tomt domene = synlig for alle. Admin → Merkevare filtreres ikke, så eier kan settes. */
-    const myDomain = (S.who || '').split('@')[1] || '';
     /* Superadmin ser tannhjulet i menylinjen (eierskap for bildemapper). Utvid lista ved behov. */
     const isSuperadmin = ['sindre@heroic.gg'].includes((S.who || '').toLowerCase());
+    const realDomain = (S.who || '').split('@')[1] || '';
+    /* «Se som»: superadmin kan bytte til et annet selskap for å se akkurat det de ser.
+       Alt som filtrerer på domene henger på myDomain, så ett bytte her slår gjennom i
+       merkevarer, bildemapper, avsendere, caser, slidebiblioteket, prismodellen og
+       pitchene. Uten override er myDomain brukerens eget domene, som før. */
+    const viewAs = isSuperadmin ? String(S.viewAs || '').toLowerCase() : '';
+    const myDomain = viewAs || realDomain;
     const brandOwned = k => { const d = ((BR[k] || {}).domain || '').toLowerCase(); return !d || d === myDomain; };
     const visBrandKeys = Object.keys(BR).filter(brandOwned);
     const brandsResolved = Object.fromEntries(Object.keys(BR).map(k => [k, { ...BR[k], logo: this.resolve(BR[k].logo), icon: this.resolve(BR[k].icon || '') }]));
@@ -3008,8 +3042,9 @@ class Component extends DCLogic {
        ryddighet i grensesnittet — ikke det som beskytter dataene. */
     const pitchCompanyOf = p => String((p || {}).company || '').toLowerCase();
     const myPitches = (store.pitches || []).filter(p => {
-      if (isSuperadmin) return true;
       const c = pitchCompanyOf(p);
+      /* superadmin uten «se som» ser alt; med «se som» ser man som det selskapet */
+      if (isSuperadmin && !viewAs) return true;
       return !c || !myDomain || c === myDomain;
     });
     /* rendering følger pitchens selskap */
@@ -4898,6 +4933,25 @@ class Component extends DCLogic {
         };
       })(),
       superadmin: isSuperadmin,
+      /* «Se som»-bytte. Verdien '' betyr «meg selv / alle», ellers et selskapsdomene. */
+      viewAs: {
+        active: !!viewAs,
+        current: viewAs || realDomain,
+        label: viewAs || realDomain || '—',
+        options: (() => {
+          const d = new Set();
+          (senders || []).forEach(x => { if (x && x.domain) d.add(String(x.domain).toLowerCase()); });
+          Object.values(store.catDomains || {}).forEach(v => { if (v) d.add(String(v).toLowerCase()); });
+          Object.keys(BR).forEach(k => { if (BR[k] && BR[k].domain) d.add(String(BR[k].domain).toLowerCase()); });
+          Object.keys(store.pricingByDomain || {}).forEach(k => d.add(String(k).toLowerCase()));
+          (store.pitches || []).forEach(pp => { if (pp && pp.company) d.add(String(pp.company).toLowerCase()); });
+          if (realDomain) d.add(realDomain);
+          return [{ v: '', label: 'Alt (superadmin)' },
+            ...[...d].filter(Boolean).sort().map(v => ({ v, label: v }))];
+        })(),
+        onPick: e => this.setState({ viewAs: e.target.value, adminShareId: null, caseSel: null, libSel: null, imgPage: 0 }),
+        onReset: () => this.setState({ viewAs: '', adminShareId: null, caseSel: null, libSel: null, imgPage: 0 })
+      },
       /* Alle selskapsdomener som finnes i basen — brukes til autocomplete i eierfeltene,
          slik at man ikke må huske «skagerrak.tech» utenat og risikere en skrivefeil
          som stille gjør noe usynlig for alle. */
