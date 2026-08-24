@@ -683,10 +683,14 @@ export const FONTS = FONT_DEFS.map(f => ({
 /* ---------- flate: mørk eller lys. Tokenene settes som variabler på wrapperen,
    slidene leser dem, og fallback er den mørke verdien de alltid har hatt. ---------- */
 export const SURFACES = {
+  /* logoTint: filter som gjør en ensfarget logo til flatens tekstfarge.
+     brightness(0) gjør den svart; invert(1) videre til hvit på mørk flate. */
   dark:  { id:'dark',  label:'Mørk',   paper:'#1B1826', ink:'#FFFFFF', inkSoft:'#C9C4D6', inkBody:'#E4E1EC',
-           inkMute:'#8E88A3', plate:'#23202F', rule:'#302B3F', mix:'#FFFFFF' },
+           inkMute:'#8E88A3', plate:'#23202F', rule:'#302B3F', mix:'#FFFFFF',
+           logoTint:'brightness(0) invert(1)' },
   beige: { id:'beige', label:'Beige',  paper:'#EAE4D6', ink:'#16131F', inkSoft:'#413A4E', inkBody:'#241F30',
-           inkMute:'#6B6577', plate:'#F5F1E7', rule:'#D6CDBB', mix:'#16131F' }
+           inkMute:'#6B6577', plate:'#F5F1E7', rule:'#D6CDBB', mix:'#16131F',
+           logoTint:'brightness(0)' }
 };
 export function surfaceOf(meta, tpl) {
   const id = (meta && meta.surface) || (tpl && tpl.surface) || 'dark';
@@ -694,7 +698,8 @@ export function surfaceOf(meta, tpl) {
 }
 export function surfaceVars(sf) {
   return { '--paper': sf.paper, '--ink': sf.ink, '--ink-soft': sf.inkSoft, '--ink-body': sf.inkBody,
-    '--ink-mute': sf.inkMute, '--plate2': sf.plate, '--rule': sf.rule, '--mix': sf.mix };
+    '--ink-mute': sf.inkMute, '--plate2': sf.plate, '--rule': sf.rule, '--mix': sf.mix,
+    '--logo-tint': sf.logoTint || 'none' };
 }
 
 export const DEFAULT_FONT = 'inter';

@@ -197,7 +197,7 @@
       <div style="display:grid;grid-template-columns:{{ brandGridCols }};gap:3.4cqw;flex:1;min-height:0;align-items:start;margin-top:1.2cqw">
         <div data-el="text" data-el-name="Tekstboks" style="width:{{ brandTextW }};min-width:0">
           <div data-el="logo" data-el-name="Logo" style="display:flex;flex-direction:column">
-            <div style="display:flex;align-items:center;margin-bottom:1.1cqw"><img src="{{ b.logo }}" alt="{{ b.name }}" style="height:{{ b.hLg }};width:auto;max-width:100%;object-fit:contain;display:block"></div>
+            <div style="display:flex;align-items:center;margin-bottom:1.1cqw"><img src="{{ b.logo }}" alt="{{ b.name }}" style="height:{{ b.hLg }};width:auto;max-width:100%;object-fit:contain;display:block;filter:{{ b.logoFilter }}"></div>
             <div style="width:100%;height:.22cqw;margin-bottom:1.8cqw;background:{{ b.color }}"></div>
           </div>
           <ul data-el="bullets" data-el-name="Punkter" style="list-style:none;display:flex;flex-direction:column;gap:.95cqw;margin:0;padding:0">
@@ -326,7 +326,7 @@
             <div data-el="stats" data-el-name="Nøkkeltall" data-in="3" style="display:flex;align-items:center;gap:1.5cqw;margin-top:1.8cqw">
               <div style="width:2.6cqw;height:2.6cqw;border-radius:50%;background:{{ b.color }};display:flex;align-items:center;justify-content:center;flex:none;overflow:hidden">
                 <sc-if value="{{ b.logo }}" hint-placeholder-val="{{ false }}">
-                  <img src="{{ b.logo }}" alt="{{ b.name }}" style="width:70%;height:70%;object-fit:contain;display:block">
+                  <img src="{{ b.logo }}" alt="{{ b.name }}" style="width:70%;height:70%;object-fit:contain;display:block;filter:{{ b.logoFilter }}">
                 </sc-if>
               </div>
               <sc-for list="{{ stats }}" as="st" hint-placeholder-count="4">
@@ -1127,7 +1127,7 @@
 
   <!-- ============ SHOWCASE ============ -->
   <sc-if value="{{ is.showcase }}" hint-placeholder-val="{{ false }}">
-    <div style="{{ heroInk }}position:absolute;inset:0;display:flex">
+    <div style="position:absolute;inset:0;display:flex">
       <div style="flex:1.2;background:repeating-linear-gradient(135deg,var(--plate2,#1A1724) 0 14px,var(--rule,#201C2C) 14px 28px);display:grid;place-items:center;padding:4cqw;text-align:center;position:relative;overflow:hidden">
         <sc-if value="{{ hasImg }}" hint-placeholder-val="{{ false }}">
           <img src="{{ imgSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"><span data-photoveil="1" style="position:absolute;inset:0;pointer-events:none;background:{{ photoVeil }}"></span>
@@ -1711,7 +1711,7 @@
 
   <!-- ============ CLOSING ============ -->
   <sc-if value="{{ is.closing }}" hint-placeholder-val="{{ false }}">
-    <div style="{{ heroInk }}position:absolute;inset:0;display:flex">
+    <div style="position:absolute;inset:0;display:flex">
       <div style="flex:1;background:repeating-linear-gradient(135deg,var(--plate2,#1A1724) 0 14px,var(--rule,#201C2C) 14px 28px);display:grid;place-items:center;padding:4cqw;text-align:center;position:relative;overflow:hidden">
         <sc-if value="{{ hasImg }}" hint-placeholder-val="{{ false }}">
           <img data-el="img" data-el-name="Bilde" src="{{ imgSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"><span data-photoveil="1" style="position:absolute;inset:0;pointer-events:none;background:{{ photoVeil }}"></span>
@@ -2367,7 +2367,10 @@ class Component extends DCLogic {
     const pillarVeilRgb = mixRgb([12,10,20], accentRgb, .24).join(',');
     const pillarStripeA = mixRgb([26,23,36], accentRgb, .2).join(',');
     const pillarStripeB = mixRgb([32,28,44], accentRgb, .2).join(',');
-    const panelBg = 'rgb(' + mixRgb([18,16,26], accentRgb, .16).join(',') + ')';
+    /* Tekstpanelet skal følge pitchens flate: aksenten blandet inn i papiret.
+       Var hardkodet mørk før — og ble i tillegg aldri sendt til malen, så
+       «background:{{ panelBg }}» ble tomt og panelet sto gjennomsiktig. */
+    const panelBg = 'color-mix(in srgb, var(--accent,#1434CB) 16%, var(--paper,#1B1826))';
 
     const types = ['cover','umbrella','statement','brand','metrics','membership','table','matrix','showcase','tiers','configurator','timeline','logowall','next','closing','divider','fullbleed','adrates','placement','case','cases','benchmark','audience','spotlight','frames','proof','pillars','invest','options','homebase','briefing','activation','partnership','formation','loyaltyapp','productscene'];
     const is = {};
@@ -2648,7 +2651,14 @@ class Component extends DCLogic {
 
     return {
       rootRef: this.root,
-      s, m, t, is, interactive, locked: !interactive, picked, b: { ...bk, logo: (s.mark === 'icon' && bk.icon) ? bk.icon : bk.logo, hLg: h(4.4, bk.scale) },
+      s, m, t, is, interactive, locked: !interactive, picked, b: { ...bk,
+        logo: (s.mark === 'icon' && bk.icon) ? bk.icon : bk.logo, hLg: h(4.4, bk.scale),
+        /* Logofarge: «auto» følger flaten (hvit på mørk, svart på lys) — det redder en
+           hvit logo som ellers blir usynlig på lyst oppsett. Ellers en fast tone. */
+        logoFilter: bk.tint === 'auto' ? 'var(--logo-tint, none)'
+          : bk.tint === 'black' ? 'brightness(0)'
+          : bk.tint === 'white' ? 'brightness(0) invert(1)'
+          : 'none' },
       frameIsBox: frameStyleVal === 'box', frameIsBrowser: frameStyleVal === 'browser', frameIsPolaroid: frameStyleVal === 'polaroid', frameIsSquare: frameStyleVal === 'square',
       statIsBoxed: statStyleVal === 'boxed', statIsRuled: statStyleVal === 'ruled',
       extraImages, hasExtraImages: extraImages.length > 0,
@@ -2674,7 +2684,7 @@ class Component extends DCLogic {
         || (S.sender && S.sender.name) || 'Skagerrak',
       /* kontaktlinja eies av avsenderen — blokka overstyrer bare når den er fylt ut */
       contactLine: s.contact || (S.sender && S.sender.contactLine) || '',
-      imgSrc, hasImg: !!imgSrc, noImg: !imgSrc, photoVeil,
+      imgSrc, hasImg: !!imgSrc, noImg: !imgSrc, photoVeil, panelBg,
       /* Forside, Duo og Avslutning er laget for å ligge over et foto, og tvinger derfor
          det mørke skjemaet. Uten foto er det bare papiret bak — da må teksten følge
          pitchens egen flate, ellers blir hvit tekst stående på lys bakgrunn. */

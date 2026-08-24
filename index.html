@@ -203,7 +203,7 @@
 
 <!-- ══════════════ PUBLIC PITCH VIEW ══════════════ -->
 <sc-if value="{{ route.isView }}" hint-placeholder-val="{{ false }}">
-  <div style="--accent:{{ accent }};--accent-ink:{{ accentInk }};--plate:{{ plate }};--font-head:{{ fontHead }};--font-body:{{ fontBody }};--paper:{{ sf.paper }};--ink:{{ sf.ink }};--ink-soft:{{ sf.inkSoft }};--ink-body:{{ sf.inkBody }};--ink-mute:{{ sf.inkMute }};--plate2:{{ sf.plate }};--rule:{{ sf.rule }};--mix:{{ sf.mix }};background:{{ sf.paper }};color:{{ sf.ink }}">
+  <div style="--accent:{{ accent }};--accent-ink:{{ accentInk }};--plate:{{ plate }};--font-head:{{ fontHead }};--font-body:{{ fontBody }};--paper:{{ sf.paper }};--ink:{{ sf.ink }};--ink-soft:{{ sf.inkSoft }};--ink-body:{{ sf.inkBody }};--ink-mute:{{ sf.inkMute }};--plate2:{{ sf.plate }};--rule:{{ sf.rule }};--mix:{{ sf.mix }};--logo-tint:{{ sf.logoTint }};background:{{ sf.paper }};color:{{ sf.ink }}">
     <!-- ett animasjonslag bak hele presentasjonen — det står stille i forhold til rullingen,
          så bevegelsen er sammenhengende fra forside til avslutning -->
     <sc-if value="{{ view.amb.on }}" hint-placeholder-val="{{ false }}">
@@ -283,7 +283,7 @@
 
 <!-- ══════════════ APP CHROME ══════════════ -->
 <sc-if value="{{ route.isApp }}" hint-placeholder-val="{{ true }}">
-<div style="--accent:{{ accent }};--accent-ink:{{ accentInk }};--plate:{{ plate }};--font-head:{{ fontHead }};--font-body:{{ fontBody }};--paper:{{ sf.paper }};--ink:{{ sf.ink }};--ink-soft:{{ sf.inkSoft }};--ink-body:{{ sf.inkBody }};--ink-mute:{{ sf.inkMute }};--plate2:{{ sf.plate }};--rule:{{ sf.rule }};--mix:{{ sf.mix }};min-height:100vh;display:flex;flex-direction:column">
+<div style="--accent:{{ accent }};--accent-ink:{{ accentInk }};--plate:{{ plate }};--font-head:{{ fontHead }};--font-body:{{ fontBody }};--paper:{{ sf.paper }};--ink:{{ sf.ink }};--ink-soft:{{ sf.inkSoft }};--ink-body:{{ sf.inkBody }};--ink-mute:{{ sf.inkMute }};--plate2:{{ sf.plate }};--rule:{{ sf.rule }};--mix:{{ sf.mix }};--logo-tint:{{ sf.logoTint }};min-height:100vh;display:flex;flex-direction:column">
 
   <header style="display:flex;align-items:center;gap:18px;padding:0 18px;height:54px;background:#FFFFFF;border-bottom:1px solid #E6E4EE;flex:none;position:sticky;top:0;z-index:60">
     <a href="#/" title="Pitch Studio" style="display:flex;align-items:center;gap:9px;text-decoration:none">
@@ -1597,13 +1597,19 @@
                   <button type="button" onClick="{{ br.onDel }}" title="Slett merkevaren" style="width:28px;border:1px solid #E6E4EE;background:transparent;color:#9A96AC;border-radius:5px;cursor:pointer;font-size:14px">×</button>
                 </div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-                  <div style="position:relative;border:1px solid #D5D2E0;border-radius:6px;height:64px;background-color:#1B1826;background-size:contain;background-repeat:no-repeat;background-position:center;background-origin:content-box;padding:10px;background-image:{{ br.thumb }}"><span style="position:absolute;left:5px;top:4px;font-size:8.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6E6883">Logo</span></div>
+                  <div style="position:relative;border:1px solid #D5D2E0;border-radius:6px;height:64px;background-color:#1B1826;background-size:contain;background-repeat:no-repeat;background-position:center;background-origin:content-box;padding:10px;background-image:{{ br.thumb }};filter:{{ br.tintFilter }}"><span style="position:absolute;left:5px;top:4px;font-size:8.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6E6883;filter:none">Logo</span></div>
                   <div style="position:relative;border:1px solid #D5D2E0;border-radius:6px;height:64px;background-color:#1B1826;background-size:contain;background-repeat:no-repeat;background-position:center;background-origin:content-box;padding:10px;background-image:{{ br.iconThumb }}"><span style="position:absolute;left:5px;top:4px;font-size:8.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6E6883">Ikon</span></div>
                 </div>
                 <div style="display:flex;gap:8px;align-items:center">
                   <input type="color" value="{{ br.color }}" onInput="{{ br.onColor }}" title="Produktfarge" style="width:40px;height:32px;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:5px;cursor:pointer;padding:2px">
                   <button type="button" onClick="{{ br.onLogo }}" style="flex:1;font-size:11.5px;font-weight:600;border-radius:5px;padding:7px;cursor:pointer;background:#F2F0F7;border:1px solid #D5D2E0;color:#322D45">Bytt logo</button>
                   <button type="button" onClick="{{ br.onIcon }}" style="flex:1;font-size:11.5px;font-weight:600;border-radius:5px;padding:7px;cursor:pointer;background:#F2F0F7;border:1px solid #D5D2E0;color:#322D45">Bytt ikon</button>
+                </div>
+                <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">
+                  <label style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#55506B;white-space:nowrap">Logofarge</label>
+                  <sc-for list="{{ br.tintOpts }}" as="o" hint-placeholder-count="4">
+                    <button type="button" onClick="{{ o.on }}" style="font-size:11px;font-weight:600;border-radius:5px;padding:5px 9px;cursor:pointer;background:{{ o.bg }};border:1px solid {{ o.border }};color:{{ o.fg }}">{{ o.label }}</button>
+                  </sc-for>
                 </div>
                 <input type="text" value="{{ br.note }}" onInput="{{ br.onNote }}" placeholder="Merknad — hva som er lett å gjøre feil" style="width:100%;background:#F2F0F7;border:1px solid #E6E4EE;border-radius:5px;color:#55506B;font-size:11.5px;padding:7px 9px">
                 <div style="display:flex;gap:8px;align-items:center">
@@ -2967,7 +2973,7 @@ class Component extends DCLogic {
         landing: { greeting: 'Pitch Studio', company: '', hasCompany: false, pitchCount: '—', pitchLabel: 'pitcher',
           slideCount: '—', brandCount: '—', sentCount: '—', draftCount: '—', isEmpty: false, hasRecent: false, recent: [] },
         accent: '#1434CB', accentInk: '#fff', plate: '#fff',
-        fontHead: "'Inter',system-ui,sans-serif", fontBody: "'Inter',system-ui,sans-serif", sf: { paper: '#1B1826', ink: '#FFFFFF', inkSoft: '#C9C4D6', inkBody: '#E4E1EC', inkMute: '#8E88A3', plate: '#23202F', rule: '#302B3F', mix: '#FFFFFF' },
+        fontHead: "'Inter',system-ui,sans-serif", fontBody: "'Inter',system-ui,sans-serif", sf: { paper: '#1B1826', ink: '#FFFFFF', inkSoft: '#C9C4D6', inkBody: '#E4E1EC', inkMute: '#8E88A3', plate: '#23202F', rule: '#302B3F', mix: '#FFFFFF', logoTint: 'brightness(0) invert(1)' },
         picker: { open: false, cats: [], items: [] },
         nav: {}, ui: { langs: [] }, archive: { empty: true, noneInTab: false, tabs: [], items: [] }, system: { factsVersion: '…' }, admin: { tabs: [], brands: [], facts: [], library: [], templates: [], tiers: [], addons: [], rates: [] },
         ed: { outline: [], fields: [], library: [], checks: [], overrides: [], senderOpts: [], profileOpts: [] }, nw: { swatches: [], templates: [], senderOpts: [], profileOpts: [] }, view: { slides: [], rail: [] } };
@@ -2993,7 +2999,8 @@ class Component extends DCLogic {
     const fontDef = fontFor(isNew && S.nw ? { template: S.nw.template } : meta);
     const sfOf = mt => D.surfaceOf(mt, tplOf(mt));
     const sfVarText = mt => { const x = sfOf(mt); return '--paper:' + x.paper + ';--ink:' + x.ink + ';--ink-soft:' + x.inkSoft
-      + ';--ink-body:' + x.inkBody + ';--ink-mute:' + x.inkMute + ';--plate2:' + x.plate + ';--rule:' + x.rule + ';--mix:' + x.mix; };
+      + ';--ink-body:' + x.inkBody + ';--ink-mute:' + x.inkMute + ';--plate2:' + x.plate + ';--rule:' + x.rule + ';--mix:' + x.mix
+      + ';--logo-tint:' + (x.logoTint || 'none'); };
     const sf = sfOf(isNew && S.nw ? { template: S.nw.template } : meta);
 
     const BR = store.brands || D.BRANDS;
@@ -4743,6 +4750,14 @@ class Component extends DCLogic {
         const set = patch => this.withStore(st => { Object.assign(st.brands[k], patch); });
         return { name: br.name, color: br.color, scale: br.scale || 1, note: br.note || '', thumb: this.cssUrl(br.logo),
           iconThumb: this.cssUrl(br.icon), hasIcon: !!br.icon,
+          /* Logofarge. «Følg flaten» gjør logoen hvit på mørk og svart på lys flate —
+             løsningen for en hvit logo som forsvinner på lyst oppsett. */
+          tintOpts: [['', 'Original'], ['auto', 'Følg flaten'], ['black', 'Svart'], ['white', 'Hvit']]
+            .map(([v, label]) => ({ label, ...pill((br.tint || '') === v),
+              on: () => set({ tint: v }) })),
+          tintFilter: br.tint === 'auto' ? 'brightness(0) invert(1)'
+            : br.tint === 'black' ? 'brightness(0)'
+            : br.tint === 'white' ? 'brightness(0) invert(1)' : 'none',
           onIcon: () => this.upload(ref => set({ icon: ref }), { maxEdge: 600 }),
           onNote: e => set({ note: e.target.value }),
           domain: br.domain || '',
