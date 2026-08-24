@@ -60,7 +60,7 @@
     <div style="position:absolute;width:3.4cqw;height:3.4cqw;bottom:2.6cqw;right:2.6cqw;border:.55cqw solid var(--accent,#1434CB);border-left:0;border-top:0;z-index:4"></div>
     <div style="position:absolute;width:3.4cqw;height:3.4cqw;top:2.6cqw;left:2.6cqw;border:.55cqw solid var(--accent,#1434CB);border-right:0;border-bottom:0;z-index:4"></div>
     <div style="position:absolute;width:3.4cqw;height:3.4cqw;bottom:2.6cqw;left:2.6cqw;border:.55cqw solid var(--accent,#1434CB);border-right:0;border-top:0;z-index:4"></div>
-    <div style="--ink:#FFFFFF;--ink-soft:#C9C4D6;--ink-body:#E4E1EC;--ink-mute:#8E88A3;--plate2:#23202F;--rule:#302B3F;--mix:#FFFFFF;color:#FFFFFF;position:absolute;inset:0;padding:7cqw 6cqw;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;z-index:3">
+    <div style="{{ heroInk }}position:absolute;inset:0;padding:7cqw 6cqw;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;z-index:3">
       <sc-if value="{{ hasLogo }}" hint-placeholder-val="{{ false }}">
         <div data-el="logo" data-el-name="Kundelogo" style="border-radius:.5cqw;display:grid;place-items:center;padding:2cqw 2.6cqw;min-width:24cqw;min-height:9.5cqw;margin-bottom:3cqw;background:var(--plate,#fff)">
           <img src="{{ m.logo }}" alt="{{ m.client }}" style="max-width:19cqw;max-height:6cqw;display:block">
@@ -114,7 +114,7 @@
             <sc-for list="{{ umbRows }}" as="r" hint-placeholder-count="3">
               <div data-in="4" style="flex:1;display:grid;grid-template-columns:2.6cqw 1fr;align-items:center">
                 <div></div>
-                <div onClick="{{ r.on }}" style="cursor:pointer;height:100%;display:grid;grid-template-columns:13cqw 1fr auto;align-items:center;gap:2cqw;background:var(--plate2,#23202F);border:1px solid var(--rule,#302B3F);border-left-width:.3cqw;border-left-style:solid;border-radius:.5cqw;padding:.9cqw 1.4cqw .9cqw 1.6cqw;border-left-color:{{ r.color }};transition:background .18s,border-left-width .18s,transform .18s" style-hover="background:#2A2739;border-left-width:.55cqw;transform:translateX(.25cqw)">
+                <div onClick="{{ r.on }}" style="cursor:pointer;height:100%;display:grid;grid-template-columns:13cqw 1fr auto;align-items:center;gap:2cqw;background:var(--plate2,#23202F);border:1px solid var(--rule,#302B3F);border-left-width:.3cqw;border-left-style:solid;border-radius:.5cqw;padding:.9cqw 1.4cqw .9cqw 1.6cqw;border-left-color:{{ r.color }};transition:background .18s,border-left-width .18s,transform .18s" style-hover="background:color-mix(in srgb, var(--mix,#FFFFFF) 8%, var(--plate2,#23202F));border-left-width:.55cqw;transform:translateX(.25cqw)">
                   <div style="display:flex;align-items:center">
                     <sc-if value="{{ r.hasLogo }}" hint-placeholder-val="{{ true }}">
                       <img src="{{ r.logo }}" alt="{{ r.name }}" style="height:{{ r.h }};width:auto;max-width:100%;object-fit:contain;display:block">
@@ -135,7 +135,7 @@
           <sc-for list="{{ umbSubs }}" as="u" hint-placeholder-count="5">
             <div data-in="4" style="display:grid;grid-template-columns:1.4cqw 1fr;align-items:center">
               <div style="height:.16cqw;background:var(--rule,#4A4459)"></div>
-              <div onClick="{{ u.on }}" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:.5cqw;background:var(--plate2,#23202F);border:1px solid var(--rule,#302B3F);border-radius:.35cqw;padding:.75cqw .9cqw;font-size:.95cqw;font-weight:600;letter-spacing:-.005em;color:var(--ink-soft,#C9C4D6);transition:background .18s,color .18s,border-color .18s" style-hover="background:#272338;color:var(--ink,#FFFFFF);border-color:var(--accent,#1434CB)">
+              <div onClick="{{ u.on }}" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:.5cqw;background:var(--plate2,#23202F);border:1px solid var(--rule,#302B3F);border-radius:.35cqw;padding:.75cqw .9cqw;font-size:.95cqw;font-weight:600;letter-spacing:-.005em;color:var(--ink-soft,#C9C4D6);transition:background .18s,color .18s,border-color .18s" style-hover="background:color-mix(in srgb, var(--mix,#FFFFFF) 8%, var(--plate2,#23202F));color:var(--ink,#FFFFFF);border-color:var(--accent,#1434CB)">
                 <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ u.label }}</span>
                 <span style="font-size:.8cqw;color:var(--ink-mute,#8E88A3)">→</span>
               </div>
@@ -1127,7 +1127,7 @@
 
   <!-- ============ SHOWCASE ============ -->
   <sc-if value="{{ is.showcase }}" hint-placeholder-val="{{ false }}">
-    <div style="--ink:#FFFFFF;--ink-soft:#C9C4D6;--ink-body:#E4E1EC;--ink-mute:#8E88A3;--plate2:#23202F;--rule:#302B3F;--mix:#FFFFFF;color:#FFFFFF;position:absolute;inset:0;display:flex">
+    <div style="{{ heroInk }}position:absolute;inset:0;display:flex">
       <div style="flex:1.2;background:repeating-linear-gradient(135deg,var(--plate2,#1A1724) 0 14px,var(--rule,#201C2C) 14px 28px);display:grid;place-items:center;padding:4cqw;text-align:center;position:relative;overflow:hidden">
         <sc-if value="{{ hasImg }}" hint-placeholder-val="{{ false }}">
           <img src="{{ imgSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"><span data-photoveil="1" style="position:absolute;inset:0;pointer-events:none;background:{{ photoVeil }}"></span>
@@ -1655,7 +1655,7 @@
       <p data-el="intro" data-el-name="Ingress" data-in="3" style="font-size:1.15cqw;line-height:1.5;color:var(--ink-soft,#C9C4D6);max-width:62ch;margin:1.1cqw 0 0">{{ s.intro }}</p>
       <div data-el="cards" data-el-name="Kort" style="flex:1;min-height:0;display:flex;gap:1.6cqw;margin-top:2cqw">
         <sc-for list="{{ optCards }}" as="c" hint-placeholder-count="2">
-          <div data-in="4" style="flex:1;min-width:0;position:relative;overflow:hidden;display:flex;flex-direction:column;gap:.9cqw;background:var(--plate2,#23202F);border:1px solid var(--rule,#302B3F);border-top:.26cqw solid var(--accent,#1434CB);border-radius:.4cqw;padding:2cqw 2.1cqw;transition:opacity .55s cubic-bezier(.22,.61,.36,1),transform .3s cubic-bezier(.22,.61,.36,1),background .18s" style-hover="transform:translateY(-.35cqw);background:#272335">
+          <div data-in="4" style="flex:1;min-width:0;position:relative;overflow:hidden;display:flex;flex-direction:column;gap:.9cqw;background:var(--plate2,#23202F);border:1px solid var(--rule,#302B3F);border-top:.26cqw solid var(--accent,#1434CB);border-radius:.4cqw;padding:2cqw 2.1cqw;transition:opacity .55s cubic-bezier(.22,.61,.36,1),transform .3s cubic-bezier(.22,.61,.36,1),background .18s" style-hover="transform:translateY(-.35cqw);background:color-mix(in srgb, var(--mix,#FFFFFF) 7%, var(--plate2,#23202F))">
             <span style="position:absolute;right:-9cqw;bottom:-11cqw;width:26cqw;height:26cqw;border:.1cqw solid color-mix(in srgb, var(--accent,#1434CB) 38%, transparent);border-radius:50%;pointer-events:none"></span>
             <span style="position:absolute;right:-4cqw;bottom:-7cqw;width:17cqw;height:17cqw;border:.1cqw solid color-mix(in srgb, var(--accent,#1434CB) 26%, transparent);border-radius:50%;pointer-events:none"></span>
             <span style="position:relative;font-size:.78cqw;font-weight:700;letter-spacing:.2em;color:color-mix(in srgb, var(--accent,#1434CB) 60%, var(--mix,#FFFFFF));font-variant-numeric:tabular-nums">{{ c.n }}</span>
@@ -1711,7 +1711,7 @@
 
   <!-- ============ CLOSING ============ -->
   <sc-if value="{{ is.closing }}" hint-placeholder-val="{{ false }}">
-    <div style="--ink:#FFFFFF;--ink-soft:#C9C4D6;--ink-body:#E4E1EC;--ink-mute:#8E88A3;--plate2:#23202F;--rule:#302B3F;--mix:#FFFFFF;color:#FFFFFF;position:absolute;inset:0;display:flex">
+    <div style="{{ heroInk }}position:absolute;inset:0;display:flex">
       <div style="flex:1;background:repeating-linear-gradient(135deg,var(--plate2,#1A1724) 0 14px,var(--rule,#201C2C) 14px 28px);display:grid;place-items:center;padding:4cqw;text-align:center;position:relative;overflow:hidden">
         <sc-if value="{{ hasImg }}" hint-placeholder-val="{{ false }}">
           <img data-el="img" data-el-name="Bilde" src="{{ imgSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"><span data-photoveil="1" style="position:absolute;inset:0;pointer-events:none;background:{{ photoVeil }}"></span>
@@ -2675,6 +2675,10 @@ class Component extends DCLogic {
       /* kontaktlinja eies av avsenderen — blokka overstyrer bare når den er fylt ut */
       contactLine: s.contact || (S.sender && S.sender.contactLine) || '',
       imgSrc, hasImg: !!imgSrc, noImg: !imgSrc, photoVeil,
+      /* Forside, Duo og Avslutning er laget for å ligge over et foto, og tvinger derfor
+         det mørke skjemaet. Uten foto er det bare papiret bak — da må teksten følge
+         pitchens egen flate, ellers blir hvit tekst stående på lys bakgrunn. */
+      heroInk: imgSrc ? '--ink:#FFFFFF;--ink-soft:#C9C4D6;--ink-body:#E4E1EC;--ink-mute:#8E88A3;--plate2:#23202F;--rule:#302B3F;--mix:#FFFFFF;color:#FFFFFF;' : '',
       brandShowImg: !s.hideImg, brandGridCols: s.hideImg ? 'auto' : 'auto 1fr',
       brandTextW: s.hideImg ? '82cqw' : '39cqw',
       hasTag: !!s.tag,
