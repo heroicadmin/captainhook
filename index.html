@@ -1711,6 +1711,12 @@
                 <input type="email" value="{{ sd.email }}" onInput="{{ sd.onEmail }}" placeholder="E-post" style="width:100%;background:#F2F0F7;border:1px solid #E6E4EE;border-radius:5px;color:#322D45;font-size:12px;padding:7px 9px">
                 <input type="tel" value="{{ sd.phone }}" onInput="{{ sd.onPhone }}" placeholder="Telefon" style="width:100%;background:#F2F0F7;border:1px solid #E6E4EE;border-radius:5px;color:#322D45;font-size:12px;padding:7px 9px">
                 <input type="text" value="{{ sd.contact }}" onInput="{{ sd.onContact }}" placeholder="Nettsted eller annet" style="width:100%;background:#F2F0F7;border:1px solid #E6E4EE;border-radius:5px;color:#322D45;font-size:12px;padding:7px 9px">
+                <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+                  <label style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#8A85A0;white-space:nowrap">Logofarge</label>
+                  <sc-for list="{{ sd.tintOpts }}" as="o" hint-placeholder-count="4">
+                    <button type="button" onClick="{{ o.on }}" style="font-size:10.5px;font-weight:600;border-radius:5px;padding:4px 8px;cursor:pointer;background:{{ o.bg }};border:1px solid {{ o.border }};color:{{ o.fg }}">{{ o.label }}</button>
+                  </sc-for>
+                </div>
                 <div style="display:flex;align-items:center;gap:7px">
                   <label style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#8A85A0;white-space:nowrap">Eier · domene</label>
                   <input type="text" value="{{ sd.domain }}" onInput="{{ sd.onDomain }}" list="dl-domains" autocomplete="off" placeholder="alle" title="Bare innloggede med dette e-postdomenet kan velge denne avsenderen. Tomt = alle." style="flex:1;min-width:0;background:#F2F0F7;border:1px solid #E6E4EE;border-radius:5px;color:#16131F;font-size:12px;padding:7px 9px">
@@ -4362,6 +4368,10 @@ class Component extends DCLogic {
           use: used ? 'brukt i ' + used + (used === 1 ? ' pitch' : ' pitcher') : 'ikke i bruk',
           domain: sd.domain || '',
           onDomain: e => { const v = e.target.value.trim().toLowerCase(); this.withStore(st => { if (v) st.senders[i].domain = v; else delete st.senders[i].domain; }); },
+          /* logofarge for vannmerket — «Følg flaten» redder en hvit logo på lys flate */
+          tintOpts: [['', 'Original'], ['auto', 'Følg flaten'], ['black', 'Svart'], ['white', 'Hvit']]
+            .map(([v, label]) => ({ label, ...pill((sd.tint || '') === v),
+              on: () => this.withStore(st => { if (v) st.senders[i].tint = v; else delete st.senders[i].tint; }) })),
           onName: e => { const v = e.target.value; this.withStore(st => { st.senders[i].name = v; }); },
           onContact: e => { const v = e.target.value; this.withStore(st => { st.senders[i].contact = v; }); },
           onEmail: e => { const v = e.target.value; this.withStore(st => { st.senders[i].email = v; }); },

@@ -2681,7 +2681,9 @@ class Component extends DCLogic {
       /* Vannmerket henter merkevarens (eller avsenderens) logo. Tinting følger samme
          valg som merkevaren, så en hvit logo ikke forsvinner på lys flate. */
       senderLogoFilter: (() => {
-        const t = (s.brand && brands[s.brand] ? brands[s.brand].tint : '') || '';
+        /* merkevarens valg gjelder når sliden har en merkevare, ellers avsenderens */
+        const t = ((s.brand && brands[s.brand] ? brands[s.brand].tint : '')
+          || (S.sender && S.sender.tint) || '');
         return t === 'auto' ? 'var(--logo-tint, none)'
           : t === 'black' ? 'brightness(0)'
           : t === 'white' ? 'brightness(0) invert(1)' : 'none';
