@@ -2367,10 +2367,11 @@ class Component extends DCLogic {
     const pillarVeilRgb = mixRgb([12,10,20], accentRgb, .24).join(',');
     const pillarStripeA = mixRgb([26,23,36], accentRgb, .2).join(',');
     const pillarStripeB = mixRgb([32,28,44], accentRgb, .2).join(',');
-    /* Tekstpanelet skal følge pitchens flate: aksenten blandet inn i papiret.
-       Var hardkodet mørk før — og ble i tillegg aldri sendt til malen, så
-       «background:{{ panelBg }}» ble tomt og panelet sto gjennomsiktig. */
-    const panelBg = 'color-mix(in srgb, var(--accent,#1434CB) 16%, var(--paper,#1B1826))';
+    /* Tekstpanelet bruker flatens egen panelfarge — samme nøytrale kortflate som
+       resten av appen. (Var hardkodet mørk før, og ble aldri sendt til malen, så
+       «background:{{ panelBg }}» ble tomt og panelet sto gjennomsiktig.
+       En aksenttone her ble for sterk på lys flate — den ble rosa.) */
+    const panelBg = 'var(--plate2, #23202F)';
 
     const types = ['cover','umbrella','statement','brand','metrics','membership','table','matrix','showcase','tiers','configurator','timeline','logowall','next','closing','divider','fullbleed','adrates','placement','case','cases','benchmark','audience','spotlight','frames','proof','pillars','invest','options','homebase','briefing','activation','partnership','formation','loyaltyapp','productscene'];
     const is = {};
