@@ -977,11 +977,15 @@ export function makeBlock(type, over, library) {
    «auto» er husets standard: mye på forside og skille, et anstrøk på innholdsslidene. */
 export const VEILS = { auto: null, tett: 1, lett: 0.9, middels: 0.72, apen: 0.5 };
 export const VEIL_LABELS = { auto: 'Auto', tett: 'Tett', lett: 'Lett', middels: 'Middels', apen: 'Åpen' };
-export function veilBg(veil, isHero, ambientOn) {
-  if (!ambientOn) return '#1B1826';
+/* Grunnflaten på arket. Papirfargen MÅ komme fra pitchens fargeskjema — før var den
+   hardkodet mørk, så en pitch med lys flate fikk mørkt ark under lyse-flate-tekstfarger
+   og ble uleselig (overskrifter og hover så «mørke ut» selv på lyst oppsett). */
+export function veilBg(veil, isHero, ambientOn, paper) {
+  const p = paper || SURFACES.dark.paper;
+  if (!ambientOn) return p;
   const a = VEILS[veil || 'auto'];
   const alpha = a == null ? (isHero ? 0.34 : 0.55) : a;
-  return 'rgba(27,24,38,' + alpha + ')';
+  return 'color-mix(in srgb, ' + p + ' ' + Math.round(alpha * 100) + '%, transparent)';
 }
 
 /* utformingene der elementene kan flyttes, skaleres og skjules */

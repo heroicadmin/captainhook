@@ -802,7 +802,7 @@
       <div data-el="rows" data-el-name="Sammenligning" style="flex:1;min-width:0;display:flex;flex-direction:column;min-height:0">
         <div data-in="3" style="font-size:.72cqw;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-mute,#8E88A3);margin-bottom:.7cqw">{{ s.barLabel }}</div>
         <sc-for list="{{ benchRows }}" as="r" hint-placeholder-count="6">
-          <div data-in="4" style="display:flex;align-items:center;gap:1.1cqw;padding:.62cqw .4cqw;border-top:1px solid var(--rule,#302B3F);transition:opacity .55s cubic-bezier(.22,.61,.36,1),transform .3s cubic-bezier(.22,.61,.36,1),background .16s;background:{{ r.rowBg }}" style-hover="background:rgba(255,255,255,.05)">
+          <div data-in="4" style="display:flex;align-items:center;gap:1.1cqw;padding:.62cqw .4cqw;border-top:1px solid var(--rule,#302B3F);transition:opacity .55s cubic-bezier(.22,.61,.36,1),transform .3s cubic-bezier(.22,.61,.36,1),background .16s;background:{{ r.rowBg }}" style-hover="background:color-mix(in srgb, var(--mix,#FFFFFF) 5%, transparent)">
             <span style="width:3.2cqw;flex:none;display:flex;align-items:center;justify-content:center">
               <sc-if value="{{ r.hasLogo }}" hint-placeholder-val="{{ true }}">
                 <img src="{{ r.logo }}" alt="{{ r.name }}" style="max-height:2.1cqw;max-width:3.2cqw;object-fit:contain;display:block"></sc-if>
@@ -973,7 +973,7 @@
       <div style="flex:none;padding:3.4cqw 5cqw 2.6cqw;text-align:center">
         <h1 data-el="title" data-el-name="Tittel" data-in="1" style="font-size:4.6cqw;font-weight:800;letter-spacing:-.01em;line-height:1;text-transform:uppercase;color:var(--ink,#FFFFFF);margin:0">{{ s.title }}</h1>
       </div>
-      <div data-el="lead" data-el-name="Ingressfelt" data-in="2" style="flex:none;background:rgba(255,255,255,.05);border-top:1px solid var(--rule,#302B3F);border-bottom:1px solid var(--rule,#302B3F);padding:1.4cqw 5cqw;text-align:center">
+      <div data-el="lead" data-el-name="Ingressfelt" data-in="2" style="flex:none;background:color-mix(in srgb, var(--mix,#FFFFFF) 5%, transparent);border-top:1px solid var(--rule,#302B3F);border-bottom:1px solid var(--rule,#302B3F);padding:1.4cqw 5cqw;text-align:center">
         <div style="font-size:1.3cqw;font-weight:700;line-height:1.35;color:var(--ink,#FFFFFF);text-wrap:pretty">{{ s.lead }}</div>
         <div style="font-size:.95cqw;line-height:1.5;color:var(--ink-mute,#8E88A3);margin-top:.5cqw;text-wrap:pretty">{{ s.sub }}</div>
       </div>
@@ -1008,7 +1008,7 @@
           <p data-el="sub" data-el-name="Underlinje" data-in="2" style="font-size:1.1cqw;line-height:1.5;color:var(--ink-soft,#C9C4D6);margin:.7cqw 0 0">{{ s.sub }}</p>
         </div>
         <span style="flex:1"></span>
-        <div data-el="note" data-el-name="Merknad" data-in="3" style="flex:none;width:46%;border-left:.28cqw solid var(--accent,#1434CB);background:rgba(255,255,255,.045);padding:1.1cqw 1.3cqw;font-size:.82cqw;line-height:1.6;color:var(--ink-soft,#C9C4D6);text-wrap:pretty">{{ s.note }}</div>
+        <div data-el="note" data-el-name="Merknad" data-in="3" style="flex:none;width:46%;border-left:.28cqw solid var(--accent,#1434CB);background:color-mix(in srgb, var(--mix,#FFFFFF) 4.5%, transparent);padding:1.1cqw 1.3cqw;font-size:.82cqw;line-height:1.6;color:var(--ink-soft,#C9C4D6);text-wrap:pretty">{{ s.note }}</div>
       </div>
 
       <div style="flex:1;min-height:0;display:flex;flex-direction:column;gap:1.8cqw">
@@ -1082,7 +1082,7 @@
         </sc-for>
       </div>
       <sc-for list="{{ rows }}" as="r" hint-placeholder-count="0">
-        <div data-in="4" style="display:flex;align-items:center;gap:1.2cqw;padding:1.15cqw 1.2cqw;border-top:1px solid var(--rule,#302B3F);transition:opacity .55s cubic-bezier(.22,.61,.36,1),transform .3s cubic-bezier(.22,.61,.36,1),background .16s" style-hover="background:rgba(255,255,255,.045)">
+        <div data-in="4" style="display:flex;align-items:center;gap:1.2cqw;padding:1.15cqw 1.2cqw;border-top:1px solid var(--rule,#302B3F);transition:opacity .55s cubic-bezier(.22,.61,.36,1),transform .3s cubic-bezier(.22,.61,.36,1),background .16s" style-hover="background:color-mix(in srgb, var(--mix,#FFFFFF) 4.5%, transparent)">
           <div style="flex:1.5;display:flex;align-items:center"><img src="{{ r.logo }}" alt="{{ r.name }}" style="height:{{ r.h }};width:auto;object-fit:contain;display:block"></div>
           <sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="4">
             <div data-in="4" style="flex:1;text-align:right;font-size:1.15cqw;font-variant-numeric:tabular-nums">{{ c.text }}</div>
@@ -1112,7 +1112,7 @@
         </sc-for>
       </div>
       <sc-for list="{{ mrows }}" as="r" hint-placeholder-count="0">
-        <div data-in="4" style="display:flex;align-items:center;gap:.6cqw;padding:1cqw .5cqw;border-top:1px solid var(--rule,#302B3F);transition:opacity .55s cubic-bezier(.22,.61,.36,1),transform .3s cubic-bezier(.22,.61,.36,1),background .16s" style-hover="background:rgba(255,255,255,.045)">
+        <div data-in="4" style="display:flex;align-items:center;gap:.6cqw;padding:1cqw .5cqw;border-top:1px solid var(--rule,#302B3F);transition:opacity .55s cubic-bezier(.22,.61,.36,1),transform .3s cubic-bezier(.22,.61,.36,1),background .16s" style-hover="background:color-mix(in srgb, var(--mix,#FFFFFF) 4.5%, transparent)">
           <div style="flex:2;display:flex;align-items:center"><img src="{{ r.logo }}" alt="{{ r.name }}" style="height:{{ r.h }};width:auto;object-fit:contain;display:block"></div>
           <sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="6">
             <div data-in="4" style="flex:1;display:grid;place-items:center">
@@ -1680,7 +1680,7 @@
         <div data-el="sub" data-el-name="Underlinje" data-in="2" style="font-size:1.15cqw;font-weight:700;letter-spacing:.02em;text-transform:uppercase;color:var(--ink-soft,#C9C4D6);margin-top:.9cqw">{{ s.sub }}</div>
         <div data-el="rows" data-el-name="Leveranser" style="flex:1;min-height:0;display:flex;flex-direction:column;gap:.5cqw;margin-top:1.9cqw">
           <sc-for list="{{ delivRows }}" as="r" hint-placeholder-count="4">
-            <div data-in="4" style="flex:1;min-height:0;display:flex;gap:1.6cqw;align-items:flex-start;background:rgba(255,255,255,.028);border-left:.24cqw solid var(--accent,#1434CB);padding:.95cqw 1.3cqw;transition:opacity .55s cubic-bezier(.22,.61,.36,1),transform .3s cubic-bezier(.22,.61,.36,1),background .18s" style-hover="transform:translateX(.25cqw);background:rgba(255,255,255,.055)">
+            <div data-in="4" style="flex:1;min-height:0;display:flex;gap:1.6cqw;align-items:flex-start;background:rgba(255,255,255,.028);border-left:.24cqw solid var(--accent,#1434CB);padding:.95cqw 1.3cqw;transition:opacity .55s cubic-bezier(.22,.61,.36,1),transform .3s cubic-bezier(.22,.61,.36,1),background .18s" style-hover="transform:translateX(.25cqw);background:color-mix(in srgb, var(--mix,#FFFFFF) 5.5%, transparent)">
               <div style="width:9cqw;flex:none;display:flex;flex-direction:column;gap:.35cqw">
                 <span style="font-size:.7cqw;font-weight:700;letter-spacing:.16em;color:color-mix(in srgb, var(--accent,#1434CB) 62%, var(--mix,#FFFFFF));font-variant-numeric:tabular-nums">{{ r.n }}</span>
                 <span style="font-size:1.32cqw;font-weight:800;letter-spacing:-.01em;line-height:1.15">{{ r.label }}</span>

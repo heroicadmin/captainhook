@@ -162,7 +162,7 @@
 
       <sc-if value="{{ gate.isLogin }}" hint-placeholder-val="{{ true }}">
         <div style="display:flex;flex-direction:column;gap:9px">
-          <input type="email" value="{{ gate.email }}" onInput="{{ gate.onEmail }}" onKeyDown="{{ gate.onKeyDown }}" placeholder="navn@skagerrak.no" style="background:#F7F6FA;border:1px solid #D5D2E0;border-radius:8px;color:#322D45;font-size:14px;padding:12px 14px" />
+          <input type="email" value="{{ gate.email }}" onInput="{{ gate.onEmail }}" onKeyDown="{{ gate.onKeyDown }}" placeholder="navn@heroic.gg" style="background:#F7F6FA;border:1px solid #D5D2E0;border-radius:8px;color:#322D45;font-size:14px;padding:12px 14px" />
           <input type="password" value="{{ gate.pw }}" onInput="{{ gate.onPw }}" onKeyDown="{{ gate.onKeyDown }}" placeholder="passord" style="background:#F7F6FA;border:1px solid #D5D2E0;border-radius:8px;color:#322D45;font-size:14px;padding:12px 14px" />
           <button type="button" onClick="{{ gate.onLogin }}" style="margin-top:4px;background:#0E9E8F;color:#fff;border:0;border-radius:8px;font-size:14px;font-weight:700;padding:12px 18px;cursor:pointer" style-hover="filter:brightness(1.08)">Logg inn</button>
           <button type="button" onClick="{{ gate.onRegister }}" style="background:transparent;color:#0E9E8F;border:1px solid #0E9E8F;border-radius:8px;font-size:13.5px;font-weight:600;padding:11px 18px;cursor:pointer" style-hover="background:#E9F6F4">Registrer bruker</button>
@@ -250,7 +250,7 @@
       <main style="margin:0 auto;display:flex;flex-direction:column;min-width:0;width:100%">
         <sc-for list="{{ view.slides }}" as="sl" hint-placeholder-count="4">
           <section data-band="1" id="{{ sl.anchor }}" data-screen-label="{{ sl.label }}" style="width:100%;position:relative;scroll-snap-align:start;scroll-snap-stop:always;scroll-margin-top:58px;box-sizing:border-box;place-items:center;padding:{{ view.page.pad }};height:{{ view.page.h }};display:{{ view.page.disp }};background:{{ sl.desk }}">
-            <div data-page="1" style="position:relative;overflow:hidden;width:100%;max-width:{{ view.page.maxW }};background:{{ sl.base }};border-radius:{{ view.page.radius }};border:{{ view.page.border }};box-shadow:{{ view.page.shadow }}">
+            <div data-page="1" style="position:relative;overflow:hidden;width:100%;margin:0 auto;max-width:{{ view.page.maxW }};background:{{ sl.base }};border-radius:{{ view.page.radius }};border:{{ view.page.border }};box-shadow:{{ view.page.shadow }}">
               <div data-fade="1" data-noi18n="1">
                 <dc-import name="PitchSlide" slide="{{ sl.block }}" meta="{{ view.meta }}" system="{{ system }}" index="{{ sl.i }}" total="{{ view.total }}" show-num="{{ false }}" hint-size="100%,auto"></dc-import>
               </div>
@@ -3082,6 +3082,10 @@ class Component extends DCLogic {
        Logomappene er ett unntak: hvert selskap har sin egen, men den vises utad bare som «Logoer». */
     const catDomains = store.catDomains || {};
     const catOwned = c => { const d = (catDomains[c] || '').toLowerCase(); return !d || d === myDomain; };
+    /* Bildene som er «mine»: de som ligger i mapper selskapet eier. Brukes til automatisk
+       utfylling av bilderammer — ellers ville en ny pitch blitt fylt med det andre
+       selskapets foto. */
+    const myImages = (store.images || []).filter(im => catOwned(im.cat));
     const isLogoCat = c => noFill.includes(c);
     /* Interne nøkler er unike per selskap (f.eks. «Heroic Logoer», «Heroic Generelt»),
        men vises utad bare med grunnnavnet. Hvert selskap ser bare sine egne mapper. */
@@ -3146,7 +3150,10 @@ class Component extends DCLogic {
             h: fit, disp: 'grid', maxW: 'calc((' + fit + ' - 2 * ' + padY + ') * 16 / 9)' }
         : { pages: false, pad: '0', radius: '0', border: '0', shadow: 'none',
             snap: 'y proximity', deskA: 'transparent', deskB: 'transparent',
-            h: 'auto', disp: 'block', maxW: 'none' };
+            /* Før sto maxW til «none»: sliden ble like bred som vinduet, og dermed like
+               høy som vinduet på en 16:9-skjerm — da lå det 58px høye toppfeltet oppå
+               toppen av hver slide. Bredden regnes nå ut fra høyden som faktisk er ledig. */
+            h: 'auto', disp: 'block', maxW: 'calc(' + fit + ' * 16 / 9)' };
     };
 
     const navBtn = on => ({ bg: on ? '#F2F0F7' : 'transparent', fg: on ? '#16131F' : '#6E6883' });
@@ -3232,7 +3239,7 @@ class Component extends DCLogic {
         const cur = this.state.nw || nwS;
         const st = this.clone(store);
         const tpl = store.templates.find(t => t.id === cur.template) || store.templates[0];
-        const gallery = store.images || D.IMAGES;
+        const gallery = myImages.length ? myImages : (store.images || D.IMAGES);
         const p = D.makePitchFromTemplate(tpl, { client: cur.client || 'Ny kunde', slug: D.slugify(cur.client), logo: cur.logo, accent: cur.accent, sender: nwSender, imageProfile: cur.profile }, gallery, st.library, st.cases, st.catsNoFill);
         D.applyImageProfile(p, gallery, cur.profile, false, st.library, st.catsNoFill);
         /* takk-sliden arver avsenderens bilde — den skal ikke fylles fra profilen */
@@ -3927,7 +3934,7 @@ class Component extends DCLogic {
         profileOpts: ['Alle', ...myProfileCats].map(c => ({ label: catLabel(c), ...pill(c === (pitch.meta.imageProfile || 'Alle')), on: () => this.updatePitch(p => { p.meta.imageProfile = c; }) })),
         profileNote: 'Fyller bare tomme flater. «Fyll på nytt» bytter alle bildene i pitchen til profilen.',
         onFillImages: () => this.updatePitch(p => {
-          D.applyImageProfile(p, store.images || [], p.meta.imageProfile || 'Alle', true, store.library, noFill);
+          D.applyImageProfile(p, myImages, p.meta.imageProfile || 'Alle', true, store.library, noFill);
           if (senderOf(p.meta).closingImg) p.blocks.forEach(b => { if (b.type === 'closing') b.data.img = ''; });
         }),
         viewHref: '#/p/' + pitch.meta.slug,
@@ -4878,7 +4885,7 @@ class Component extends DCLogic {
            Verdiene er de samme som PitchSlide bruker internt. */
         slides: ((pg, on) => pitch.blocks.map((b, i) => ({ block: b, i, anchor: 'st' + i,
           desk: i % 2 ? pg.deskB : pg.deskA,
-          base: D.veilBg(b.veil, b.type === 'cover' || b.type === 'divider', on),
+          base: D.veilBg(b.veil, b.type === 'cover' || b.type === 'divider', on, D.surfaceOf(pitch.meta, tplOf(pitch.meta)).paper),
           label: String(i + 1).padStart(2, '0') + ' · ' + ((LIB(b.type) || {}).name || b.type) })))(pageStyle(pitch.meta), ambFor(pitch.meta).on)
       };
     }
