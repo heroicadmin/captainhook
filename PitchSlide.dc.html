@@ -1891,7 +1891,7 @@
   </div>
 
   <!-- avsender-vannmerke: samme plassering på alle slidetyper, kan skjules/flyttes per slide -->
-  <img data-el="watermark" data-el-name="Avsendervannmerke" src="{{ senderLogo }}" alt="{{ senderName }}" style="position:absolute;top:4.2cqw;right:5.5cqw;height:1.8cqw;opacity:.9;z-index:6">
+  <img data-el="watermark" data-el-name="Avsendervannmerke" src="{{ senderLogo }}" alt="{{ senderName }}" style="position:absolute;top:4.2cqw;right:5.5cqw;height:1.8cqw;opacity:.9;z-index:6;filter:{{ senderLogoFilter }}">
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:720},&quot;slide&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;{type:string,data:object}&quot;},&quot;meta&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;object&quot;},&quot;system&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;object&quot;},&quot;index&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:0,&quot;tsType&quot;:&quot;number&quot;},&quot;total&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:1,&quot;tsType&quot;:&quot;number&quot;},&quot;showNum&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;},&quot;onConfig&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;(s:object)=&gt;void&quot;},&quot;layout&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;Record&lt;string,{x?:number,y?:number,s?:number,hidden?:boolean}&gt;&quot;},&quot;onLayout&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;(key:string,v:object|null)=&gt;void&quot;}}">
@@ -2678,6 +2678,14 @@ class Component extends DCLogic {
       formLogos, formTitle,
       /* Vannmerket følger merkevaren på sliden når den har én — ikonet først, det er
          små dimensjoner. Uten merkevare faller det tilbake til avsenderen. */
+      /* Vannmerket henter merkevarens (eller avsenderens) logo. Tinting følger samme
+         valg som merkevaren, så en hvit logo ikke forsvinner på lys flate. */
+      senderLogoFilter: (() => {
+        const t = (s.brand && brands[s.brand] ? brands[s.brand].tint : '') || '';
+        return t === 'auto' ? 'var(--logo-tint, none)'
+          : t === 'black' ? 'brightness(0)'
+          : t === 'white' ? 'brightness(0) invert(1)' : 'none';
+      })(),
       senderLogo: (s.brand && brands[s.brand] ? (brands[s.brand].icon || brands[s.brand].logo) : '')
         || (S.sender && S.sender.logo) || S.skagerrakLogo || 'logos/skagerrak.png',
       senderName: (s.brand && brands[s.brand] ? brands[s.brand].name : '')
