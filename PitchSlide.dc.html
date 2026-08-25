@@ -2053,6 +2053,14 @@ class Component extends DCLogic {
         n.style.display = n.dataset.elDisp || '';
         delete n.dataset.elDisp;
       }
+      /* Inverter: snur lysheten på elementet. Brukes på logoer som er hvite og
+         forsvinner på lys flate (eller omvendt). Malens eget filter tas vare på
+         første gang, ellers er det borte for godt etter en av/på-runde. */
+      if (n.dataset.elFilter === undefined) n.dataset.elFilter = n.style.filter || '';
+      const baseFilter = n.dataset.elFilter;
+      n.style.filter = v.inv
+        ? (baseFilter && baseFilter !== 'none' ? baseFilter + ' invert(1)' : 'invert(1)')
+        : baseFilter;
       n.style.cursor = this.editing() ? 'move' : '';
     });
     this.chrome();
@@ -2101,6 +2109,7 @@ class Component extends DCLogic {
       + '<div data-bar style="position:absolute;display:none;align-items:center;gap:2px;background:#16131F;border-radius:7px;padding:3px;pointer-events:auto;box-shadow:0 8px 20px -8px rgba(0,0,0,.6);white-space:nowrap">'
       + '<span data-name style="font:600 11px Inter,system-ui,sans-serif;color:#C9C4D6;padding:0 7px"></span>'
       + '<button data-hide type="button" style="font:600 11px Inter,system-ui,sans-serif;color:#fff;background:#2A2536;border:0;border-radius:5px;padding:5px 8px;cursor:pointer">Skjul</button>'
+      + '<button data-invert type="button" style="font:600 11px Inter,system-ui,sans-serif;color:#fff;background:#2A2536;border:0;border-radius:5px;padding:5px 8px;cursor:pointer">Inverter</button>'
       + '<button data-reset type="button" style="font:600 11px Inter,system-ui,sans-serif;color:#fff;background:#2A2536;border:0;border-radius:5px;padding:5px 8px;cursor:pointer">Tilbakestill</button>'
       + '</div>';
     c.querySelector('[data-hide]').addEventListener('click', e => {
@@ -2109,6 +2118,13 @@ class Component extends DCLogic {
       const lay = this.lay();
       const allHidden = keys.every(k => (lay[k] || {}).hidden);
       keys.forEach(k => { const v = { ...(lay[k] || {}) }; v.hidden = !allHidden; this.props.onLayout(k, v); });
+    });
+    c.querySelector('[data-invert]').addEventListener('click', e => {
+      e.stopPropagation();
+      const keys = this.state.selEls; if (!keys.length) return;
+      const lay = this.lay();
+      const allInv = keys.every(k => (lay[k] || {}).inv);
+      keys.forEach(k => { const v = { ...(lay[k] || {}) }; if (allInv) delete v.inv; else v.inv = true; this.props.onLayout(k, v); });
     });
     c.querySelector('[data-reset]').addEventListener('click', e => {
       e.stopPropagation();
@@ -2168,6 +2184,10 @@ class Component extends DCLogic {
     bar.style.top = y >= 40 ? (y - 34) + 'px' : Math.min(rb.height - 34, y + ebH + 6) + 'px';
     c.querySelector('[data-name]').textContent = isGroup ? (nodesSel.length + ' valgt') : (elName || single.key);
     c.querySelector('[data-hide]').textContent = hidden ? 'Vis' : 'Skjul';
+    const inverted = nodesSel.length && nodesSel.every(o => (lay[o.key] || {}).inv);
+    const invBtn = c.querySelector('[data-invert]');
+    invBtn.textContent = inverted ? 'Uninverter' : 'Inverter';
+    invBtn.style.background = inverted ? '#7C5CFF' : '#2A2536';
   }
 
   endDrag() {
