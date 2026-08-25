@@ -1151,7 +1151,7 @@
   <sc-if value="{{ is.montage }}" hint-placeholder-val="{{ false }}">
     <div style="position:absolute;inset:0;overflow:{{ montOverflow }}">
       <!-- bildene ligger fritt, overlapper, og velges hver for seg -->
-      <div style="position:absolute;left:-2cqw;width:58cqw;top:{{ montBleed }};bottom:{{ montBleed }};z-index:1;-webkit-mask-image:{{ montFade }};mask-image:{{ montFade }}">
+      <div style="position:absolute;left:-2cqw;width:64cqw;top:{{ montBleed }};bottom:{{ montBleed }};z-index:1;-webkit-mask-image:{{ montFade }};mask-image:{{ montFade }}">
         <sc-for list="{{ mont }}" as="mi" hint-placeholder-count="3">
           <div data-el="{{ mi.key }}" data-el-name="{{ mi.name }}" style="position:absolute;left:{{ mi.l }};top:{{ mi.t }};width:{{ mi.w }};height:{{ mi.h }};z-index:{{ mi.z }};overflow:hidden;transform:rotate({{ mi.rot }});box-shadow:0 .6cqw 1.8cqw rgba(0,0,0,.26)">
             <img src="{{ mi.src }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
@@ -2785,7 +2785,7 @@ class Component extends DCLogic {
          gjennom — klippingen skjer i den innerste rammen som klipper. */
       montOverflow: (m.pageMode || '') !== 'pages' ? 'visible' : 'hidden',
       /* Myk uttoning mot høyre: bildeflaten slutter ikke i en kant, den blir papir. */
-      montFade: 'linear-gradient(to right, #000 0, #000 54%, rgba(0,0,0,.55) 78%, transparent 100%)',
+      montFade: 'linear-gradient(to right, #000 0, #000 40%, rgba(0,0,0,.72) 62%, rgba(0,0,0,.28) 82%, transparent 96%)',
       /* Forside, Duo og Avslutning er laget for å ligge over et foto, og tvinger derfor
          det mørke skjemaet. Uten foto er det bare papiret bak — da må teksten følge
          pitchens egen flate, ellers blir hvit tekst stående på lys bakgrunn. */
