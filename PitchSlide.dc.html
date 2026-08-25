@@ -1149,17 +1149,17 @@
   </sc-if>
 
   <sc-if value="{{ is.montage }}" hint-placeholder-val="{{ false }}">
-    <div style="position:absolute;inset:0;overflow:hidden">
-      <!-- bildene fyller sliden og velges hver for seg -->
-      <div style="position:absolute;left:0;width:52cqw;top:{{ montBleed }};bottom:{{ montBleed }};display:grid;grid-template-columns:{{ montCols }};grid-template-rows:{{ montRows }};gap:.35cqw;z-index:1">
+    <div style="position:absolute;inset:0;overflow:{{ montOverflow }}">
+      <!-- bildene ligger fritt, overlapper, og velges hver for seg -->
+      <div style="position:absolute;left:-2cqw;width:58cqw;top:{{ montBleed }};bottom:{{ montBleed }};z-index:1;-webkit-mask-image:{{ montFade }};mask-image:{{ montFade }}">
         <sc-for list="{{ mont }}" as="mi" hint-placeholder-count="3">
-          <div data-el="{{ mi.key }}" data-el-name="{{ mi.name }}" style="position:relative;overflow:hidden;grid-row:{{ mi.span }}">
+          <div data-el="{{ mi.key }}" data-el-name="{{ mi.name }}" style="position:absolute;left:{{ mi.l }};top:{{ mi.t }};width:{{ mi.w }};height:{{ mi.h }};z-index:{{ mi.z }};overflow:hidden;transform:rotate({{ mi.rot }});box-shadow:0 .6cqw 1.8cqw rgba(0,0,0,.26)">
             <img src="{{ mi.src }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
           </div>
         </sc-for>
       </div>
       <sc-if value="{{ montEmpty }}" hint-placeholder-val="{{ true }}">
-        <span style="position:absolute;left:0;width:52cqw;top:0;bottom:0;display:grid;place-items:center;background:var(--plate2,#23202F);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.8cqw;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-mute,#8E88A3);text-align:center;padding:6cqw">Velg Bilde 1–3 i feltlisten</span>
+        <span style="position:absolute;left:0;width:50cqw;top:0;bottom:0;display:grid;place-items:center;background:var(--plate2,#23202F);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.8cqw;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-mute,#8E88A3);text-align:center;padding:6cqw">Velg Bilde 1–3 i feltlisten</span>
       </sc-if>
       <div style="position:absolute;inset:0;padding:5cqw 4.5cqw;display:flex;flex-direction:column;justify-content:center;align-items:flex-end;text-align:right;z-index:2">
         <div style="width:34cqw;max-width:42%">
@@ -2752,24 +2752,40 @@ class Component extends DCLogic {
       /* Bare bildene som faktisk er valgt vises, og de fyller flaten: ett bilde tar alt,
          to deler den i to, tre gir ett stort pluss to stablede. Bildene velges i
          feltlisten (Bilde 1–3), så sliden trenger ingen tomme ruter å klikke på. */
+      /* Collagen skal IKKE være et rutenett. Et rutenett gir en rett, loddrett skjøt mot
+         teksten — nøyaktig Duo-oppsettet denne flaten skulle bryte med. Bildene legges
+         derfor som frie, lett roterte fliser som overlapper hverandre, og hele flaten
+         tones ut mot høyre med en maske, slik at overgangen til papiret er myk.
+         Geometrien er faste sett per antall bilder: tilfeldige verdier ville flyttet
+         bildene for hver render, og en pitch må se likt ut hver gang den åpnes. */
       mont: (() => {
+        const TILES = {
+          1: [{ l: '4%',  t: '6%',  w: '70%', h: '84%', rot: '-2.2deg', z: 2 }],
+          2: [{ l: '0%',  t: '2%',  w: '56%', h: '64%', rot: '-3.4deg', z: 2 },
+              { l: '32%', t: '34%', w: '54%', h: '62%', rot: '2.8deg',  z: 3 }],
+          3: [{ l: '-1%', t: '0%',  w: '50%', h: '58%', rot: '-4deg',   z: 2 },
+              { l: '36%', t: '10%', w: '46%', h: '54%', rot: '3.2deg',  z: 3 },
+              { l: '10%', t: '44%', w: '52%', h: '56%', rot: '1.6deg',  z: 4 }]
+        };
         const all = [1,2,3].map(i => {
           const key = i === 1 ? 'img' : 'img' + i;
           return { key: 'mimg' + i, name: 'Bilde ' + i, src: resolveImg(s[key]),
             hint: s[i === 1 ? 'imgHint' : 'imgHint' + i] || '' };
         }).filter(x => !!x.src);
-        return all.map((x, i) => ({ ...x, span: (all.length === 3 && i === 0) ? 'span 2' : 'auto' }));
+        const g = TILES[all.length] || TILES[3];
+        return all.map((x, i) => ({ ...x, ...(g[i] || g[g.length - 1]) }));
       })(),
-      montCols: (() => {
-        const n = [s.img, s.img2, s.img3].filter(Boolean).length;
-        return n >= 3 ? '1.35fr 1fr' : n === 2 ? '1fr 1fr' : '1fr';
-      })(),
-      montRows: ([s.img, s.img2, s.img3].filter(Boolean).length >= 3) ? '1fr 1fr' : '1fr',
       montEmpty: ![s.img, s.img2, s.img3].some(Boolean),
       /* I landingsside-modus (sammenhengende rulling) skal collagen kunne blø ut over
          sliden over og under, så bildene henger sammen på tvers av slideskillene.
          I sidevisning må sliden klippe som før, ellers lekker den ut av arket. */
       montBleed: (m.pageMode || '') !== 'pages' ? '-7cqw' : '0cqw',
+      /* Ytterrammen må slippe blødningen ut i landingsside-modus. Sto den til «hidden»
+         her, ble bildene klippet ved slidekanten selv om både sliden og arket slapp dem
+         gjennom — klippingen skjer i den innerste rammen som klipper. */
+      montOverflow: (m.pageMode || '') !== 'pages' ? 'visible' : 'hidden',
+      /* Myk uttoning mot høyre: bildeflaten slutter ikke i en kant, den blir papir. */
+      montFade: 'linear-gradient(to right, #000 0, #000 54%, rgba(0,0,0,.55) 78%, transparent 100%)',
       /* Forside, Duo og Avslutning er laget for å ligge over et foto, og tvinger derfor
          det mørke skjemaet. Uten foto er det bare papiret bak — da må teksten følge
          pitchens egen flate, ellers blir hvit tekst stående på lys bakgrunn. */
