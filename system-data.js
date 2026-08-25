@@ -543,6 +543,20 @@ export const LIBRARY = [
       ],
       ctaHead:'Du har et personlig abonnement', ctaText:'Visste du at du kan spare penger med et gruppeabonnement?' } },
 
+  /* Collage: bildene fyller sliden og velges hver for seg, teksten ligger til høyre.
+     Erstatter behovet for en ferdig sammensatt collage som ett innbakt bilde. */
+  { type:'montage', cat:'Bevis', name:'Collage', desc:'Tre valgbare bilder som fyller sliden, med tekst til høyre. Ingen todeling.',
+    fields:[['eyebrow','Stikktittel','text'],['title','Tittel','text'],['body','Punkter','list'],
+            ['img','Bilde 1','image'],['imgHint','Bildeanvisning 1','text'],
+            ['img2','Bilde 2','image'],['imgHint2','Bildeanvisning 2','text'],
+            ['img3','Bilde 3','image'],['imgHint3','Bildeanvisning 3','text'],
+            ['note','Notatlinje','text']],
+    defaults:{ eyebrow:'Innhold', title:'Stedet selger seg selv når folk faktisk ser det.',
+      body:['Kortformat filmet på stedet — bak kulissene og personligheter',
+            'Innhold laget for å nå utenfor boblen, inn i reise- og livsstilsfeeder'],
+      imgHint:'Hovedmotiv — stemning fra stedet', imgHint2:'Detalj eller portrett',
+      imgHint3:'Omgivelser eller publikum' } },
+
   /* Variant av Produktprofil: samme base ('brand'), scene-utforming via defaults.variant */
   { type:'productscene', base:'brand', cat:'Økosystem', name:'Produktvitrine', desc:'Variant av Produktprofil — partnerkryss og enhetsscene, for produkter med et tydelig partnertilbud.',
     fields:[['brand','Merkevare','brand'],['title','Tittel','text'],['text','Ingress','area'],['stats','Tall','stats'],
@@ -997,7 +1011,7 @@ export function veilBg(veil, isHero, ambientOn, paper) {
 export const MOVABLE_BASES = ['cover', 'umbrella', 'statement', 'brand', 'metrics', 'membership', 'table', 'matrix',
   'showcase', 'case', 'cases', 'tiers', 'configurator', 'adrates', 'placement', 'timeline',
   'logowall', 'next', 'fullbleed', 'closing', 'divider', 'benchmark', 'audience', 'spotlight', 'frames', 'proof', 'pillars',
-  'briefing', 'activation', 'partnership', 'formation', 'productscene'];
+  'briefing', 'activation', 'partnership', 'formation', 'productscene', 'montage'];
 export function canMove(base) { return MOVABLE_BASES.includes(base); }
 
 /* en slide er tom for egne plasseringer når ingenting er flyttet, skalert eller skjult */

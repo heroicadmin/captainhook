@@ -1148,6 +1148,40 @@
     </div>
   </sc-if>
 
+  <sc-if value="{{ is.montage }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;overflow:hidden">
+      <!-- bildene fyller sliden og velges hver for seg -->
+      <div style="position:absolute;inset:0;display:grid;grid-template-columns:1.35fr 1fr;grid-template-rows:1fr 1fr;gap:.35cqw">
+        <sc-for list="{{ mont }}" as="mi" hint-placeholder-count="3">
+          <div data-el="{{ mi.key }}" data-el-name="{{ mi.name }}" style="position:relative;overflow:hidden;background:var(--plate2,#23202F)">
+            <sc-if value="{{ mi.hasSrc }}" hint-placeholder-val="{{ false }}">
+              <img src="{{ mi.src }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
+            </sc-if>
+            <sc-if value="{{ mi.noSrc }}" hint-placeholder-val="{{ true }}">
+              <span style="position:absolute;inset:0;display:grid;place-items:center;padding:2cqw;text-align:center;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.72cqw;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-mute,#8E88A3);line-height:1.6">{{ mi.hint }}</span>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+      <!-- slør i papirfargen, slik at teksten til høyre er lesbar på begge flater -->
+      <span style="position:absolute;inset:0;pointer-events:none;background:{{ montScrim }}"></span>
+      <div style="position:absolute;inset:0;padding:6cqw 5.5cqw;display:flex;flex-direction:column;justify-content:center;align-items:flex-end;text-align:right">
+        <div style="width:38cqw;max-width:52%">
+          <div data-el="eyebrow" data-el-name="Stikktittel" data-in="1" style="font-size:.8cqw;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--accent,#1434CB)">{{ s.eyebrow }}</div>
+          <h1 data-el="title" data-el-name="Tittel" data-in="2" style="font-size:3.1cqw;font-weight:700;letter-spacing:-.02em;line-height:1.12;margin:.9cqw 0 1.8cqw">{{ s.title }}</h1>
+          <ul data-el="body" data-el-name="Punkter" style="list-style:none;display:flex;flex-direction:column;gap:1cqw;margin:0;padding:0">
+            <sc-for list="{{ bullets }}" as="li" hint-placeholder-count="3">
+              <li data-in="4" style="font-size:1.2cqw;line-height:1.5;color:var(--ink-soft,#C9C4D6);padding-right:1.5cqw;position:relative;text-wrap:pretty" style-after="content:'';position:absolute;right:0;top:.5cqw;width:.5cqw;height:.5cqw;background:var(--accent,#1434CB)">{{ li.text }}</li>
+            </sc-for>
+          </ul>
+          <sc-if value="{{ hasNote }}" hint-placeholder-val="{{ false }}">
+            <p data-el="note" data-el-name="Notatlinje" data-in="3" style="font-size:.9cqw;font-weight:700;color:var(--ink,#FFFFFF);margin:1.6cqw 0 0">{{ s.note }}</p>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
   <!-- ============ CASE ============ -->
   <sc-if value="{{ is.case }}" hint-placeholder-val="{{ false }}">
     <div style="--ink:#FFFFFF;--ink-soft:#C9C4D6;--ink-body:#E4E1EC;--ink-mute:#8E88A3;--plate2:#23202F;--rule:#302B3F;--mix:#FFFFFF;color:#FFFFFF;position:absolute;inset:0;display:flex">
@@ -2393,7 +2427,7 @@ class Component extends DCLogic {
        En aksenttone her ble for sterk på lys flate — den ble rosa.) */
     const panelBg = 'var(--plate2, #23202F)';
 
-    const types = ['cover','umbrella','statement','brand','metrics','membership','table','matrix','showcase','tiers','configurator','timeline','logowall','next','closing','divider','fullbleed','adrates','placement','case','cases','benchmark','audience','spotlight','frames','proof','pillars','invest','options','homebase','briefing','activation','partnership','formation','loyaltyapp','productscene'];
+    const types = ['cover','umbrella','statement','brand','metrics','membership','table','matrix','showcase','tiers','configurator','timeline','logowall','next','closing','divider','fullbleed','adrates','placement','case','cases','benchmark','audience','spotlight','frames','proof','pillars','invest','options','homebase','briefing','activation','partnership','formation','loyaltyapp','productscene','montage'];
     const is = {};
     /* base er utformingen — egendefinerte slides i biblioteket peker på en av disse */
     const baseType = blk.base || blk.type;
@@ -2716,6 +2750,15 @@ class Component extends DCLogic {
       /* kontaktlinja eies av avsenderen — blokka overstyrer bare når den er fylt ut */
       contactLine: s.contact || (S.sender && S.sender.contactLine) || '',
       imgSrc, hasImg: !!imgSrc, noImg: !imgSrc, photoVeil, panelBg,
+      /* Collage: bildene fyller sliden og velges hver for seg. Teksten ligger til
+         høyre over et slør i papirfargen, så den er lesbar på både lys og mørk flate. */
+      mont: [1,2,3].map(i => {
+        const key = i === 1 ? 'img' : 'img' + i;
+        const src = resolveImg(s[key]);
+        return { key: 'mimg' + i, name: 'Bilde ' + i, src, hasSrc: !!src, noSrc: !src,
+          hint: s[i === 1 ? 'imgHint' : 'imgHint' + i] || '' };
+      }),
+      montScrim: 'linear-gradient(90deg, transparent 0%, color-mix(in srgb, var(--paper,#1B1826) 55%, transparent) 34%, color-mix(in srgb, var(--paper,#1B1826) 92%, transparent) 52%, var(--paper,#1B1826) 66%)',
       /* Forside, Duo og Avslutning er laget for å ligge over et foto, og tvinger derfor
          det mørke skjemaet. Uten foto er det bare papiret bak — da må teksten følge
          pitchens egen flate, ellers blir hvit tekst stående på lys bakgrunn. */
