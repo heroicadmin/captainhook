@@ -250,7 +250,7 @@
       <main style="margin:0 auto;display:flex;flex-direction:column;min-width:0;width:100%">
         <sc-for list="{{ view.slides }}" as="sl" hint-placeholder-count="4">
           <section data-band="1" id="{{ sl.anchor }}" data-screen-label="{{ sl.label }}" style="width:100%;position:relative;scroll-snap-align:start;scroll-snap-stop:always;scroll-margin-top:58px;box-sizing:border-box;place-items:center;padding:{{ view.page.pad }};height:{{ view.page.h }};display:{{ view.page.disp }};background:{{ sl.desk }}">
-            <div data-page="1" style="position:relative;overflow:hidden;width:100%;margin:0 auto;max-width:{{ view.page.maxW }};background:{{ sl.base }};border-radius:{{ view.page.radius }};border:{{ view.page.border }};box-shadow:{{ view.page.shadow }}">
+            <div data-page="1" style="position:relative;overflow:{{ view.page.overflow }};width:100%;margin:0 auto;max-width:{{ view.page.maxW }};background:{{ sl.base }};border-radius:{{ view.page.radius }};border:{{ view.page.border }};box-shadow:{{ view.page.shadow }}">
               <div data-fade="1" data-noi18n="1">
                 <dc-import name="PitchSlide" slide="{{ sl.block }}" meta="{{ view.meta }}" system="{{ system }}" index="{{ sl.i }}" total="{{ view.total }}" show-num="{{ false }}" hint-size="100%,auto"></dc-import>
               </div>
@@ -3160,13 +3160,16 @@ class Component extends DCLogic {
       return pages
         ? { pages: true, pad: padY + ' clamp(12px,2.4vw,34px)', radius: '10px',
             border: fr.border, shadow: fr.shadow, snap: 'y mandatory', deskA: dk.a, deskB: dk.b,
-            h: fit, disp: 'grid', maxW: 'calc((' + fit + ' - 2 * ' + padY + ') * 16 / 9)' }
+            h: fit, disp: 'grid', overflow: 'hidden', maxW: 'calc((' + fit + ' - 2 * ' + padY + ') * 16 / 9)' }
         : { pages: false, pad: '0', radius: '0', border: '0', shadow: 'none',
             snap: 'y proximity', deskA: 'transparent', deskB: 'transparent',
             /* Før sto maxW til «none»: sliden ble like bred som vinduet, og dermed like
                høy som vinduet på en 16:9-skjerm — da lå det 58px høye toppfeltet oppå
                toppen av hver slide. Bredden regnes nå ut fra høyden som faktisk er ledig. */
-            h: 'auto', disp: 'block', maxW: 'calc(' + fit + ' * 16 / 9)' };
+            /* Landingsside-modus: arket klipper ikke, slik at slides som lar bilder blø
+               ut over kanten (Collage) henger sammen på tvers av slideskillene. Hver slide
+               klipper fortsatt selv, så bare de flatene som ber om det slipper ut. */
+            h: 'auto', disp: 'block', overflow: 'visible', maxW: 'calc(' + fit + ' * 16 / 9)' };
     };
 
     const navBtn = on => ({ bg: on ? '#F2F0F7' : 'transparent', fg: on ? '#16131F' : '#6E6883' });

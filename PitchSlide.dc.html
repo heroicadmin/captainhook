@@ -25,7 +25,7 @@
   [data-slide] h1,[data-slide] h2,[data-slide] [data-display]{font-family:var(--font-head,var(--font-body,'Inter',system-ui,sans-serif))}
 </style>
 </helmet>
-<div ref="{{ rootRef }}" data-slide="1" style="width:100%;height:100%;aspect-ratio:16/9;container-type:size;position:relative;overflow:hidden;background:transparent;color:var(--ink,#FFFFFF);font-family:var(--font-body,'Inter',system-ui,sans-serif);-webkit-font-smoothing:antialiased">
+<div ref="{{ rootRef }}" data-slide="1" style="width:100%;height:100%;aspect-ratio:16/9;container-type:size;position:relative;overflow:{{ rootOverflow }};background:transparent;color:var(--ink,#FFFFFF);font-family:var(--font-body,'Inter',system-ui,sans-serif);-webkit-font-smoothing:antialiased">
 
   <!-- Grunnflaten. Med gjennomgående bakgrunn er den delvis gjennomsiktig, slik at
        det ene animasjonslaget bak hele presentasjonen skinner igjennom uten å starte på nytt per slide. -->
@@ -1151,7 +1151,7 @@
   <sc-if value="{{ is.montage }}" hint-placeholder-val="{{ false }}">
     <div style="position:absolute;inset:0;overflow:hidden">
       <!-- bildene fyller sliden og velges hver for seg -->
-      <div style="position:absolute;inset:0;display:grid;grid-template-columns:{{ montCols }};grid-template-rows:{{ montRows }};gap:.35cqw">
+      <div style="position:absolute;left:0;width:52cqw;top:{{ montBleed }};bottom:{{ montBleed }};display:grid;grid-template-columns:{{ montCols }};grid-template-rows:{{ montRows }};gap:.35cqw;z-index:1">
         <sc-for list="{{ mont }}" as="mi" hint-placeholder-count="3">
           <div data-el="{{ mi.key }}" data-el-name="{{ mi.name }}" style="position:relative;overflow:hidden;grid-row:{{ mi.span }}">
             <img src="{{ mi.src }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
@@ -1159,15 +1159,15 @@
         </sc-for>
       </div>
       <sc-if value="{{ montEmpty }}" hint-placeholder-val="{{ true }}">
-        <span style="position:absolute;inset:0;display:grid;place-items:center;background:var(--plate2,#23202F);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.8cqw;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-mute,#8E88A3);text-align:center;padding:6cqw">Velg Bilde 1–3 i feltlisten</span>
+        <span style="position:absolute;left:0;width:52cqw;top:0;bottom:0;display:grid;place-items:center;background:var(--plate2,#23202F);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.8cqw;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-mute,#8E88A3);text-align:center;padding:6cqw">Velg Bilde 1–3 i feltlisten</span>
       </sc-if>
-      <div style="position:absolute;inset:0;padding:5cqw 4.5cqw;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;text-align:left">
-        <div style="width:30cqw;max-width:42%">
+      <div style="position:absolute;inset:0;padding:5cqw 4.5cqw;display:flex;flex-direction:column;justify-content:center;align-items:flex-end;text-align:right;z-index:2">
+        <div style="width:34cqw;max-width:42%">
           <div data-el="eyebrow" data-el-name="Stikktittel" data-in="1" style="font-size:.68cqw;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--accent,#1434CB)">{{ s.eyebrow }}</div>
           <h1 data-el="title" data-el-name="Tittel" data-in="2" style="font-size:2.15cqw;font-weight:700;letter-spacing:-.02em;line-height:1.14;margin:.7cqw 0 1.3cqw">{{ s.title }}</h1>
           <ul data-el="body" data-el-name="Punkter" style="list-style:none;display:flex;flex-direction:column;gap:.75cqw;margin:0;padding:0">
             <sc-for list="{{ bullets }}" as="li" hint-placeholder-count="3">
-              <li data-in="4" style="font-size:.92cqw;line-height:1.5;color:var(--ink-soft,#C9C4D6);padding-left:1.2cqw;position:relative;text-wrap:pretty" style-before="content:'';position:absolute;left:0;top:.42cqw;width:.4cqw;height:.4cqw;background:var(--accent,#1434CB)">{{ li.text }}</li>
+              <li data-in="4" style="font-size:.92cqw;line-height:1.5;color:var(--ink-soft,#C9C4D6);padding-right:1.2cqw;position:relative;text-wrap:pretty" style-after="content:'';position:absolute;right:0;top:.42cqw;width:.4cqw;height:.4cqw;background:var(--accent,#1434CB)">{{ li.text }}</li>
             </sc-for>
           </ul>
           <sc-if value="{{ hasNote }}" hint-placeholder-val="{{ false }}">
@@ -2702,6 +2702,7 @@ class Component extends DCLogic {
 
     return {
       rootRef: this.root,
+      rootOverflow: (baseType === 'montage' && (m.pageMode || '') !== 'pages') ? 'visible' : 'hidden',
       s, m, t, is, interactive, locked: !interactive, picked, b: { ...bk,
         logo: (s.mark === 'icon' && bk.icon) ? bk.icon : bk.logo, hLg: h(4.4, bk.scale),
         /* Logofarge: «auto» følger flaten (hvit på mørk, svart på lys) — det redder en
@@ -2765,6 +2766,10 @@ class Component extends DCLogic {
       })(),
       montRows: ([s.img, s.img2, s.img3].filter(Boolean).length >= 3) ? '1fr 1fr' : '1fr',
       montEmpty: ![s.img, s.img2, s.img3].some(Boolean),
+      /* I landingsside-modus (sammenhengende rulling) skal collagen kunne blø ut over
+         sliden over og under, så bildene henger sammen på tvers av slideskillene.
+         I sidevisning må sliden klippe som før, ellers lekker den ut av arket. */
+      montBleed: (m.pageMode || '') !== 'pages' ? '-7cqw' : '0cqw',
       /* Forside, Duo og Avslutning er laget for å ligge over et foto, og tvinger derfor
          det mørke skjemaet. Uten foto er det bare papiret bak — da må teksten følge
          pitchens egen flate, ellers blir hvit tekst stående på lys bakgrunn. */
