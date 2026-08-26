@@ -545,17 +545,23 @@ export const LIBRARY = [
 
   /* Collage: bildene fyller sliden og velges hver for seg, teksten ligger til høyre.
      Erstatter behovet for en ferdig sammensatt collage som ett innbakt bilde. */
-  { type:'montage', cat:'Bevis', name:'Collage', desc:'Tre valgbare bilder som fyller sliden, med tekst til høyre. Ingen todeling.',
+  { type:'montage', cat:'Bevis', name:'Collage', desc:'Inntil seks polaroids strødd utover til venstre, med tekst til høyre. Oppå kan det ligge inntil fire stickers — utskårne motiv uten ramme. Ingen todeling.',
     fields:[['eyebrow','Stikktittel','text'],['title','Tittel','text'],['body','Punkter','list'],
-            ['img','Bilde 1','image'],['imgHint','Bildeanvisning 1','text'],
-            ['img2','Bilde 2','image'],['imgHint2','Bildeanvisning 2','text'],
-            ['img3','Bilde 3','image'],['imgHint3','Bildeanvisning 3','text'],
+            ['img','Polaroid 1','image'],['imgHint','Bildeanvisning 1','text'],
+            ['img2','Polaroid 2','image'],['imgHint2','Bildeanvisning 2','text'],
+            ['img3','Polaroid 3','image'],['imgHint3','Bildeanvisning 3','text'],
+            ['img4','Polaroid 4','image'],['imgHint4','Bildeanvisning 4','text'],
+            ['img5','Polaroid 5','image'],['imgHint5','Bildeanvisning 5','text'],
+            ['img6','Polaroid 6','image'],['imgHint6','Bildeanvisning 6','text'],
+            ['sticker1','Sticker 1','image'],['sticker2','Sticker 2','image'],
+            ['sticker3','Sticker 3','image'],['sticker4','Sticker 4','image'],
             ['note','Notatlinje','text']],
     defaults:{ eyebrow:'Innhold', title:'Stedet selger seg selv når folk faktisk ser det.',
       body:['Kortformat filmet på stedet — bak kulissene og personligheter',
             'Innhold laget for å nå utenfor boblen, inn i reise- og livsstilsfeeder'],
       imgHint:'Hovedmotiv — stemning fra stedet', imgHint2:'Detalj eller portrett',
-      imgHint3:'Omgivelser eller publikum' } },
+      imgHint3:'Omgivelser eller publikum', imgHint4:'Mennesker i aktivitet',
+      imgHint5:'Sted eller arkitektur', imgHint6:'Nærbilde eller detalj' } },
 
   /* Variant av Produktprofil: samme base ('brand'), scene-utforming via defaults.variant */
   { type:'productscene', base:'brand', cat:'Økosystem', name:'Produktvitrine', desc:'Variant av Produktprofil — partnerkryss og enhetsscene, for produkter med et tydelig partnertilbud.',

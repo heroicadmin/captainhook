@@ -1150,16 +1150,24 @@
 
   <sc-if value="{{ is.montage }}" hint-placeholder-val="{{ false }}">
     <div style="position:absolute;inset:0;overflow:{{ montOverflow }}">
-      <!-- bildene ligger fritt, overlapper, og velges hver for seg -->
-      <div style="position:absolute;left:-2cqw;width:64cqw;top:{{ montBleed }};bottom:{{ montBleed }};z-index:1;-webkit-mask-image:{{ montFade }};mask-image:{{ montFade }}">
-        <sc-for list="{{ mont }}" as="mi" hint-placeholder-count="3">
-          <div data-el="{{ mi.key }}" data-el-name="{{ mi.name }}" style="position:absolute;left:{{ mi.l }};top:{{ mi.t }};width:{{ mi.w }};height:{{ mi.h }};z-index:{{ mi.z }};overflow:hidden;transform:rotate({{ mi.rot }});box-shadow:0 .6cqw 1.8cqw rgba(0,0,0,.26)">
-            <img src="{{ mi.src }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
+      <!-- polaroids strødd utover til venstre; hver ramme, tapebit og sticker velges hver for seg -->
+      <div style="position:absolute;left:-1cqw;width:57cqw;top:{{ montBleed }};bottom:{{ montBleed }};z-index:1">
+        <sc-for list="{{ mont }}" as="mi" hint-placeholder-count="5">
+          <div data-el="{{ mi.key }}" data-el-name="{{ mi.name }}" style="position:absolute;left:{{ mi.l }};top:{{ mi.t }};width:{{ mi.w }};height:{{ mi.h }};z-index:{{ mi.z }};transform:rotate({{ mi.rot }})">
+            <div style="position:absolute;inset:0;box-sizing:border-box;background:#FDFCF8;padding:.55cqw .55cqw 1.7cqw;box-shadow:0 .7cqw 1.9cqw rgba(0,0,0,.30)">
+              <img src="{{ mi.src }}" alt="" style="width:100%;height:100%;object-fit:cover;display:block">
+            </div>
+            <span style="position:absolute;top:-.7cqw;left:{{ mi.tl }};width:{{ mi.tw }};height:1.9cqw;transform:rotate({{ mi.trot }});background:linear-gradient(180deg,rgba(255,255,255,.80),rgba(230,227,219,.66));box-shadow:0 .12cqw .35cqw rgba(0,0,0,.14);clip-path:polygon(3% 0,100% 7%,97% 100%,0 91%)"></span>
+          </div>
+        </sc-for>
+        <sc-for list="{{ montStickers }}" as="st" hint-placeholder-count="3">
+          <div data-el="{{ st.key }}" data-el-name="{{ st.name }}" style="position:absolute;left:{{ st.l }};top:{{ st.t }};width:{{ st.w }};z-index:{{ st.z }};transform:rotate({{ st.rot }})">
+            <img src="{{ st.src }}" alt="" style="width:100%;height:auto;display:block;filter:drop-shadow(0 .5cqw 1.1cqw rgba(0,0,0,.38))">
           </div>
         </sc-for>
       </div>
       <sc-if value="{{ montEmpty }}" hint-placeholder-val="{{ true }}">
-        <span style="position:absolute;left:0;width:50cqw;top:0;bottom:0;display:grid;place-items:center;background:var(--plate2,#23202F);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.8cqw;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-mute,#8E88A3);text-align:center;padding:6cqw">Velg Bilde 1–3 i feltlisten</span>
+        <span style="position:absolute;left:0;width:50cqw;top:0;bottom:0;display:grid;place-items:center;background:var(--plate2,#23202F);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.8cqw;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-mute,#8E88A3);text-align:center;padding:6cqw">Velg Polaroid 1–6 i feltlisten</span>
       </sc-if>
       <div style="position:absolute;inset:0;padding:5cqw 4.5cqw;display:flex;flex-direction:column;justify-content:center;align-items:flex-end;text-align:right;z-index:2">
         <div style="width:34cqw;max-width:42%">
@@ -2752,30 +2760,51 @@ class Component extends DCLogic {
       /* Bare bildene som faktisk er valgt vises, og de fyller flaten: ett bilde tar alt,
          to deler den i to, tre gir ett stort pluss to stablede. Bildene velges i
          feltlisten (Bilde 1–3), så sliden trenger ingen tomme ruter å klikke på. */
-      /* Collagen skal IKKE være et rutenett. Et rutenett gir en rett, loddrett skjøt mot
-         teksten — nøyaktig Duo-oppsettet denne flaten skulle bryte med. Bildene legges
-         derfor som frie, lett roterte fliser som overlapper hverandre, og hele flaten
-         tones ut mot høyre med en maske, slik at overgangen til papiret er myk.
-         Geometrien er faste sett per antall bilder: tilfeldige verdier ville flyttet
-         bildene for hver render, og en pitch må se likt ut hver gang den åpnes. */
+      /* Collagen er tre lag, etter mockupen: polaroids med hvit ramme og tapebit øverst,
+         og utskårne stickers oppå. Ingen maske og ingen uttoning — flaten slutter der
+         polaroidene slutter.
+         Plasseringene er FASTE, ikke tilfeldige: en pitch må se identisk ut hver gang
+         klienten åpner den. SLOTS er spredningen fra mockupen, PICKS velger hvilke
+         plasser som brukes når det er færre enn seks bilder, slik at få bilder havner
+         midt i flaten istedenfor å klumpe seg i ett hjørne, og SOLO gir ett enkelt
+         bilde en større, sentrert plass. tl/tw/trot er tapebiten. */
       mont: (() => {
-        const TILES = {
-          1: [{ l: '4%',  t: '6%',  w: '70%', h: '84%', rot: '-2.2deg', z: 2 }],
-          2: [{ l: '0%',  t: '2%',  w: '56%', h: '64%', rot: '-3.4deg', z: 2 },
-              { l: '32%', t: '34%', w: '54%', h: '62%', rot: '2.8deg',  z: 3 }],
-          3: [{ l: '-1%', t: '0%',  w: '50%', h: '58%', rot: '-4deg',   z: 2 },
-              { l: '36%', t: '10%', w: '46%', h: '54%', rot: '3.2deg',  z: 3 },
-              { l: '10%', t: '44%', w: '52%', h: '56%', rot: '1.6deg',  z: 4 }]
-        };
-        const all = [1,2,3].map(i => {
+        const SLOTS = [
+          { l:'27%', t:'1%',  w:'35%', h:'41%', rot:'-4deg', z:3, tl:'26%', tw:'46%', trot:'-9deg'  },
+          { l:'56%', t:'5%',  w:'36%', h:'42%', rot:'9deg',  z:2, tl:'22%', tw:'50%', trot:'6deg'   },
+          { l:'1%',  t:'27%', w:'36%', h:'43%', rot:'-7deg', z:4, tl:'18%', tw:'48%', trot:'-14deg' },
+          { l:'35%', t:'49%', w:'31%', h:'41%', rot:'-2deg', z:5, tl:'24%', tw:'44%', trot:'4deg'   },
+          { l:'60%', t:'45%', w:'34%', h:'45%', rot:'3deg',  z:6, tl:'28%', tw:'46%', trot:'-6deg'  },
+          { l:'11%', t:'62%', w:'30%', h:'37%', rot:'6deg',  z:7, tl:'20%', tw:'44%', trot:'11deg'  }
+        ];
+        const SOLO = { l:'22%', t:'14%', w:'48%', h:'62%', rot:'-3deg', z:3, tl:'25%', tw:'46%', trot:'-8deg' };
+        const PICKS = { 1:[0], 2:[0,4], 3:[2,1,3], 4:[2,0,1,4], 5:[0,1,2,3,4], 6:[0,1,2,3,4,5] };
+        const all = [1,2,3,4,5,6].map(i => {
           const key = i === 1 ? 'img' : 'img' + i;
-          return { key: 'mimg' + i, name: 'Bilde ' + i, src: resolveImg(s[key]),
+          return { key: 'mimg' + i, name: 'Polaroid ' + i, src: resolveImg(s[key]),
             hint: s[i === 1 ? 'imgHint' : 'imgHint' + i] || '' };
         }).filter(x => !!x.src);
-        const g = TILES[all.length] || TILES[3];
-        return all.map((x, i) => ({ ...x, ...(g[i] || g[g.length - 1]) }));
+        if (all.length === 1) return [{ ...all[0], ...SOLO }];
+        const pick = PICKS[all.length] || PICKS[6];
+        return all.map((x, i) => ({ ...x, ...SLOTS[pick[i]] }));
       })(),
-      montEmpty: ![s.img, s.img2, s.img3].some(Boolean),
+      /* Stickers har ingen ramme — de er utskårne motiv som legges oppå polaroidene.
+         Skyggen settes med drop-shadow, som følger alfakanalen, ikke en rektangelkant.
+         Plassen følger rekkefølgen de er valgt i, ikke feltnummeret, slik at én sticker
+         alene alltid havner på en god plass. */
+      montStickers: (() => {
+        const SLOTS = [
+          { l:'3%',  t:'11%', w:'18%', rot:'-6deg', z:12 },
+          { l:'12%', t:'59%', w:'22%', rot:'3deg',  z:13 },
+          { l:'59%', t:'65%', w:'22%', rot:'-4deg', z:14 },
+          { l:'47%', t:'1%',  w:'16%', rot:'9deg',  z:15 }
+        ];
+        return [1,2,3,4]
+          .map(i => ({ key: 'msticker' + i, name: 'Sticker ' + i, src: resolveImg(s['sticker' + i]) }))
+          .filter(x => !!x.src)
+          .map((x, i) => ({ ...x, ...SLOTS[i] }));
+      })(),
+      montEmpty: ![s.img, s.img2, s.img3, s.img4, s.img5, s.img6].some(Boolean),
       /* I landingsside-modus (sammenhengende rulling) skal collagen kunne blø ut over
          sliden over og under, så bildene henger sammen på tvers av slideskillene.
          I sidevisning må sliden klippe som før, ellers lekker den ut av arket. */
@@ -2784,8 +2813,6 @@ class Component extends DCLogic {
          her, ble bildene klippet ved slidekanten selv om både sliden og arket slapp dem
          gjennom — klippingen skjer i den innerste rammen som klipper. */
       montOverflow: (m.pageMode || '') !== 'pages' ? 'visible' : 'hidden',
-      /* Myk uttoning mot høyre: bildeflaten slutter ikke i en kant, den blir papir. */
-      montFade: 'linear-gradient(to right, #000 0, #000 40%, rgba(0,0,0,.72) 62%, rgba(0,0,0,.28) 82%, transparent 96%)',
       /* Forside, Duo og Avslutning er laget for å ligge over et foto, og tvinger derfor
          det mørke skjemaet. Uten foto er det bare papiret bak — da må teksten følge
          pitchens egen flate, ellers blir hvit tekst stående på lys bakgrunn. */
