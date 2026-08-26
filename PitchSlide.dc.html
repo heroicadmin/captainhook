@@ -1151,7 +1151,7 @@
   <sc-if value="{{ is.montage }}" hint-placeholder-val="{{ false }}">
     <div style="position:absolute;inset:0;overflow:{{ montOverflow }}">
       <!-- polaroids strødd utover til venstre; hver ramme, tapebit og sticker velges hver for seg -->
-      <div style="position:absolute;left:-1cqw;width:57cqw;top:{{ montBleed }};bottom:{{ montBleed }};z-index:1">
+      <div style="position:absolute;left:-1cqw;width:57cqw;top:0;bottom:0;z-index:1">
         <sc-for list="{{ mont }}" as="mi" hint-placeholder-count="5">
           <div data-el="{{ mi.key }}" data-el-name="{{ mi.name }}" style="position:absolute;left:{{ mi.l }};top:{{ mi.t }};width:{{ mi.w }};height:{{ mi.h }};z-index:{{ mi.z }};transform:rotate({{ mi.rot }})">
             <div style="position:absolute;inset:0;box-sizing:border-box;background:#FDFCF8;padding:.55cqw .55cqw 1.7cqw;box-shadow:0 .7cqw 1.9cqw rgba(0,0,0,.30)">
@@ -2770,14 +2770,14 @@ class Component extends DCLogic {
          bilde en større, sentrert plass. tl/tw/trot er tapebiten. */
       mont: (() => {
         const SLOTS = [
-          { l:'27%', t:'1%',  w:'35%', h:'41%', rot:'-4deg', z:3, tl:'26%', tw:'46%', trot:'-9deg'  },
-          { l:'56%', t:'5%',  w:'36%', h:'42%', rot:'9deg',  z:2, tl:'22%', tw:'50%', trot:'6deg'   },
-          { l:'1%',  t:'27%', w:'36%', h:'43%', rot:'-7deg', z:4, tl:'18%', tw:'48%', trot:'-14deg' },
-          { l:'35%', t:'49%', w:'31%', h:'41%', rot:'-2deg', z:5, tl:'24%', tw:'44%', trot:'4deg'   },
-          { l:'60%', t:'45%', w:'34%', h:'45%', rot:'3deg',  z:6, tl:'28%', tw:'46%', trot:'-6deg'  },
-          { l:'11%', t:'62%', w:'30%', h:'37%', rot:'6deg',  z:7, tl:'20%', tw:'44%', trot:'11deg'  }
+          { l:'30%', t:'-5%', w:'32%', h:'46%', rot:'-4deg', z:3, tl:'26%', tw:'46%', trot:'-9deg'  },
+          { l:'55%', t:'-1%', w:'33%', h:'47%', rot:'9deg',  z:2, tl:'22%', tw:'50%', trot:'6deg'   },
+          { l:'6%',  t:'24%', w:'33%', h:'48%', rot:'-7deg', z:4, tl:'18%', tw:'48%', trot:'-14deg' },
+          { l:'34%', t:'52%', w:'29%', h:'46%', rot:'-2deg', z:5, tl:'24%', tw:'44%', trot:'4deg'   },
+          { l:'58%', t:'48%', w:'31%', h:'50%', rot:'3deg',  z:6, tl:'28%', tw:'46%', trot:'-6deg'  },
+          { l:'13%', t:'66%', w:'28%', h:'42%', rot:'6deg',  z:7, tl:'20%', tw:'44%', trot:'11deg'  }
         ];
-        const SOLO = { l:'22%', t:'14%', w:'48%', h:'62%', rot:'-3deg', z:3, tl:'25%', tw:'46%', trot:'-8deg' };
+        const SOLO = { l:'24%', t:'8%',  w:'44%', h:'76%', rot:'-3deg', z:3, tl:'25%', tw:'46%', trot:'-8deg' };
         const PICKS = { 1:[0], 2:[0,4], 3:[2,1,3], 4:[2,0,1,4], 5:[0,1,2,3,4], 6:[0,1,2,3,4,5] };
         const all = [1,2,3,4,5,6].map(i => {
           const key = i === 1 ? 'img' : 'img' + i;
@@ -2794,10 +2794,10 @@ class Component extends DCLogic {
          alene alltid havner på en god plass. */
       montStickers: (() => {
         const SLOTS = [
-          { l:'3%',  t:'11%', w:'18%', rot:'-6deg', z:12 },
-          { l:'12%', t:'59%', w:'22%', rot:'3deg',  z:13 },
-          { l:'59%', t:'65%', w:'22%', rot:'-4deg', z:14 },
-          { l:'47%', t:'1%',  w:'16%', rot:'9deg',  z:15 }
+          { l:'5%',  t:'12%', w:'16%', rot:'-6deg', z:12 },
+          { l:'13%', t:'62%', w:'20%', rot:'3deg',  z:13 },
+          { l:'56%', t:'66%', w:'20%', rot:'-4deg', z:14 },
+          { l:'46%', t:'-2%', w:'14%', rot:'9deg',  z:15 }
         ];
         return [1,2,3,4]
           .map(i => ({ key: 'msticker' + i, name: 'Sticker ' + i, src: resolveImg(s['sticker' + i]) }))
@@ -2805,10 +2805,11 @@ class Component extends DCLogic {
           .map((x, i) => ({ ...x, ...SLOTS[i] }));
       })(),
       montEmpty: ![s.img, s.img2, s.img3, s.img4, s.img5, s.img6].some(Boolean),
-      /* I landingsside-modus (sammenhengende rulling) skal collagen kunne blø ut over
-         sliden over og under, så bildene henger sammen på tvers av slideskillene.
-         I sidevisning må sliden klippe som før, ellers lekker den ut av arket. */
-      montBleed: (m.pageMode || '') !== 'pages' ? '-7cqw' : '0cqw',
+      /* Blødningen ligger i GEOMETRIEN, ikke i rammen: øverste og nederste rad går selv
+         litt utenfor 0 % og 100 %. Før strakk rammen seg -7cqw ut i landingsside-modus,
+         men da målte slot-prosentene mot en boks 25 % høyere enn sliden, og de samme
+         tallene ga to helt ulike komposisjoner i de to modusene — ett enkelt bilde havnet
+         høyt og avklipt. Nå er rammen alltid slidens egen høyde. */
       /* Ytterrammen må slippe blødningen ut i landingsside-modus. Sto den til «hidden»
          her, ble bildene klippet ved slidekanten selv om både sliden og arket slapp dem
          gjennom — klippingen skjer i den innerste rammen som klipper. */
