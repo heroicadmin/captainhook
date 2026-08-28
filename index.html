@@ -3095,6 +3095,19 @@ class Component extends DCLogic {
        Logomappene er ett unntak: hvert selskap har sin egen, men den vises utad bare som «Logoer». */
     const catDomains = store.catDomains || {};
     const catOwned = c => { const d = (catDomains[c] || '').toLowerCase(); return !d || d === myDomain; };
+    /* Superadmin uten «se som» skal kunne BLA i alle bilder, også andre selskapers — samme
+       regel som pitchlisten allerede fulgte. Skillet mot catOwned er med vilje: catOwned
+       styrer AUTOMATISK utfylling (myImages, catFill, bildeprofil) og må holde seg til ett
+       selskap, ellers fylles en ny pitch igjen med begge selskapers foto. catBrowsable
+       styrer bare manuell velging. Med «se som» satt oppfører superadmin seg som det
+       selskapet, også her. */
+    const catBrowsable = c => catOwned(c) || (isSuperadmin && !viewAs);
+    /* To selskaper har hver sin mappe som heter det samme utad («Logoer», «Generelt»).
+       Når superadmin ser begge samtidig, må eieren stå på, ellers er de ikke til å skille. */
+    const catPickLabel = c => {
+      const d = (catDomains[c] || '').toLowerCase();
+      return (isSuperadmin && !viewAs && d && d !== realDomain) ? catLabel(c) + ' · ' + d : catLabel(c);
+    };
     /* Bildene som er «mine»: de som ligger i mapper selskapet eier. Brukes til automatisk
        utfylling av bilderammer — ellers ville en ny pitch blitt fylt med det andre
        selskapets foto. */
@@ -4851,20 +4864,20 @@ class Component extends DCLogic {
       }
       this.setState({ picker: null });
     };
-    /* en valgt kategori som brukeren ikke eier (f.eks. arvet fra pitchens bildeprofil) faller tilbake til «Alle» */
-    const effPickerCat = (!S.pickerCat || S.pickerCat === 'Alle' || catOwned(S.pickerCat)) ? (S.pickerCat || 'Alle') : 'Alle';
-    /* eierskap håndheves alltid — aldri bilder fra en mappe brukerens domene ikke eier */
-    const pickList = (store.images || []).filter(im => catOwned(im.cat) && (effPickerCat === 'Alle' || im.cat === effPickerCat));
-    const pickerCatOpts = ['Alle', ...(store.imageCats || D.IMAGE_CATS).filter(catOwned)];
+    /* en valgt kategori brukeren ikke når (f.eks. arvet fra pitchens bildeprofil) faller tilbake til «Alle» */
+    const effPickerCat = (!S.pickerCat || S.pickerCat === 'Alle' || catBrowsable(S.pickerCat)) ? (S.pickerCat || 'Alle') : 'Alle';
+    /* eierskap håndheves fortsatt — superadmin uten «se som» er den eneste som ser på tvers */
+    const pickList = (store.images || []).filter(im => catBrowsable(im.cat) && (effPickerCat === 'Alle' || im.cat === effPickerCat));
+    const pickerCatOpts = ['Alle', ...(store.imageCats || D.IMAGE_CATS).filter(catBrowsable)];
     const picker = {
       open: !!pk,
       note: pk && pk.mode === 'tpl' ? 'Bildet festes til raden i templaten'
         : pk && pk.mode === 'sender' ? 'Bildet brukes på takk-sliden for denne avsenderen'
         : 'Bildet settes på sliden du redigerer',
-      cats: pickerCatOpts.map(c => ({ label: catLabel(c), ...pill(c === effPickerCat), on: () => this.setState({ pickerCat: c }) })),
+      cats: pickerCatOpts.map(c => ({ label: catPickLabel(c), ...pill(c === effPickerCat), on: () => this.setState({ pickerCat: c }) })),
       items: pickList.map(im => {
         const mark = isLogoCat(im.cat);
-        return { name: im.name, cat: catLabel(im.cat), thumb: this.cssUrl(im.src),
+        return { name: im.name, cat: catPickLabel(im.cat), thumb: this.cssUrl(im.src),
           isMark: mark, isPhoto: !mark,
           border: '#E6E4EE', on: () => applyPick(im.src) };
       }),
