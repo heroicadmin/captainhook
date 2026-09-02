@@ -72,3 +72,24 @@ Ikke stol på at Railway melder `SUCCESS` — det kan være forrige bygg. Verifi
 mot den live filen:
 
     curl -s https://pitch.limitbreak.no/ | grep <ny streng>
+
+## Navneendring på pitcher endrer ikke adressen
+
+«Endre navn» i arkivkortet skriver bare `meta.client`. `meta.slug` blir stående med vilje:
+slugen ER klientlenken (`#/p/<slug>`, og `pitch_gate(slug)` i basen), så en endring der
+bryter lenker som alt er sendt ut. Slugen redigeres separat i editoren, der det er et
+bevisst valg. Navnefeltet ligger i kortet, ikke i en `prompt()` — se punktet om
+dialogundertrykking over.
+
+## Templates eies av et selskap
+
+Hver oppføring i `store.templates` kan ha `domain`. Tom = felles. `tplOwned` filtrerer både
+templatevalget i «Ny pitch» og listen i admin; superadmin uten «se som» ser alle. Valget i
+«Ny pitch» faller tilbake til første synlige template hvis det lagrede valget ikke er synlig
+— ellers ville «Opprett» bygget fra en template brukeren ikke har tilgang til.
+
+En template kan bære sitt EGET innhold, ikke bare blokktyper: en rad kan være
+`{ type, title, data, img, layout, caseId }`, og `makePitchFromTemplate` legger `data` oppå
+bibliotekets standard. Malta-templaten og DNB-løpet gjør dette. Nye templates må legges i
+`BUILTIN_TEMPLATES` hvis de skal tilbakestilles til koden ved versjonsbump; de plukkes opp
+uansett av seedingen som legger til templates med ukjent id.

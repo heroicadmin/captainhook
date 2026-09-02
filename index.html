@@ -512,7 +512,14 @@
             </a>
             <div style="padding:16px 16px 14px;display:flex;flex-direction:column;gap:10px;flex:1">
               <div style="display:flex;align-items:center;gap:8px">
-                <span style="font-size:16px;font-weight:700;letter-spacing:-.01em">{{ p.client }}</span>
+                <sc-if value="{{ p.notRenaming }}" hint-placeholder-val="{{ true }}">
+                  <span style="font-size:16px;font-weight:700;letter-spacing:-.01em">{{ p.client }}</span>
+                </sc-if>
+                <sc-if value="{{ p.renaming }}" hint-placeholder-val="{{ false }}">
+                  <input type="text" value="{{ p.renameVal }}" onInput="{{ p.onRenameInput }}" onKeyDown="{{ p.onRenameKey }}" onClick="{{ p.onRenameStart }}" autofocus="1" aria-label="Nytt navn på pitchen" style="flex:1;min-width:0;font-size:16px;font-weight:700;letter-spacing:-.01em;background:#FFFFFF;border:1px solid var(--accent);border-radius:6px;padding:5px 8px;color:#16131F">
+                  <button type="button" onClick="{{ p.onRenameSave }}" style="font-size:12px;font-weight:600;color:var(--accent-ink);background:var(--accent);border:1px solid var(--accent);border-radius:5px;padding:6px 10px;cursor:pointer">Lagre</button>
+                  <button type="button" onClick="{{ p.onRenameCancel }}" title="Avbryt" style="font-size:12px;font-weight:600;color:#6E6883;background:transparent;border:1px solid #E6E4EE;border-radius:5px;padding:6px 9px;cursor:pointer">Avbryt</button>
+                </sc-if>
                 <span style="flex:1"></span>
                 <span style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:3px 7px;border-radius:4px;background:{{ p.statusBg }};color:{{ p.statusFg }}">{{ p.status }}</span>
               </div>
@@ -522,6 +529,7 @@
               <div style="display:flex;gap:6px;flex-wrap:wrap;padding-top:4px">
                 <a href="{{ p.editHref }}" style="font-size:12px;font-weight:600;color:#322D45;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:5px;padding:7px 11px;transition:background .14s,border-color .14s" style-hover="background:#FFFFFF;border-color:var(--accent);color:#16131F">Rediger</a>
                 <a href="{{ p.viewHref }}" style="font-size:12px;font-weight:600;color:#322D45;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:5px;padding:7px 11px;transition:background .14s,border-color .14s" style-hover="background:#FFFFFF;border-color:var(--accent);color:#16131F">Åpne kundeside</a>
+                <button type="button" onClick="{{ p.onRenameStart }}" style="font-size:12px;font-weight:600;color:#322D45;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:5px;padding:7px 11px;transition:background .14s,border-color .14s;cursor:pointer" style-hover="background:#FFFFFF;border-color:var(--accent);color:#16131F">Endre navn</button>
                 <button type="button" onClick="{{ p.onDup }}" style="font-size:12px;font-weight:600;color:#322D45;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:5px;padding:7px 11px;transition:background .14s,border-color .14s;cursor:pointer" style-hover="background:#FFFFFF;border-color:var(--accent);color:#16131F">Dupliser</button>
                 <button type="button" onClick="{{ p.onDel }}" style="font-size:12px;font-weight:600;color:#6E6883;background:transparent;border:1px solid #E6E4EE;border-radius:5px;padding:7px 11px;cursor:pointer;transition:background .14s,color .14s,border-color .14s" style-hover="background:rgba(233,55,110,.08);border-color:#E9376E;color:#E9376E">Slett</button>
               </div>
@@ -1520,6 +1528,10 @@
               <button type="button" onClick="{{ admin.onTplDup }}" title="Dupliser" style="border:0;background:transparent;color:#9A96AC;cursor:pointer;font-size:12px">⧉</button>
               <button type="button" onClick="{{ admin.onTplDel }}" title="Slett template" style="border:0;background:transparent;color:#9A96AC;cursor:pointer;font-size:14px">×</button>
             </div>
+            <div style="display:flex;align-items:center;gap:8px;margin:8px 0 4px">
+              <label style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#55506B;white-space:nowrap">Eier · domene</label>
+              <input type="text" value="{{ admin.tplDomain }}" onInput="{{ admin.onTplDomain }}" list="dl-domains" autocomplete="off" placeholder="alle" style="flex:1;min-width:0;font-size:12px;background:#F7F6FA;border:1px solid #D5D2E0;border-radius:6px;padding:6px 8px;color:#16131F;font-family:ui-monospace,Menlo,monospace">
+            </div>
             <div style="font-size:12.5px;color:#6E6883;line-height:1.5;margin-bottom:10px">{{ admin.tplCount }}</div>
             <div style="display:flex;align-items:center;gap:9px;padding:9px 10px;background:#F7F6FB;border:1px solid #E6E4EE;border-radius:7px;margin-bottom:14px">
               <span style="font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#8A85A0">Språk</span>
@@ -1993,6 +2005,7 @@ class Component extends DCLogic {
     shareStats: null, shareLocked: null, shareCopied: false,
     sel: 0, tab: 'content', showLib: false, insertAt: null, showCheck: false,
     adminTab: 'facts', adminTpl: 'master', nw: null, scroll: 0, libSel: null, caseSel: null,
+    renameId: null, renameVal: null,
     assets: {}, picker: null, pickerCat: 'Alle', adminCat: 'Alle', arcTab: 'all',
     uiLang: 'no'
   };
@@ -2569,6 +2582,22 @@ class Component extends DCLogic {
     fn(t); this.save(store);
   }
   withStore(fn) { const st = this.clone(this.state.store); fn(st); this.save(st); }
+  /* Navneendring fra arkivkortet. Bare visningsnavnet endres — adressen (slug) blir
+     stående, siden den er klientlenken. Et tomt navn avvises i stedet for å lage en
+     pitch uten navn; den slås opp på id, ikke på indeks, så et samtidig slett ikke
+     kan treffe feil rad. */
+  commitRename(id) {
+    const name = String(this.state.renameVal === undefined || this.state.renameVal === null
+      ? '' : this.state.renameVal).trim();
+    if (!name) return this.setState({ renameId: null, renameVal: null });
+    const st = this.clone(this.state.store);
+    const t = (st.pitches || []).find(x => x.id === id);
+    if (!t) return this.setState({ renameId: null, renameVal: null });
+    if (t.meta.client === name) return this.setState({ renameId: null, renameVal: null });
+    t.meta.client = name;
+    this.setState({ renameId: null, renameVal: null });
+    this.save(st);
+  }
   resolve(src) { const u = this.D ? this.D.resolveSrc(src, this.state.assets) : (src || ''); return window.__resURL(u); }
   cssUrl(src) { const u = this.resolve(src); return u ? 'url("' + u + '")' : 'none'; }
   /* Opplastinger går til IndexedDB. Tidligere lå de som data-URL i localStorage,
@@ -3222,6 +3251,21 @@ class Component extends DCLogic {
       }),
       items: shown.map(p => ({
         client: p.meta.client, slug: p.meta.slug, accent: p.meta.accent, status: p.meta.status,
+        /* Navneendring skjer i kortet, ikke i en prompt(): Chrome slutter å vise
+           prompt/confirm etter noen dialoger, og da ville knappen bare vært død.
+           Adressen (slug) står med vilje urørt — den er klientlenken, og en endring
+           der ville brutt lenker som alt er sendt. Slug redigeres i editoren. */
+        renaming: S.renameId === p.id,
+        notRenaming: S.renameId !== p.id,
+        renameVal: S.renameId === p.id ? (S.renameVal !== undefined && S.renameVal !== null ? S.renameVal : p.meta.client) : '',
+        onRenameStart: e => { e.stopPropagation(); e.preventDefault();
+          this.setState({ renameId: p.id, renameVal: p.meta.client }); },
+        onRenameInput: e => this.setState({ renameVal: e.target.value }),
+        onRenameKey: e => { if (e.key === 'Enter') { e.preventDefault(); this.commitRename(p.id); }
+          else if (e.key === 'Escape') { e.preventDefault(); this.setState({ renameId: null, renameVal: null }); } },
+        onRenameSave: e => { e.stopPropagation(); e.preventDefault(); this.commitRename(p.id); },
+        onRenameCancel: e => { e.stopPropagation(); e.preventDefault();
+          this.setState({ renameId: null, renameVal: null }); },
         ...statusStyle(p.meta.status),
         cover: p.blocks[0] || null, coverMeta: stillMeta(p.meta), count: p.blocks.length, ...fontVars(p.meta), sfVars: sfVarText(p.meta),
         hasCover: !!p.blocks.length, noCover: !p.blocks.length, thumbRef: this.thumbRef,
@@ -3237,7 +3281,14 @@ class Component extends DCLogic {
     };
 
     /* ---------- NEW ---------- */
-    const nwS = S.nw || this.freshNew(D);
+    const nwS = (() => {
+      const base = S.nw || this.freshNew(D);
+      /* Et valg som ikke lenger er synlig (annet selskaps template) faller tilbake til
+         den første synlige — ellers ville «Opprett» bygget fra en template brukeren
+         ikke har tilgang til. */
+      if (visTemplates.some(t => t.id === base.template)) return base;
+      return { ...base, template: (visTemplates[0] || {}).id || base.template };
+    })();
     /* ny pitch: fall tilbake til brukerens egen første avsender hvis standarden ikke eies */
     const nwSender = ownSenders.some(s => s.id === nwS.sender) ? nwS.sender : (ownSenders[0] || {}).id;
     const nw = {
@@ -3255,7 +3306,7 @@ class Component extends DCLogic {
       profileOpts: myProfileCats.map(c => ({ label: catLabel(c), ...pill(c === nwS.profile), on: () => this.setState(st => ({ nw: { ...st.nw, profile: c } })) })),
       swatches: (nwS.swatches || []).map(c => ({ hex: c, border: c === nwS.accent ? '#16131F' : 'transparent', on: () => this.setState(st => ({ nw: { ...st.nw, accent: c } })) })),
       // kortene leses fra det delte laget, ikke fra koden — ellers er admin en blindvei
-      templates: store.templates.map(t => ({ name: t.name, len: t.blocks.length + ' blokker', desc: t.desc || 'Egendefinert template fra admin.',
+      templates: visTemplates.map(t => ({ name: t.name, len: t.blocks.length + ' blokker', desc: t.desc || 'Egendefinert template fra admin.',
         lang: (t.lang || 'no').toUpperCase(),
         bg: t.id === nwS.template ? 'color-mix(in srgb, var(--accent) 10%, #FFFFFF)' : '#FFFFFF',
         border: t.id === nwS.template ? 'var(--accent)' : '#E6E4EE',
@@ -4088,6 +4139,10 @@ class Component extends DCLogic {
         onSource: e => touchFact(k, { source: e.target.value }) };
     };
 
+    /* Templates eies av et selskap, som merkevarer og mapper. Tom eier = felles.
+       Superadmin uten «se som» ser alle; med «se som» ser man som det selskapet. */
+    const tplOwned = t => { const d = ((t || {}).domain || '').toLowerCase(); return !d || d === myDomain || (isSuperadmin && !viewAs); };
+    const visTemplates = (store.templates || []).filter(tplOwned);
     /* templates som lego */
     const tplId = S.adminTpl || (store.templates[0] || {}).id;
     const tplIdx = store.templates.findIndex(t => t.id === tplId);
@@ -4400,8 +4455,11 @@ class Component extends DCLogic {
       onSenderNew: () => { const name = prompt('Navn på avsender'); if (!name) return;
         this.upload(ref => this.withStore(st => { st.senders.push({ id: D.slugify(name), name, logo: ref, email: '', phone: '', contact: '', domain: myDomain }); }), { maxEdge: 900 }); },
 
-      tplPicker: store.templates.map(t => ({ label: t.name, ...pill(t.id === tplId), on: () => this.setState({ adminTpl: t.id }) })),
+      tplPicker: (store.templates || []).filter(tplOwned).map(t => ({ label: t.name, ...pill(t.id === tplId), on: () => this.setState({ adminTpl: t.id }) })),
       tplName: tpl.name,
+      tplDomain: tpl.domain || '',
+      onTplDomain: e => { const v = e.target.value.trim().toLowerCase();
+        writeTpl(t => { if (v) t.domain = v; else delete t.domain; }); },
       /* språkmerking på templaten: hvilket språk innholdet er skrevet på. Nye pitcher arver den. */
       tplLangs: (this.I ? this.I.LANGS : []).map(l => ({
         label: l.label,

@@ -5,7 +5,7 @@
 export const VERSION = { schema: 'skagerrak-pitch/1', facts: '2026-08', templates: 20, images: 3, cases: 2, updated: '2026-08-13' };
 
 /* Ids som eies av koden. Brukerlagde templates røres aldri av migreringen. */
-export const BUILTIN_TEMPLATES = ['master', 'simple', 'media', 'blank', 'malta', 'catalog'];
+export const BUILTIN_TEMPLATES = ['master', 'simple', 'media', 'blank', 'malta', 'catalog', 'dnb'];
 
 export const BRANDS = {
   gamer:     { name: 'Gamer.no',        color: '#F05A22', logo: 'logos/gamerno.png',        scale: 1, note: 'Optisk skala 1 · rekkevidde' },
@@ -930,7 +930,711 @@ export const TEMPLATES = [
       { type:'closing', title:'Close', img:'mt-crowd', data:{
         text:"Malta doesn't need to claim it's an esports hub. It can own one.",
         contact:'', imgHint:'Closing image — players on stage, wide' } }
-    ] }
+    ] },
+
+  /* DNB-løpet som ferdig template. Den bærer sin egen kopi — samme mekanisme som
+     Malta-templaten — så en ny pitch starter med hele presentasjonen, ikke bare
+     skjelettet. Eid av skagerrak.tech: den vises bare i Skagerraks templatevalg. */
+  { id:'dnb', name:'DNB-løpet', lang:'no', accent:'#007878', surface:'dark', domain:'skagerrak.tech',
+    desc:'Fullt norsk partnerskapsløp bygget fra DNB-presentasjonen — partnerskap, formasjon, paraply, fem merkevarer, medlemskap og avslutning. Teksten er DNBs og må skrives om per kunde.',
+    brands:{},
+    blocks:[
+      { type:'cover',
+        data: {
+          img: 'images/malta/malta-cover-stage.jpg',
+          sub: '',
+          note: '',
+          title: 'Top of mind i norsk e-sport og gamingkultur',
+          kicker: 'Skagerrak × DNB',
+          imgHint: 'Arrangementsbilde — publikum på playoffs'
+        },
+        layout: {
+          logo: {
+            s: 1.91,
+            x: 0,
+            y: 0
+          },
+          title: {
+            w: 52.6
+          }
+        } },
+      { type:'partnership',
+        data: {
+          img: '',
+          body: 'Skagerrak er et medie- og teknologiselskap som spesialiserer seg på gaming, e-sport og digital underholdning\n\nBygger et økosystem innen gaming, e-sport og sport med egen norsk teknologi fra topp til bunn, zero dependencies og annonsering fra kredible aktører\n\nOffisielle samarbeid med Norges Fotballforbund, Norges Bedriftsidrettsforbund og Norges E-sportforbund\n\nEierboken består av aktører som Tor Olav Trøim, Smedvig, Johan Brand, Polaris Media og Hodne-familien',
+          logo1: 'asset:amsxprtkvagqu',
+          logo2: 'asset:amsxki9g6pq8s',
+          logos2: [
+            {
+              img: 'asset:amskceoejpkfj',
+              name: 'Ny logo'
+            },
+            {
+              img: 'asset:amsxppkpof1if',
+              name: 'Ny logo'
+            },
+            {
+              img: 'asset:amsxpq42impxx',
+              name: 'Ny logo'
+            }
+          ],
+          imgHint: 'Foto — lag i konkurranse, wide',
+          logo1Name: 'Good Game',
+          logo2Name: 'Skagerrak'
+        },
+        layout: {
+          card: {
+            s: 1.29,
+            x: 2,
+            y: 1.5
+          }
+        } },
+      { type:'formation',
+        data: {
+          img: '',
+          grad: 'inherit',
+          word: '',
+          logos: [
+            {
+              img: 'asset:amskceoejpkfj',
+              name: 'Good Game Ligaen'
+            },
+            {
+              img: 'asset:amsxpq42impxx',
+              name: 'Gamer.no'
+            },
+            {
+              img: 'asset:amsxppkpof1if',
+              name: 'Bedriftsligaen'
+            }
+          ],
+          title: 'Etableringen av en norsk\ngaming mastodont',
+          images: [],
+          noGrad: false,
+          imgHint: 'Foto — lagbilde fra scenen, wide'
+        },
+        layout: {
+          title: {
+            w: 35.7
+          },
+          img_5mk9lct: {
+            hidden: true
+          }
+        } },
+      { type:'umbrella',
+        data: {
+          subs: [],
+          intro: 'E-sport, idrett og kultur på en plattform. Uten noise.',
+          title: 'Et økosystem i tverrsnittet av consumer  og corporate',
+          brands: [
+            {
+              key: 'gamer',
+              lead: 'Norges ledende',
+              rest: 'nettsted for spill, teknologi og spillkultur'
+            },
+            {
+              key: 'komplett',
+              lead: 'Europas største',
+              rest: 'nasjonale liga i e-sport'
+            },
+            {
+              key: 'bl',
+              lead: 'Nordens største',
+              rest: 'bedriftsliga innen gaming og sjakk'
+            },
+            {
+              key: 'arena',
+              lead: 'Norges største',
+              rest: 'plattform for kompetitiv gaming'
+            }
+          ],
+          parent: 'Skagerrak',
+          eyebrow: 'Økosystemet'
+        },
+        layout: {
+          eyebrow: {
+            x: 0,
+            y: 0
+          }
+        } },
+      { type:'brand', brand:'gamer',
+        data: {
+          img: 'images/malta/malta-team-lineup.jpg',
+          body: [
+            'Siden 2001 har Gamer.no utviklet seg til Norges ledende medie for alt innen gaming, e-sport og popkultur',
+            'Et stort og aktivt community på over 100.000 nordmenn med hovedvekt på aldersgruppen 19 - 27 og 28 - 36',
+            'Sammensveiset medlemskapsprogram med over 12.000 abonnementer'
+          ],
+          brand: 'gamer',
+          stats: [
+            {
+              fact: 'gamer.readers'
+            },
+            {
+              fact: 'gamer.demo'
+            },
+            {
+              fact: 'gamer.mobile'
+            }
+          ],
+          images: [
+            {
+              id: 'h5iu1om',
+              img: 'asset:amsj42a13e9ls',
+              slot: 0,
+              imgHint: 'Bilde',
+              frameStyle: 'polaroid'
+            },
+            {
+              id: '1wgbouk',
+              img: 'asset:amsj42abxfum2',
+              slot: 2,
+              imgHint: 'Bilde',
+              frameStyle: 'polaroid'
+            },
+            {
+              id: '0n1ohxo',
+              img: 'asset:amsj42agu82rq',
+              slot: 1,
+              imgHint: 'Bilde',
+              frameStyle: 'polaroid'
+            }
+          ],
+          source: 'Google Analytics H1 2026 og brukerundersøkelse 2025.',
+          eyebrow: 'IP & MERKEVAREPROFIL',
+          imgHint: 'Skjermbilde — forsiden av Gamer.no',
+          shotUrl: 'gamer.no'
+        },
+        layout: {
+          body: {
+            x: 0,
+            y: 0
+          },
+          text: {
+            x: 0,
+            y: 0
+          },
+          img_0n1ohxo: {
+            s: 0.76,
+            x: 13.06,
+            y: -3.44
+          },
+          img_1wgbouk: {
+            x: 21.5,
+            y: -7.12
+          },
+          img_h5iu1om: {
+            x: 1,
+            y: -14.5
+          },
+          img_ka13elu: {
+            x: 18.5,
+            y: -1,
+            hidden: true
+          }
+        } },
+      { type:'brand', brand:'bl',
+        data: {
+          img: '',
+          body: [
+            'Nordens største liga innen e-sport og sjakk for næringslivet',
+            'Offisiell og eksklusiv leverandør til Norges Bedriftsidrettsforbund, NFF og Norsk Toppfotball',
+            'Skandinavisk ekspansjon i 2026 gjennom Företagsligan og Firmaligaen'
+          ],
+          brand: 'bl',
+          stats: [
+            {
+              fact: 'bl.companies'
+            },
+            {
+              fact: 'bl.employees'
+            },
+            {
+              fact: 'bl.demo',
+              label: '+200 care packages'
+            },
+            {
+              fact: 'bl.obx',
+              label: 'andel av Oslo Børs deltagende'
+            }
+          ],
+          images: [
+            {
+              id: 'ukh497k',
+              img: 'asset:amsz07sg2fwkv',
+              slot: 0,
+              imgHint: 'Bilde'
+            },
+            {
+              id: 'm0phu4w',
+              img: 'asset:amsz08r2r7k5k',
+              slot: 1,
+              imgHint: 'Bilde'
+            },
+            {
+              id: 'l4m22rf',
+              img: '',
+              slot: 2,
+              imgHint: 'Bilde'
+            }
+          ],
+          source: 'Påmeldingsdata sesong 2025/26.',
+          eyebrow: 'IP & MERKEVAREPROFIL',
+          imgHint: 'Skjermbilde — påmelding og lagoversikt',
+          shotUrl: 'bedriftsligaen.no',
+          frameStyle: 'box'
+        },
+        layout: {
+          body: {
+            x: 0,
+            y: 0
+          },
+          img_l4m22rf: {
+            x: 26.5,
+            y: -12
+          },
+          img_m0phu4w: {
+            x: -22,
+            y: -12
+          },
+          img_ukh497k: {
+            x: -19.8,
+            y: -12
+          }
+        } },
+      { type:'brand', brand:'arena',
+        data: {
+          img: '',
+          body: [
+            'Bygget på Skagerrak sin plattformteknologi, Maelstrøm, så er GG Arena hele Norges kompetitive turneringsplattform for amatører, utøvere og ambisiøse turneringsoperatører.'
+          ],
+          img2: '',
+          note: 'Ingen nedlastninger. Logg inn, klikk og spill.',
+          brand: 'arena',
+          stats: [
+            {
+              label: 'Average Monthly Users',
+              value: '52.000'
+            },
+            {
+              label: 'Partner Share of Voice',
+              value: '100%'
+            },
+            {
+              label: 'Share of voice',
+              value: '100%'
+            },
+            {
+              label: 'PC / Desktop',
+              value: '95%'
+            }
+          ],
+          images: [
+            {
+              id: 'vn9wiqn',
+              img: '',
+              slot: 0,
+              imgHint: 'Bilde',
+              frameStyle: 'polaroid'
+            }
+          ],
+          source: '',
+          eyebrow: 'IP & MERKEVAREPROFIL',
+          imgHint: 'Skjermbilde — turneringsoversikt i GG Arena',
+          shotUrl: 'ggarena.no',
+          imgHint2: 'Skjermbilde — mobilvisning i GG Arena',
+          partners: [
+            'Loyalty Club',
+            'Platform',
+            'Product Placement',
+            'Activities',
+            'Tournaments',
+            'League',
+            'In-game Ads'
+          ]
+        },
+        layout: {
+          img: {
+            s: 1.21,
+            x: 47.5,
+            y: -14.56
+          },
+          img2: {
+            x: 45.02,
+            y: -12.15,
+            hidden: true
+          },
+          note: {
+            x: 0,
+            y: 13
+          },
+          text: {
+            x: 0,
+            y: 0
+          },
+          stats: {
+            x: 0,
+            y: 0
+          },
+          partner5: {
+            x: 0,
+            y: 0
+          },
+          partner6: {
+            x: 0.05,
+            y: 0
+          },
+          partners: {
+            s: 1.01,
+            x: 1.24,
+            y: 4.85
+          },
+          img_vn9wiqn: {
+            hidden: true
+          }
+        } },
+      { type:'brand', brand:'spillexpo',
+        data: {
+          img: '',
+          body: [
+            'SpillExpo er Norges største teknologi- og gaming festival arrangert i Lillestrøm på Nova Spectrum hvert år i November.',
+            'Festivalen tiltrekker seg titusenvis av besøkende hvert år, hvor Skagerrak deltar med hele alle merkevarene i økosystemet gjennom eget område av festivalen med Bedriftsligaen, Gamer.no, GG Arena og ikke minst sluttspillet i Komplettligaen i samarbeid med samarbeidspartnere',
+            'SpillExpo gir Skagerrak tilgang til fysiske aktiveringer og aktiviteter sammen med samarbeidspartnere'
+          ],
+          brand: 'spillexpo',
+          stats: [
+            {
+              label: 'Besøkende',
+              value: '30 000'
+            },
+            {
+              label: 'Merkevarer',
+              value: '4'
+            },
+            {
+              label: 'Aktiviteter',
+              value: '8'
+            },
+            {
+              label: 'Standområder',
+              value: '4'
+            }
+          ],
+          images: [
+            {
+              id: '8thp4mu',
+              img: 'asset:amsypqhgjwj6i',
+              slot: 0,
+              imgHint: 'Bilde'
+            },
+            {
+              id: '3pi04zn',
+              img: 'asset:amsyp4dxwp0r8',
+              slot: 1,
+              imgHint: 'Bilde'
+            },
+            {
+              id: 'oz2n581',
+              img: 'asset:amsyoyhjr7xp0',
+              slot: 2,
+              imgHint: 'Bilde'
+            },
+            {
+              id: 'l4355dt',
+              img: 'asset:amsj42ajdf5an',
+              slot: 3,
+              imgHint: 'Bilde'
+            }
+          ],
+          source: '',
+          eyebrow: 'IP & MERKEVAREPROFIL',
+          imgHint: '',
+          shotUrl: '',
+          frameStyle: 'square'
+        },
+        layout: {
+          img: {
+            hidden: true
+          },
+          body: {
+            x: 0,
+            y: 0.46
+          },
+          img_3pi04zn: {
+            s: 1.28,
+            x: -9.08,
+            y: -11.39
+          },
+          img_8thp4mu: {
+            s: 1.28,
+            x: -5.11,
+            y: -11.39
+          },
+          img_l4355dt: {
+            s: 1.28,
+            x: 20.92,
+            y: -30.94
+          },
+          img_oz2n581: {
+            s: 1.28,
+            x: 24.89,
+            y: -30.94
+          }
+        } },
+      { type:'brand', brand:'komplett',
+        data: {
+          img: '',
+          body: [
+            'Det offisielle Norgesmesterskapet i e-sport siden 2014 og Europas største nasjonale liga',
+            'Med over 10.000 spillere hver sesong og 1.000 organiserte klubber fordelt over tre sesonger',
+            'Mange deltar nå i ungdomsårene i Komplettligaen og senere i Bedriftsligaen gjennom arbeidsplassen',
+            'Kåret til Norges 4. mest populære sportsunderholdningsmerkevare blant unge av VG (23)'
+          ],
+          grad: 'inherit',
+          brand: 'komplett',
+          stats: [
+            {
+              fact: 'komplett.players'
+            },
+            {
+              fact: 'komplett.teams'
+            },
+            {
+              fact: 'komplett.watch'
+            },
+            {
+              label: 'Sesonger',
+              value: '3'
+            }
+          ],
+          images: [
+            {
+              id: 'eiwtduy',
+              img: 'asset:amsyde9zycsit',
+              slot: 0,
+              imgHint: '',
+              frameStyle: 'box'
+            },
+            {
+              id: 'e0mkhc0',
+              img: 'asset:amsyzr8e92aob',
+              slot: 1,
+              imgHint: '',
+              frameStyle: 'polaroid'
+            },
+            {
+              id: 'ubldhmb',
+              img: 'asset:amsyztko4i62d',
+              slot: 3,
+              imgHint: 'Bilde'
+            },
+            {
+              id: 'aqy2yx0',
+              img: 'asset:amsyztsurdkm8',
+              slot: 4,
+              imgHint: 'Bilde'
+            },
+            {
+              id: '2m3qqka',
+              img: 'asset:amsx2bj67rpxq',
+              slot: 2,
+              imgHint: ''
+            }
+          ],
+          noGrad: false,
+          source: 'Plattformdata og Twitch-analyse 2025.',
+          eyebrow: 'IP & MERKEVAREPROFIL',
+          imgHint: 'Skjermbilde — ligaoversikt i Good Game Arena',
+          shotUrl: '',
+          statStyle: 'boxed',
+          frameStyle: 'polaroid'
+        },
+        layout: {
+          img: {
+            hidden: true
+          },
+          body: {
+            x: 0,
+            y: 0
+          },
+          img2: {
+            s: 1.55,
+            x: -6.97,
+            y: -11.5
+          },
+          img3: {
+            s: 2.48,
+            x: -0.5,
+            y: -31.41
+          },
+          img4: {
+            s: 1,
+            x: 13.93,
+            y: -2.5
+          },
+          img_0: {
+            s: 2.56,
+            x: -15,
+            y: -29
+          },
+          img_1: {
+            s: 0.92,
+            x: 0,
+            y: -15
+          },
+          img_2: {
+            x: 2,
+            y: -14.45
+          },
+          source: {
+            x: 0,
+            y: 4
+          },
+          eyebrow: {
+            x: 0,
+            y: 0
+          },
+          img_2m3qqka: {
+            x: 29.87,
+            y: -17
+          },
+          img_aqy2yx0: {
+            x: 61,
+            y: -28.92
+          },
+          img_e0mkhc0: {
+            s: 1.17,
+            x: -22,
+            y: -11.5
+          },
+          img_eiwtduy: {
+            s: 3,
+            x: -19.5,
+            y: -28
+          },
+          img_ubldhmb: {
+            x: 34.74,
+            y: -9
+          }
+        } },
+      { type:'membership',
+        data: {
+          img: '',
+          sub: 'Et case rundt kundekonvertering og preferanse i Ung-segmentet\n',
+          tag: 'Good Game Gull er abonnementet som kreves for å delta i økosystemet av ulike grunner. Enten du vil delta sportslig for gøy eller med ambisjoner i Komplettligaen, eller vil delta i community hos Gamer.no med kommersielle fordeler',
+          body: '',
+          grad: 'inherit',
+          img2: 'assets/gamergull-loyalty.png',
+          lead: 'Good Game Gull',
+          deals: [],
+          title: 'GOOD GAME GULL X DNB',
+          images: [
+            {
+              id: 'ggmbb4lxx9',
+              img: 'asset:amszxo0jwq3y2',
+              slot: 1,
+              imgHint: 'Skjermbilde — GG Gull-fordeler i appen',
+              frameStyle: 'raw'
+            },
+            {
+              id: 'nbj8vli',
+              img: 'asset:amszvqvqh5qrv',
+              slot: 0,
+              imgHint: 'Bilde',
+              frameStyle: 'square'
+            }
+          ],
+          noGrad: false,
+          imgHint: 'Skjermbilde — Gamer Gull i appen',
+          footnote: 'I kjernen av et potensielt samarbeid er det ønskelig å fokusere på konvertering av kunder innen **Ung og Pluss-segmentet**:',
+          img2Mode: 'photo',
+          imgHint2: '',
+          closingNote: 'Potensielle synergier mot Visa co-branded cards og innen andre arrangementer DNB er involvert i.',
+          iconBullets: [
+            {
+              img: 'asset:amszvs88gzxmy',
+              tag: '',
+              head: 'Over 12.000 medlemmer abonnerer på årsbasis for tilgang til konkurranse, innhold eller kommersielle fordeler',
+              text: ''
+            },
+            {
+              img: 'asset:amszvs88gzxmy',
+              tag: '',
+              head: 'DNB har per i dag 49 % av de abonnerende medlemmene, hvor resterende er fordelt mellom Sparebank1, Nordea og SEB/Eurocard',
+              text: ''
+            },
+            {
+              img: 'asset:amszvs88gzxmy',
+              tag: '',
+              head: 'Et totalt community på over 100.000 medlemmer når annonseblokkering lanseres i abonnementet hos Gamer.no ila. H2-26.',
+              text: ''
+            }
+          ],
+          widgetPrice: '',
+          widgetTitle: '',
+          footnoteBody: 'Abonnement koster **89,- i mnd** for ordinær deltagelse gjennom sesongene for hver individuell spiller\nDNB Ung/Pluss-kunder som betaler med sitt **DNB VISA eller Mastercard** får dekket abonnement samt **subsidiert billett til Spillexpo**\nDe som ikke har kundeforhold hos DNB må betale på vanlig måte eller kan velge å opprette et hos DNB for å dra nytte av fordelene\n'
+        },
+        layout: {
+          img: {
+            s: 1.51,
+            x: -5.8,
+            y: -0.8,
+            hidden: true
+          },
+          body: {
+            x: 0,
+            y: 0
+          },
+          img2: {
+            s: 1.55,
+            x: -14,
+            y: 5.46
+          },
+          closingNote: {
+            x: 0,
+            y: 1.5
+          },
+          iconBullets: {
+            x: 0,
+            y: 2.2
+          },
+          img_nbj8vli: {
+            s: 1.31,
+            x: -21.91,
+            y: -12.26
+          },
+          img_ggmbb4lxx9: {
+            s: 1.58,
+            x: 10.74,
+            y: -16.69
+          }
+        } },
+      { type:'closing',
+        data: {
+          img: 'images/malta/malta-gamingmalta-plate.jpg',
+          text: 'Takk!',
+          contact: '',
+          imgHint: 'Arrangementsbilde — spillere i aksjon'
+        },
+        layout: {
+          logo: {
+            s: 2.36,
+            x: -1,
+            y: -4.5
+          },
+          senderLogo: {
+            x: 0,
+            y: 0
+          }
+        } },
+      { type:'divider',
+        data: {
+          img: 'images/malta/malta-island-polaroids.png',
+          sub: 'Dokumentasjon og referanser',
+          word: 'Appendiks',
+          imgHint: 'Arrangementsbilde — scene, vidvinkel'
+        } }
+    ] },
 ];
 
 /* ---------- hjelpere ---------- */
