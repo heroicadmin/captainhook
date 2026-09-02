@@ -93,3 +93,31 @@ En template kan bære sitt EGET innhold, ikke bare blokktyper: en rad kan være
 bibliotekets standard. Malta-templaten og DNB-løpet gjør dette. Nye templates må legges i
 `BUILTIN_TEMPLATES` hvis de skal tilbakestilles til koden ved versjonsbump; de plukkes opp
 uansett av seedingen som legger til templates med ukjent id.
+
+## Native dialoger er forbudt i knapper som gjør noe
+
+Chrome slutter å vise `prompt`/`confirm`/`alert` etter noen dialoger i samme økt
+(«prevent additional dialogs»). Etter det returnerer `confirm()` false og `prompt()` null,
+og knappen gjør **ingenting, helt stille**. Det var halve årsaken til at slettknappen for
+bilder ble meldt som ødelagt.
+
+To felleshjelpere finnes nå på komponenten:
+
+- `armDel(token, run, word)` — to-trinns sletting. Første klikk armerer, andre utfører.
+  Returnerer `{ label, mark, bg, fg, border, on, armed }` til markupen. Armeringen er én
+  tilstand (`state.armed`) for hele appen, så to knapper aldri står armert samtidig.
+- `nameField(token, run, initial)` — inline navnefelt. Enter lagrer, Escape avbryter, tomt
+  navn lagrer ikke. Returnerer `{ open, closed, value, onOpen, onInput, onKey, onSave, onCancel }`.
+
+Alle seks destruktive `confirm()` er borte (pitch, avsender, template, case, bibliotek-slide,
+merkevare), og seks ettfelts-`prompt()` (ny mappe, ny avsender, ny template, nytt
+template-navn, ny case, ny merkevare).
+
+Beskjeder som lå i dialogene måtte flytte, ikke forsvinne: «finnes allerede» vises live under
+navnefeltet, «er i bruk» står ved slettknappen, og minimum-én-regelen skjuler knappen i
+stedet for å vise en alert.
+
+**Fortsatt igjen** — tre `prompt()`-kjeder som trenger et skjema, ikke ett felt: nytt tall i
+faktabasen (4 prompts), ny slide i biblioteket (3 prompts), og begrunnelse ved overstyring av
+et faktatall (1 prompt, men midt i en annen flyt). `alert()` brukes ellers bare til
+feilmeldinger og kvitteringer, der stille bortfall ikke ødelegger data.

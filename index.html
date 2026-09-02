@@ -531,7 +531,7 @@
                 <a href="{{ p.viewHref }}" style="font-size:12px;font-weight:600;color:#322D45;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:5px;padding:7px 11px;transition:background .14s,border-color .14s" style-hover="background:#FFFFFF;border-color:var(--accent);color:#16131F">Åpne kundeside</a>
                 <button type="button" onClick="{{ p.onRenameStart }}" style="font-size:12px;font-weight:600;color:#322D45;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:5px;padding:7px 11px;transition:background .14s,border-color .14s;cursor:pointer" style-hover="background:#FFFFFF;border-color:var(--accent);color:#16131F">Endre navn</button>
                 <button type="button" onClick="{{ p.onDup }}" style="font-size:12px;font-weight:600;color:#322D45;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:5px;padding:7px 11px;transition:background .14s,border-color .14s;cursor:pointer" style-hover="background:#FFFFFF;border-color:var(--accent);color:#16131F">Dupliser</button>
-                <button type="button" onClick="{{ p.onDel }}" style="font-size:12px;font-weight:600;color:#6E6883;background:transparent;border:1px solid #E6E4EE;border-radius:5px;padding:7px 11px;cursor:pointer;transition:background .14s,color .14s,border-color .14s" style-hover="background:rgba(233,55,110,.08);border-color:#E9376E;color:#E9376E">Slett</button>
+                <button type="button" onClick="{{ p.del.on }}" title="Klikk én gang til for å slette" style="font-size:12px;font-weight:600;color:{{ p.del.fg }};background:{{ p.del.bg }};border:1px solid {{ p.del.border }};border-radius:5px;padding:7px 11px;cursor:pointer;transition:background .14s,color .14s,border-color .14s" style-hover="background:rgba(233,55,110,.08);border-color:#E9376E;color:#E9376E">{{ p.del.label }}</button>
               </div>
             </div>
           </div>
@@ -1247,7 +1247,7 @@
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
               <span style="font-size:10px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#8A85A0">Basen</span>
               <span style="flex:1"></span>
-              <button type="button" onClick="{{ admin.onCaseNew }}" style="font-size:11.5px;font-weight:600;border-radius:5px;padding:6px 10px;cursor:pointer;background:#322D45;border:1px solid #322D45;color:#FFFFFF">+ Ny case</button>
+              <sc-if value="{{ admin.caseNew.closed }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ admin.caseNew.onOpen }}" style="font-size:11.5px;font-weight:600;border-radius:5px;padding:6px 10px;cursor:pointer;background:#322D45;border:1px solid #322D45;color:#FFFFFF">+ Ny case</button></sc-if><sc-if value="{{ admin.caseNew.open }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:6px"><input type="text" value="{{ admin.caseNew.value }}" onInput="{{ admin.caseNew.onInput }}" onKeyDown="{{ admin.caseNew.onKey }}" autofocus="1" placeholder="Tittel på casen" aria-label="Tittel på casen" style="width:190px;font-size:12px;background:#FFFFFF;border:1px solid var(--accent);border-radius:5px;padding:6px 8px;color:#16131F"><button type="button" onClick="{{ admin.caseNew.onSave }}" style="font-size:12px;font-weight:600;color:var(--accent-ink);background:var(--accent);border:1px solid var(--accent);border-radius:5px;padding:6px 10px;cursor:pointer">Lagre</button><button type="button" onClick="{{ admin.caseNew.onCancel }}" title="Avbryt" style="font-size:12px;font-weight:600;color:#6E6883;background:transparent;border:1px solid #E6E4EE;border-radius:5px;padding:6px 9px;cursor:pointer">Avbryt</button><sc-if value="{{ admin.caseNewDup }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px;color:#E9376E;font-weight:600">Finnes allerede</span></sc-if></span></sc-if> 
             </div>
             <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px">
               <sc-for list="{{ admin.caseBrandFilter }}" as="b" hint-placeholder-count="3">
@@ -1273,7 +1273,7 @@
                 <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
                   <input type="text" value="{{ admin.caseTitle }}" onInput="{{ admin.onCaseTitle }}" placeholder="Tittel" style="flex:1;min-width:0;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:5px;color:#16131F;font-size:14px;font-weight:700;padding:8px 10px">
                   <button type="button" onClick="{{ admin.onCaseHidden }}" style="flex:none;font-size:11px;font-weight:600;border-radius:5px;padding:8px 11px;cursor:pointer;background:{{ admin.caseHiddenBg }};border:0;color:{{ admin.caseHiddenFg }}">{{ admin.caseHiddenLabel }}</button>
-                  <button type="button" onClick="{{ admin.onCaseDel }}" title="Slett casen" style="flex:none;width:30px;height:32px;border:1px solid #E6E4EE;background:transparent;color:#9A96AC;border-radius:5px;cursor:pointer;font-size:15px">×</button>
+                  <sc-if value="{{ admin.caseHasSel }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ admin.caseDel.on }}" title="Slett casen — klikk én gang til for å bekrefte" style="flex:none;width:30px;height:32px;border:1px solid {{ admin.caseDel.border }};background:{{ admin.caseDel.bg }};color:{{ admin.caseDel.fg }};border-radius:5px;cursor:pointer;font-size:15px">{{ admin.caseDel.mark }}</button></sc-if><sc-if value="{{ admin.caseHasNote }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px;line-height:1.4;color:#8A85A0;font-weight:600">{{ admin.caseDelNote }}</span></sc-if>
                 </div>
                 <div style="display:flex;gap:8px;flex-wrap:wrap">
                   <input type="text" value="{{ admin.caseKicker }}" onInput="{{ admin.onCaseKicker }}" placeholder="Kicker" style="flex:1;min-width:120px;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:5px;color:#55506B;font-size:12.5px;padding:8px 10px">
@@ -1397,7 +1397,7 @@
                     </sc-for>
                   </select>
                   <button type="button" onClick="{{ admin.onLibFull }}" style="font-size:11.5px;font-weight:700;border-radius:5px;padding:8px 12px;cursor:pointer;background:var(--accent);border:0;color:var(--accent-ink)">Åpne full slide</button>
-                  <button type="button" onClick="{{ admin.onLibDel }}" title="Slett fra biblioteket" style="width:30px;height:32px;border:1px solid #E6E4EE;background:transparent;color:#9A96AC;border-radius:5px;cursor:pointer;font-size:15px">×</button>
+                  <sc-if value="{{ admin.libNotBlocked }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ admin.libDel.on }}" title="Slett fra biblioteket — klikk én gang til for å bekrefte" style="width:30px;height:32px;border:1px solid {{ admin.libDel.border }};background:{{ admin.libDel.bg }};color:{{ admin.libDel.fg }};border-radius:5px;cursor:pointer;font-size:15px">{{ admin.libDel.mark }}</button></sc-if><sc-if value="{{ admin.libBlocked }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px;line-height:1.4;color:#8A85A0;font-weight:600">{{ admin.libInUse }}</span></sc-if>
                 </div>
                 <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:#8A85A0">
                   <span style="font-family:ui-monospace,Menlo,monospace;color:#9A96AC">{{ admin.libTypeLabel }}</span>
@@ -1500,7 +1500,7 @@
           <sc-for list="{{ admin.tplPicker }}" as="t" hint-placeholder-count="3">
             <button type="button" onClick="{{ t.on }}" style="font-size:12.5px;font-weight:600;border-radius:6px;padding:8px 13px;cursor:pointer;background:{{ t.bg }};border:1px solid {{ t.border }};color:{{ t.fg }}">{{ t.label }}</button>
           </sc-for>
-          <button type="button" onClick="{{ admin.onTplNew }}" style="font-size:12.5px;font-weight:600;border-radius:6px;padding:8px 13px;cursor:pointer;background:transparent;border:1px dashed #D5D2E0;color:#6E6883">+ Ny template</button>
+          <sc-if value="{{ admin.tplNew.closed }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ admin.tplNew.onOpen }}" style="font-size:12.5px;font-weight:600;border-radius:6px;padding:8px 13px;cursor:pointer;background:transparent;border:1px dashed #D5D2E0;color:#6E6883">+ Ny template</button></sc-if><sc-if value="{{ admin.tplNew.open }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:6px"><input type="text" value="{{ admin.tplNew.value }}" onInput="{{ admin.tplNew.onInput }}" onKeyDown="{{ admin.tplNew.onKey }}" autofocus="1" placeholder="Navn på template" aria-label="Navn på template" style="width:170px;font-size:12px;background:#FFFFFF;border:1px solid var(--accent);border-radius:5px;padding:6px 8px;color:#16131F"><button type="button" onClick="{{ admin.tplNew.onSave }}" style="font-size:12px;font-weight:600;color:var(--accent-ink);background:var(--accent);border:1px solid var(--accent);border-radius:5px;padding:6px 10px;cursor:pointer">Lagre</button><button type="button" onClick="{{ admin.tplNew.onCancel }}" title="Avbryt" style="font-size:12px;font-weight:600;color:#6E6883;background:transparent;border:1px solid #E6E4EE;border-radius:5px;padding:6px 9px;cursor:pointer">Avbryt</button></span></sc-if> 
         </div>
 
         <div style="display:grid;grid-template-columns:1fr 300px;gap:18px;align-items:start">
@@ -1524,9 +1524,9 @@
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
               <span style="font-size:14px;font-weight:700">{{ admin.tplName }}</span>
               <span style="flex:1"></span>
-              <button type="button" onClick="{{ admin.onTplRename }}" title="Gi nytt navn" style="border:0;background:transparent;color:#9A96AC;cursor:pointer;font-size:12px">✎</button>
+              <sc-if value="{{ admin.tplRename.closed }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ admin.tplRename.onOpen }}" title="Gi nytt navn" style="border:0;background:transparent;color:#9A96AC;cursor:pointer;font-size:12px">✎</button></sc-if><sc-if value="{{ admin.tplRename.open }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:6px"><input type="text" value="{{ admin.tplRename.value }}" onInput="{{ admin.tplRename.onInput }}" onKeyDown="{{ admin.tplRename.onKey }}" autofocus="1" placeholder="Nytt navn" aria-label="Nytt navn" style="width:150px;font-size:12px;background:#FFFFFF;border:1px solid var(--accent);border-radius:5px;padding:6px 8px;color:#16131F"><button type="button" onClick="{{ admin.tplRename.onSave }}" style="font-size:12px;font-weight:600;color:var(--accent-ink);background:var(--accent);border:1px solid var(--accent);border-radius:5px;padding:6px 10px;cursor:pointer">Lagre</button><button type="button" onClick="{{ admin.tplRename.onCancel }}" title="Avbryt" style="font-size:12px;font-weight:600;color:#6E6883;background:transparent;border:1px solid #E6E4EE;border-radius:5px;padding:6px 9px;cursor:pointer">Avbryt</button></span></sc-if> 
               <button type="button" onClick="{{ admin.onTplDup }}" title="Dupliser" style="border:0;background:transparent;color:#9A96AC;cursor:pointer;font-size:12px">⧉</button>
-              <button type="button" onClick="{{ admin.onTplDel }}" title="Slett template" style="border:0;background:transparent;color:#9A96AC;cursor:pointer;font-size:14px">×</button>
+              <sc-if value="{{ admin.tplCanDel }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ admin.tplDel.on }}" title="Slett template — klikk én gang til for å bekrefte" style="border:0;background:{{ admin.tplDel.bg }};color:{{ admin.tplDel.fg }};cursor:pointer;font-size:14px">{{ admin.tplDel.mark }}</button></sc-if>
             </div>
             <div style="display:flex;align-items:center;gap:8px;margin:8px 0 4px">
               <label style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#55506B;white-space:nowrap">Eier · domene</label>
@@ -1597,7 +1597,7 @@
           <h2 style="font-size:19px;font-weight:700;letter-spacing:-.01em;margin:0">Merkevare</h2>
           <span style="font-size:12px;color:#6E6883">Hver logo vises på både mørk og lys flate, siden det er der feil oppdages.</span>
           <span style="flex:1"></span>
-          <button type="button" onClick="{{ admin.onBrandNew }}" style="font-size:12px;font-weight:700;color:var(--accent-ink);background:var(--accent);border:0;border-radius:6px;transition:filter .14s,box-shadow .14s;padding:9px 14px;cursor:pointer;white-space:nowrap" style-hover="filter:brightness(1.08);box-shadow:0 10px 22px -12px var(--accent)">+ Ny merkevare</button>
+          <sc-if value="{{ admin.brandNew.closed }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ admin.brandNew.onOpen }}" style="font-size:12px;font-weight:700;color:var(--accent-ink);background:var(--accent);border:0;border-radius:6px;transition:filter .14s,box-shadow .14s;padding:9px 14px;cursor:pointer;white-space:nowrap" style-hover="filter:brightness(1.08);box-shadow:0 10px 22px -12px var(--accent)">+ Ny merkevare</button></sc-if><sc-if value="{{ admin.brandNew.open }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:6px"><input type="text" value="{{ admin.brandNew.value }}" onInput="{{ admin.brandNew.onInput }}" onKeyDown="{{ admin.brandNew.onKey }}" autofocus="1" placeholder="Navn på merkevaren" aria-label="Navn på merkevaren" style="width:170px;font-size:12px;background:#FFFFFF;border:1px solid var(--accent);border-radius:5px;padding:6px 8px;color:#16131F"><button type="button" onClick="{{ admin.brandNew.onSave }}" style="font-size:12px;font-weight:600;color:var(--accent-ink);background:var(--accent);border:1px solid var(--accent);border-radius:5px;padding:6px 10px;cursor:pointer">Lagre</button><button type="button" onClick="{{ admin.brandNew.onCancel }}" title="Avbryt" style="font-size:12px;font-weight:600;color:#6E6883;background:transparent;border:1px solid #E6E4EE;border-radius:5px;padding:6px 9px;cursor:pointer">Avbryt</button></span></sc-if> 
         </div>
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px">
           <sc-for list="{{ admin.brands }}" as="br" hint-placeholder-count="6">
@@ -1606,7 +1606,7 @@
               <div style="padding:16px;display:flex;flex-direction:column;gap:10px">
                 <div style="display:flex;align-items:center;gap:8px">
                   <input type="text" value="{{ br.name }}" onInput="{{ br.onName }}" style="flex:1;min-width:0;background:#F2F0F7;border:1px solid #E6E4EE;border-radius:5px;color:#16131F;font-size:13.5px;font-weight:700;padding:7px 9px">
-                  <button type="button" onClick="{{ br.onDel }}" title="Slett merkevaren" style="width:28px;border:1px solid #E6E4EE;background:transparent;color:#9A96AC;border-radius:5px;cursor:pointer;font-size:14px">×</button>
+                  <sc-if value="{{ br.canDel }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ br.del.on }}" title="Slett merkevaren — klikk én gang til for å bekrefte" style="width:28px;border:1px solid {{ br.del.border }};background:{{ br.del.bg }};color:{{ br.del.fg }};border-radius:5px;cursor:pointer;font-size:14px">{{ br.del.mark }}</button></sc-if><sc-if value="{{ br.hasDelNote }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px;line-height:1.4;color:#8A85A0;font-weight:600">{{ br.delNote }}</span></sc-if>
                 </div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
                   <div style="position:relative;border:1px solid #D5D2E0;border-radius:6px;height:64px;background-color:#1B1826;background-size:contain;background-repeat:no-repeat;background-position:center;background-origin:content-box;padding:10px;background-image:{{ br.thumb }};filter:{{ br.tintFilter }}"><span style="position:absolute;left:5px;top:4px;font-size:8.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6E6883;filter:none">Logo</span></div>
@@ -1670,7 +1670,7 @@
           <sc-for list="{{ admin.imgCatFilterRest }}" as="c" hint-placeholder-count="3">
             <button type="button" onClick="{{ c.on }}" style="font-size:12px;font-weight:600;border-radius:6px;padding:7px 12px;cursor:pointer;background:{{ c.bg }};border:1px solid {{ c.border }};color:{{ c.fg }}">{{ c.label }}</button>
           </sc-for>
-          <button type="button" onClick="{{ admin.onNewCat }}" style="font-size:12px;font-weight:600;border-radius:6px;padding:7px 12px;cursor:pointer;background:transparent;border:1px dashed #D5D2E0;color:#6E6883">+ Ny kategori</button>
+          <sc-if value="{{ admin.newCat.closed }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ admin.newCat.onOpen }}" style="font-size:12px;font-weight:600;border-radius:6px;padding:7px 12px;cursor:pointer;background:transparent;border:1px dashed #D5D2E0;color:#6E6883">+ Ny kategori</button></sc-if><sc-if value="{{ admin.newCat.open }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:6px"><input type="text" value="{{ admin.newCat.value }}" onInput="{{ admin.newCat.onInput }}" onKeyDown="{{ admin.newCat.onKey }}" autofocus="1" placeholder="Navn på mappen" aria-label="Navn på mappen" style="width:170px;font-size:12px;background:#FFFFFF;border:1px solid var(--accent);border-radius:5px;padding:6px 8px;color:#16131F"><button type="button" onClick="{{ admin.newCat.onSave }}" style="font-size:12px;font-weight:600;color:var(--accent-ink);background:var(--accent);border:1px solid var(--accent);border-radius:5px;padding:6px 10px;cursor:pointer">Lagre</button><button type="button" onClick="{{ admin.newCat.onCancel }}" title="Avbryt" style="font-size:12px;font-weight:600;color:#6E6883;background:transparent;border:1px solid #E6E4EE;border-radius:5px;padding:6px 9px;cursor:pointer">Avbryt</button><sc-if value="{{ admin.newCatDup }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px;color:#E9376E;font-weight:600">Finnes allerede</span></sc-if></span></sc-if> 
         </div>
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;animation:{{ subAnim }}">
           <sc-for list="{{ admin.images }}" as="im" hint-placeholder-count="8">
@@ -1712,7 +1712,7 @@
           <h2 style="font-size:19px;font-weight:700;letter-spacing:-.01em;margin:0">Avsender</h2>
           <span style="font-size:12px;color:#6E6883">Hvem pitchen kommer fra. Logoen står nederst på forside og avslutning, på mørk flate.</span>
           <span style="flex:1"></span>
-          <button type="button" onClick="{{ admin.onSenderNew }}" style="font-size:12px;font-weight:700;color:var(--accent-ink);background:var(--accent);border:0;border-radius:6px;transition:filter .14s,box-shadow .14s;padding:9px 14px;cursor:pointer" style-hover="filter:brightness(1.08);box-shadow:0 10px 22px -12px var(--accent)">+ Ny avsender</button>
+          <sc-if value="{{ admin.senderNew.closed }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ admin.senderNew.onOpen }}" style="font-size:12px;font-weight:700;color:var(--accent-ink);background:var(--accent);border:0;border-radius:6px;transition:filter .14s,box-shadow .14s;padding:9px 14px;cursor:pointer" style-hover="filter:brightness(1.08);box-shadow:0 10px 22px -12px var(--accent)">+ Ny avsender</button></sc-if><sc-if value="{{ admin.senderNew.open }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:6px"><input type="text" value="{{ admin.senderNew.value }}" onInput="{{ admin.senderNew.onInput }}" onKeyDown="{{ admin.senderNew.onKey }}" autofocus="1" placeholder="Navn på avsenderen" aria-label="Navn på avsenderen" style="width:170px;font-size:12px;background:#FFFFFF;border:1px solid var(--accent);border-radius:5px;padding:6px 8px;color:#16131F"><button type="button" onClick="{{ admin.senderNew.onSave }}" style="font-size:12px;font-weight:600;color:var(--accent-ink);background:var(--accent);border:1px solid var(--accent);border-radius:5px;padding:6px 10px;cursor:pointer">Lagre</button><button type="button" onClick="{{ admin.senderNew.onCancel }}" title="Avbryt" style="font-size:12px;font-weight:600;color:#6E6883;background:transparent;border:1px solid #E6E4EE;border-radius:5px;padding:6px 9px;cursor:pointer">Avbryt</button></span></sc-if> 
         </div>
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px">
           <sc-for list="{{ admin.senders }}" as="sd" hint-placeholder-count="2">
@@ -1741,7 +1741,7 @@
                 </div>
                 <div style="display:flex;gap:5px">
                   <button type="button" onClick="{{ sd.onLogo }}" style="flex:1;font-size:11.5px;font-weight:600;border-radius:5px;padding:7px;cursor:pointer;background:#F2F0F7;border:1px solid #D5D2E0;color:#322D45">Bytt logo</button>
-                  <button type="button" onClick="{{ sd.onDel }}" title="Slett avsender" style="width:30px;border:1px solid #E6E4EE;background:transparent;color:#9A96AC;border-radius:5px;cursor:pointer">×</button>
+                  <sc-if value="{{ sd.canDel }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ sd.del.on }}" title="Slett avsender — klikk én gang til for å bekrefte" style="width:30px;border:1px solid {{ sd.del.border }};background:{{ sd.del.bg }};color:{{ sd.del.fg }};border-radius:5px;cursor:pointer">{{ sd.del.mark }}</button></sc-if>
                 </div>
                 <span style="font-size:10.5px;color:#A7A3B7">{{ sd.use }}</span>
               </div>
@@ -2005,7 +2005,7 @@ class Component extends DCLogic {
     shareStats: null, shareLocked: null, shareCopied: false,
     sel: 0, tab: 'content', showLib: false, insertAt: null, showCheck: false,
     adminTab: 'facts', adminTpl: 'master', nw: null, scroll: 0, libSel: null, caseSel: null,
-    renameId: null, renameVal: null,
+    renameId: null, renameVal: null, armed: null, naming: null, nameVal: null,
     assets: {}, picker: null, pickerCat: 'Alle', adminCat: 'Alle', arcTab: 'all',
     uiLang: 'no'
   };
@@ -2582,6 +2582,57 @@ class Component extends DCLogic {
     fn(t); this.save(store);
   }
   withStore(fn) { const st = this.clone(this.state.store); fn(st); this.save(st); }
+  /* ── To felleshjelpere som erstatter native dialoger ──────────────────────────────
+     Chrome slutter å vise prompt/confirm/alert etter noen dialoger i samme økt
+     («prevent additional dialogs»). Etter det gjorde knappene INGENTING, helt stille.
+     Det var halve årsaken til at slettknappen for bilder var «ødelagt». Derfor bor
+     både bekreftelse og navngiving i grensesnittet nå. Se NOTES.md. */
+
+  /* To-trinns sletting: første klikk armerer knappen, andre utfører. Armeringen er
+     én tilstand for hele appen, så det aldri står to armerte knapper samtidig. */
+  armDel(token, run, word) {
+    const armed = this.state.armed === token;
+    return {
+      armed, notArmed: !armed,
+      label: armed ? (word || 'Slett') + '?' : (word || 'Slett'),
+      mark: armed ? '?' : '\u00d7',
+      bg: armed ? 'rgba(233,55,110,.12)' : 'transparent',
+      fg: armed ? '#E9376E' : '#9A96AC',
+      border: armed ? '#E9376E' : '#E6E4EE',
+      on: e => {
+        if (e && e.stopPropagation) e.stopPropagation();
+        if (e && e.preventDefault) e.preventDefault();
+        if (!armed) return this.setState({ armed: token });
+        this.setState({ armed: null });
+        run();
+      }
+    };
+  }
+  /* Inline navnefelt: åpnes av en knapp, lagres med Enter eller Lagre, avbrytes med
+     Escape. Tomt navn lagrer ikke — da ville en oppføring blitt navnløs. */
+  nameField(token, run, initial) {
+    const open = this.state.naming === token;
+    const val = open ? (this.state.nameVal == null ? (initial || '') : this.state.nameVal) : '';
+    const commit = () => {
+      const v = String(val).trim();
+      this.setState({ naming: null, nameVal: null });
+      if (v) run(v);
+    };
+    return {
+      open, closed: !open, value: val,
+      onOpen: e => { if (e && e.stopPropagation) e.stopPropagation();
+        if (e && e.preventDefault) e.preventDefault();
+        this.setState({ naming: token, nameVal: initial == null ? '' : initial }); },
+      onInput: e => this.setState({ nameVal: e.target.value }),
+      onKey: e => { if (e.key === 'Enter') { e.preventDefault(); commit(); }
+        else if (e.key === 'Escape') { e.preventDefault(); this.setState({ naming: null, nameVal: null }); } },
+      onSave: e => { if (e && e.stopPropagation) e.stopPropagation();
+        if (e && e.preventDefault) e.preventDefault(); commit(); },
+      onCancel: e => { if (e && e.stopPropagation) e.stopPropagation();
+        if (e && e.preventDefault) e.preventDefault();
+        this.setState({ naming: null, nameVal: null }); }
+    };
+  }
   /* Navneendring fra arkivkortet. Bare visningsnavnet endres — adressen (slug) blir
      stående, siden den er klientlenken. Et tomt navn avvises i stedet for å lage en
      pitch uten navn; den slås opp på id, ikke på indeks, så et samtidig slett ikke
@@ -3275,8 +3326,9 @@ class Component extends DCLogic {
           c.id = D.uid(); c.meta.client += ' (kopi)'; c.meta.slug = D.slugify(c.meta.client);
           c.meta.created = new Date().toISOString().slice(0, 10); c.meta.status = 'kladd';
           st.pitches.unshift(c); this.save(st); },
-        onDel: e => { e.stopPropagation(); if (!confirm('Slette pitchen for ' + p.meta.client + '?')) return;
-          const st = this.clone(store); st.pitches = st.pitches.filter(x => x.id !== p.id); this.save(st); }
+        del: this.armDel('pitch:' + p.id, () => {
+          const st = this.clone(this.state.store);
+          st.pitches = (st.pitches || []).filter(x => x.id !== p.id); this.save(st); })
       }))
     };
 
@@ -4425,9 +4477,13 @@ class Component extends DCLogic {
         const cat = S.adminCat !== 'Alle' ? S.adminCat : (st.imageCats || [])[0] || 'Generelt';
         recs.forEach(r => st.images.push({ id: D.uid(), name: this.cleanName(r.name), cat, src: 'asset:' + r.id }));
       })),
-      onNewCat: () => { const n = prompt('Navn på ny kategori'); if (!n) return;
-        if ((store.imageCats || []).includes(n)) return alert('Kategorien finnes allerede.');
-        this.withStore(st => { st.imageCats.push(n); }); this.setState({ adminCat: n }); },
+      /* Navnet skrives i grensesnittet. «Finnes allerede» sto i en alert() — den vises
+         nå live under feltet, så man ser kollisjonen før man trykker Lagre. */
+      newCat: this.nameField('cat', v => {
+        if ((this.state.store.imageCats || []).includes(v)) return;
+        this.withStore(st => { st.imageCats.push(v); }); this.setState({ adminCat: v });
+      }),
+      newCatDup: !!(S.naming === 'cat' && S.nameVal && (store.imageCats || []).includes(String(S.nameVal).trim())),
 
       senders: senders.map((sd, i) => ({ sd, i })).filter(x => !viewAs || senderOwned(x.sd)).map(({ sd, i }) => {
         const used = myPitches.filter(p => (p.meta.sender || senders[0].id) === sd.id).length;
@@ -4448,12 +4504,15 @@ class Component extends DCLogic {
           onEmail: e => { const v = e.target.value; this.withStore(st => { st.senders[i].email = v; }); },
           onPhone: e => { const v = e.target.value; this.withStore(st => { st.senders[i].phone = v; }); },
           onLogo: () => this.upload(ref => this.withStore(st => { st.senders[i].logo = ref; }), { maxEdge: 900 }),
-          onDel: () => { if (senders.length < 2) return alert('Minst én avsender må finnes.');
-            if (!confirm('Slette «' + sd.name + '»?')) return;
-            this.withStore(st => { st.senders.splice(i, 1); }); } };
+          canDel: senders.length > 1, lastOne: senders.length < 2,
+          del: this.armDel('sender:' + (sd.id || i), () => this.withStore(st => {
+            /* slås opp på id, ikke indeks — indeksen kan ha flyttet seg siden render */
+            const ix = (st.senders || []).findIndex(x => x.id === sd.id);
+            if (ix >= 0) st.senders.splice(ix, 1);
+          })) };
       }),
-      onSenderNew: () => { const name = prompt('Navn på avsender'); if (!name) return;
-        this.upload(ref => this.withStore(st => { st.senders.push({ id: D.slugify(name), name, logo: ref, email: '', phone: '', contact: '', domain: myDomain }); }), { maxEdge: 900 }); },
+      senderNew: this.nameField('sender', name => {
+        this.upload(ref => this.withStore(st => { st.senders.push({ id: D.slugify(name), name, logo: ref, email: '', phone: '', contact: '', domain: myDomain }); }), { maxEdge: 900 }); }),
 
       tplPicker: (store.templates || []).filter(tplOwned).map(t => ({ label: t.name, ...pill(t.id === tplId), on: () => this.setState({ adminTpl: t.id }) })),
       tplName: tpl.name,
@@ -4543,18 +4602,26 @@ class Component extends DCLogic {
       tplCanLayout: !!(tplRows[S.tplFull] && D.canMove((LIB(tplRows[S.tplFull].type) || {}).base || tplRows[S.tplFull].type)),
       tplNoLayout: !!(tplRows[S.tplFull] && !D.canMove((LIB(tplRows[S.tplFull].type) || {}).base || tplRows[S.tplFull].type)),
       tplFullLayoutLabel: 'Tilbakestill alle (' + (tplRows[S.tplFull] ? D.layoutCount(tplRows[S.tplFull].layout) : 0) + ')',
-      onTplNew: () => { const name = prompt('Navn på ny template'); if (!name) return;
-        const st = this.clone(store); const id = D.slugify(name);
-        st.templates.push({ id, name, len: '0 blokker', desc: '', lang: 'no', blocks: [], brands: {} });
-        this.save(st); this.setState({ adminTpl: id }); },
-      onTplRename: () => { const name = prompt('Nytt navn', tpl.name); if (name) writeTpl(t => { t.name = name; }); },
+      tplNew: this.nameField('tplnew', name => {
+        const st = this.clone(this.state.store); const id = D.slugify(name);
+        if ((st.templates || []).some(t => t.id === id)) return;
+        /* nye templates arver selskapet man jobber som, ellers blir de felles ved uhell */
+        st.templates.push({ id, name, desc: '', lang: 'no', blocks: [], brands: {},
+          ...(myDomain ? { domain: myDomain } : {}) });
+        this.save(st); this.setState({ adminTpl: id });
+      }),
+      tplRename: this.nameField('tplrename', name => writeTpl(t => { t.name = name; }), tpl.name),
       onTplDup: () => { const st = this.clone(store); const c = this.clone(tpl);
         c.id = D.slugify(tpl.name + '-kopi'); c.name = tpl.name + ' (kopi)';
         st.templates.push(c); this.save(st); this.setState({ adminTpl: c.id }); },
-      onTplDel: () => { if (store.templates.length < 2) return alert('Minst én template må finnes.');
-        if (!confirm('Slette «' + tpl.name + '»?')) return;
-        const st = this.clone(store); st.templates.splice(tplIdx, 1); this.save(st);
-        this.setState({ adminTpl: st.templates[0].id }); },
+      tplCanDel: store.templates.length > 1,
+      tplDel: this.armDel('tpl:' + tplId, () => {
+        const st = this.clone(this.state.store);
+        const ix = (st.templates || []).findIndex(t => t.id === tplId);
+        if (ix < 0 || st.templates.length < 2) return;
+        st.templates.splice(ix, 1); this.save(st);
+        this.setState({ adminTpl: st.templates[0].id });
+      }),
       onExportFacts: () => this.sheetIO()
         .then(io => this.download('Tallgrunnlag ' + today() + '.xlsx', io.factsToXlsx(store.facts)))
         .catch(e => alert('Kunne ikke lage arket: ' + (e && e.message ? e.message : e))),
@@ -4592,14 +4659,14 @@ class Component extends DCLogic {
       })),
       caseBrandFilter: [{ v: 'all', label: 'Alle' }, ...visBrandKeys.map(k => ({ v: k, label: BR[k].name }))].map(o => ({ label: o.label, ...pill(o.v === caseBrandFilterVal), on: () => this.setState({ adminCaseBrand: o.v, caseSel: null }) })),
       casesEmpty: visibleCases.length === 0,
-      onCaseNew: () => {
-        const title = prompt('Tittel på den nye casen');
-        if (!title) return;
+      caseNew: this.nameField('case', title => {
         const id = 'c-' + D.slugify(title);
-        if ((store.cases || []).some(c => c.id === id)) return alert('Det finnes allerede en case med samme tittel.');
+        if ((this.state.store.cases || []).some(c => c.id === id)) return;
         this.withStore(st => { st.cases.push({ id, kicker: '', title, text: '', client: '', year: '', result: '', img: '', brand: '', tiers: [] }); });
         this.setState({ caseSel: id });
-      },
+      }),
+      caseNewDup: !!(S.naming === 'case' && S.nameVal
+        && (store.cases || []).some(c => c.id === 'c-' + D.slugify(String(S.nameVal).trim()))),
       caseHasSel: !!caseSel,
       caseTitle: caseSel ? caseSel.title || '' : '',
       caseKicker: caseSel ? caseSel.kicker || '' : '',
@@ -4625,11 +4692,13 @@ class Component extends DCLogic {
       onCaseImg: () => this.setState({ picker: { mode: 'case', id: caseSelId }, pickerCat: 'Alle' }),
       onCaseImgClear: () => writeCase(c => { c.img = ''; }),
       onCaseHidden: () => writeCase(c => { c.hidden = !c.hidden; }),
-      onCaseDel: () => {
+      /* Bruksadvarselen sto i confirm()-teksten. Den vises nå ved knappen, så den
+         faktisk leses — og ikke forsvinner når nettleseren slutter å vise dialoger. */
+      caseDelNote: caseSel && caseUse(caseSel.id)
+        ? 'Casen er kopiert inn i ' + caseUse(caseSel.id) + ' slides. De står som de er.' : '',
+      caseHasNote: !!(caseSel && caseUse(caseSel.id)),
+      caseDel: this.armDel('case:' + ((caseSel || {}).id || ''), () => {
         if (!caseSel) return;
-        const n = caseUse(caseSel.id);
-        if (!confirm(n ? 'Casen er kopiert inn i ' + n + ' slides. De står som de er. Slette den fra basen?'
-          : 'Slette «' + caseSel.title + '» fra casebasen?')) return;
         this.withStore(st => {
           st.cases = st.cases.filter(c => c.id !== caseSel.id);
           st.casesRemoved = [...(st.casesRemoved || []), caseSel.id];
@@ -4637,7 +4706,7 @@ class Component extends DCLogic {
           (st.templates || []).forEach(t => { t.blocks = D.tplBlocks(t).map(r => r.caseId === caseSel.id ? { ...r, caseId: '' } : r); t.brands = {}; });
         });
         this.setState({ caseSel: null });
-      },
+      }),
       /* merking: hvilke prisnivåer casen kan brukes på */
       caseTierTags: (myPricing.tiers || []).map(ti => ({
         label: ti.name, ...pill(caseSel ? (caseSel.tiers || []).includes(ti.id) : false),
@@ -4727,14 +4796,18 @@ class Component extends DCLogic {
       onLibName: e => { const v = e.target.value; writeLib(en => { en.name = v; }); },
       onLibDesc: e => { const v = e.target.value; writeLib(en => { en.desc = v; }); },
       onLibCat: e => { const v = e.target.value; writeLib(en => { en.cat = v; }); },
-      onLibDel: () => {
+      /* «I bruk»-sperren sto i en alert(). Den er nå en tilstand på knappen, så grunnen
+         til at man ikke får slette står ved siden av knappen i stedet for å forsvinne. */
+      libInUse: libSel ? (() => { const u = libUse(libSel.type); return (u.pitches || u.templates) ? u.label : ''; })() : '',
+      libBlocked: libSel ? (() => { const u = libUse(libSel.type); return !!(u.pitches || u.templates); })() : false,
+      libNotBlocked: libSel ? (() => { const u = libUse(libSel.type); return !(u.pitches || u.templates); })() : false,
+      libDel: this.armDel('lib:' + ((libSel || {}).type || ''), () => {
         if (!libSel) return;
         const u = libUse(libSel.type);
-        if (u.pitches || u.templates) return alert('«' + libSel.name + '» er i bruk: ' + u.label + '. Fjern den derfra først.');
-        if (!confirm('Slette «' + libSel.name + '» fra biblioteket?')) return;
+        if (u.pitches || u.templates) return;
         this.withStore(st => { st.library = st.library.filter(x => x.type !== libSel.type); });
         this.setState({ libSel: null });
-      },
+      }),
       libFields: libSel ? (libSel.fields || []).map((f, fi) => ({
         key: f[0], label: f[1], kind: f[2],
         kindOptions: [...new Set([...KINDS, f[2]])].map(k => ({ v: k, label: k })),
@@ -4851,9 +4924,11 @@ class Component extends DCLogic {
           onColor: e => set({ color: e.target.value }),
           onScale: e => set({ scale: Number(e.target.value) || 1 }),
           onLogo: () => this.upload(ref => set({ logo: ref }), { maxEdge: 900 }),
-          onDel: () => {
-            if (Object.keys(BR).length < 2) return alert('Minst én merkevare må finnes.');
-            if (!confirm('Slette «' + br.name + '»?' + (used ? ' Den er i bruk på ' + used + ' slides — de faller tilbake til første merkevare.' : ''))) return;
+          canDel: Object.keys(BR).length > 1,
+          delNote: used ? 'I bruk på ' + used + ' slides — de faller tilbake til første merkevare.' : '',
+          hasDelNote: !!used,
+          del: this.armDel('brand:' + k, () => {
+            if (Object.keys(BR).length < 2) return;
             const fallback = Object.keys(BR).find(x => x !== k);
             this.withStore(st => {
               delete st.brands[k];
@@ -4864,14 +4939,13 @@ class Component extends DCLogic {
               }));
               st.templates.forEach(tp => { tp.blocks = D.tplBlocks(tp).map(r => (r.brand === k ? { ...r, brand: fallback } : r)); tp.brands = {}; });
             });
-          } };
+          }) };
       }),
-      onBrandNew: () => {
-        const name = prompt('Navn på merkevaren'); if (!name) return;
+      brandNew: this.nameField('brand', name => {
         const key = D.slugify(name).replace(/-/g, '').slice(0, 14);
-        if (BR[key]) return alert('Merkevaren finnes allerede.');
+        if (BR[key]) return;
         this.upload(ref => this.withStore(st => { st.brands[key] = { name, color: '#7C5CFF', logo: ref, scale: 1, domain: myDomain }; }), { maxEdge: 900 });
-      },
+      }),
       tiers: (myPricing.tiers || []).map((t, i) => {
         const set = patch => writePricing(pr => { if ((pr.tiers || [])[i]) Object.assign(pr.tiers[i], patch); });
         return { name: t.name, price: t.price, reach: t.reach, emv: t.emv,
