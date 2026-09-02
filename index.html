@@ -3164,6 +3164,12 @@ class Component extends DCLogic {
        Eierskapet settes i tannhjulet, som lister alle slides uavhengig av filteret.
        Filtreringen gjelder bare valglistene — pitcher som alt bruker sliden rendres som før. */
     const libOwned = b => { const d = ((b || {}).domain || '').toLowerCase(); return !d || d === myDomain; };
+    /* Templates eies av et selskap, som slides og avsendere. Deklareres HER, sammen med de
+       andre eierskaps-predikatene — ikke nede hos admin-panelet: «Ny pitch» leser
+       visTemplates lenger opp i samme funksjon, og en const nedenfor gir
+       «Cannot access 'visTemplates' before initialization» for alle innloggede. */
+    const tplOwned = t => { const d = ((t || {}).domain || '').toLowerCase(); return !d || d === myDomain || (isSuperadmin && !viewAs); };
+    const visTemplates = (store.templates || []).filter(tplOwned);
     const LIBVIS = LIBALL.filter(libOwned);
     const LIB = ty => D.libEntry(store.library, ty);
     const catOpts = ['Alle', ...(store.imageCats || D.IMAGE_CATS)];
@@ -4193,8 +4199,6 @@ class Component extends DCLogic {
 
     /* Templates eies av et selskap, som merkevarer og mapper. Tom eier = felles.
        Superadmin uten «se som» ser alle; med «se som» ser man som det selskapet. */
-    const tplOwned = t => { const d = ((t || {}).domain || '').toLowerCase(); return !d || d === myDomain || (isSuperadmin && !viewAs); };
-    const visTemplates = (store.templates || []).filter(tplOwned);
     /* templates som lego */
     const tplId = S.adminTpl || (store.templates[0] || {}).id;
     const tplIdx = store.templates.findIndex(t => t.id === tplId);
