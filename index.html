@@ -507,10 +507,10 @@
         <sc-for list="{{ archive.items }}" as="p" hint-placeholder-count="3">
           <div style="background:#FFFFFF;border:1px solid #E6E4EE;border-radius:10px;overflow:hidden;display:flex;flex-direction:column;transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease" style-hover="transform:translateY(-2px);box-shadow:0 14px 30px -18px rgba(30,26,48,.45);border-color:#C8C4D8">
             <div style="height:6px;background:{{ p.accent }}"></div>
-            <a href="{{ p.viewHref }}" ref="{{ p.thumbRef }}" title="Åpne kundesiden" style="display:block;position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;background:#16131F;border-bottom:1px solid #E6E4EE">
+            <a href="{{ p.viewHref }}" title="Åpne kundesiden" style="display:block;position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;background:#16131F;border-bottom:1px solid #E6E4EE">
               <sc-if value="{{ p.hasCover }}" hint-placeholder-val="{{ true }}">
-                <div data-noi18n="1" style="position:absolute;top:0;left:0;width:1180px;transform-origin:top left;transform:scale(var(--s,.254));pointer-events:none;--font-head:{{ p.fontHead }};--font-body:{{ p.fontBody }};{{ p.sfVars }}">
-                  <dc-import name="PitchSlide" slide="{{ p.cover }}" meta="{{ p.coverMeta }}" system="{{ system }}" index="{{ 0 }}" total="{{ p.count }}" show-num="{{ false }}" hint-size="1180px,664px"></dc-import>
+                <div data-noi18n="1" style="position:absolute;inset:0;pointer-events:none;--font-head:{{ p.fontHead }};--font-body:{{ p.fontBody }};{{ p.sfVars }}">
+                  <dc-import name="PitchSlide" slide="{{ p.cover }}" meta="{{ p.coverMeta }}" system="{{ system }}" index="{{ 0 }}" total="{{ p.count }}" show-num="{{ false }}" hint-size="100%,100%"></dc-import>
                 </div>
               </sc-if>
               <sc-if value="{{ p.noCover }}" hint-placeholder-val="{{ false }}">
@@ -1388,9 +1388,9 @@
                     <button type="button" onClick="{{ o.on }}" style="font-size:11px;font-weight:600;border-radius:5px;padding:5px 9px;cursor:pointer;background:{{ o.bg }};border:1px solid {{ o.border }};color:{{ o.fg }}">{{ o.label }}</button>
                   </sc-for>
                 </div>
-                <div ref="{{ admin.libThumbRef }}" style="position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;background:#16131F">
-                  <div data-noi18n="1" style="position:absolute;top:0;left:0;width:1180px;transform-origin:top left;transform:scale(var(--s,.5))">
-                    <dc-import name="PitchSlide" slide="{{ admin.libPreview }}" meta="{{ admin.libPreviewMeta }}" system="{{ system }}" index="{{ 0 }}" total="{{ 1 }}" show-num="{{ false }}" hint-size="1180px,664px"></dc-import>
+                <div style="position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;background:#16131F">
+                  <div data-noi18n="1" style="position:absolute;inset:0">
+                    <dc-import name="PitchSlide" slide="{{ admin.libPreview }}" meta="{{ admin.libPreviewMeta }}" system="{{ system }}" index="{{ 0 }}" total="{{ 1 }}" show-num="{{ false }}" hint-size="100%,100%"></dc-import>
                   </div>
                 </div>
               </div>
@@ -2407,7 +2407,7 @@ class Component extends DCLogic {
     document.body.appendChild(this._file);
   }
   componentWillUnmount() { if (this._dlg) Object.keys(this._dlg).forEach(k => { window[k] = this._dlg[k]; });
-    removeEventListener('hashchange', this._onHash); removeEventListener('keydown', this._onKey); this._file?.remove(); this._io?.disconnect(); this._ro?.disconnect(); clearTimeout(this._bandT); clearTimeout(this._bandFail); }
+    removeEventListener('hashchange', this._onHash); removeEventListener('keydown', this._onKey); this._file?.remove(); this._io?.disconnect(); clearTimeout(this._bandT); clearTimeout(this._bandFail); }
 
   /* seksjonene på kundesiden tones inn når de ruller inn i bildet */
   jumpBand(dir) {
@@ -2856,16 +2856,14 @@ class Component extends DCLogic {
     this.setState({ exportingHtml: false });
   }
   sheetIO() { return this._sheetIO || (this._sheetIO = import(window.__modURL('./sheet-io.js'))); }
-  /* Arkivminiatyrer: sliden rendres i 1180 px og skaleres etter kortets faktiske bredde. */
-  thumbRef = el => {
-    if (!this._ro) this._ro = new ResizeObserver(es => es.forEach(e => {
-      const w = e.contentRect.width;
-      if (w) e.target.style.setProperty('--s', String(w / 1180));
-    }));
-    if (!el) return;
-    el.style.setProperty('--s', String((el.clientWidth || 300) / 1180));
-    this._ro.observe(el);
-  };
+  /* Miniatyrene rendret sliden i faste 1180 px og skalerte den ned med en --s satt fra
+     JS, holdt oppdatert av en ResizeObserver. Det var unødvendig: PitchSlide er allerede
+     helt container-relativ (cqw hele veien), så den skalerer seg selv — det er nettopp
+     derfor klientvisningen er størrelsesuavhengig. Fullskjerm-forhåndsvisningene i admin
+     har alltid rendret den på width:100% uten transform. Miniatyrene gjør nå det samme.
+     Mekanismen kunne gi en for stor --s: clientWidth leses før rutenettet har satt seg,
+     og faller den tilbake på 300 eller leser en bredere rad, blir sliden zoomet inn og
+     logoen skjøvet ut av kortet. */
   /* Skriver en liste med { key, value, label, source, updated } inn i faktabasen.
      Endret verdi flytter den forrige til historikken, tomme celler lar feltet stå. */
   applyFactRows(rows, store, today) {
@@ -3386,7 +3384,7 @@ class Component extends DCLogic {
           this.setState({ renameId: null, renameVal: null }); },
         ...statusStyle(p.meta.status),
         cover: p.blocks[0] || null, coverMeta: stillMeta(p.meta), count: p.blocks.length, ...fontVars(p.meta), sfVars: sfVarText(p.meta),
-        hasCover: !!p.blocks.length, noCover: !p.blocks.length, thumbRef: this.thumbRef,
+        hasCover: !!p.blocks.length, noCover: !p.blocks.length,
         line: p.blocks.length + ' blokker · ' + (D.TEMPLATES.find(t => t.id === p.meta.template)?.name || '—') + ' · ' + p.meta.created,
         editHref: '#/edit/' + p.id, viewHref: '#/p/' + p.meta.slug,
         onDup: e => { e.stopPropagation(); const st = this.clone(store); const c = this.clone(p);
@@ -4946,7 +4944,6 @@ class Component extends DCLogic {
       libBrandOpts: [{ v: '', label: 'Lorem ipsum' }, ...visBrandKeys.map(k => ({ v: k, label: BR[k].name }))]
         .map(o => ({ label: o.label, ...pill(o.v === (S.libBrand || '')), on: () => this.setState({ libBrand: o.v }) })),
       libBrandIsBrandSlide: !!(libSel && libSel.base === 'brand'),
-      libThumbRef: this.thumbRef,
       /* flytting i biblioteket er standardplasseringen. Hele økten teller som én endring:
          versjonen bumpes når fullskjermvisningen lukkes, ikke for hver lille dytt. */
       onLibLayout: (key, v) => {

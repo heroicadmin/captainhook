@@ -158,3 +158,24 @@ på en token som ikke var klar ga et permanent svart galleri uten et eneste spor
 forsøk med økende pause, feilen bobler opp, og et «Bilder mangler»-banner med «Prøv igjen»
 vises i toppfeltet.
 
+## Miniatyrer: ikke render sliden i fast bredde og skaler den ned
+
+Kortet på forsiden og miniatyren i slidebiblioteket rendret PitchSlide i faste `1180px` og
+skalerte den med `transform:scale(var(--s))`, der `--s` ble satt fra JS
+(`clientWidth / 1180`) og holdt oppdatert av en ResizeObserver.
+
+Det var både unødvendig og skjørt:
+- **Unødvendig**, fordi PitchSlide er helt container-relativ (cqw hele veien) og skalerer seg
+  selv. Fullskjerm-forhåndsvisningene i admin har alltid rendret den på `width:100%` uten
+  transform. Målt på en slide i kortstørrelse (372×209) ligger alt innenfor.
+- **Skjørt**, fordi `clientWidth` leses før rutenettet har satt seg. Faller den tilbake på
+  `300`, eller leser bredden på en hel rad, blir `--s` for stor — sliden zoomes inn og
+  logoen skyves ut av kortet.
+
+Begge miniatyrene rendrer nå PitchSlide på `position:absolute;inset:0` i en 16/9-boks.
+`thumbRef`, `libThumbRef`, `--s` og ResizeObserveren er borte.
+
+Merk: `hint-size` er BARE en skjelett-hint under strømming (`minWidth`/`minHeight` på
+placeholderen), ikke rendringsstørrelsen. `hint-size="1180px,664px"` ga derfor et skjelett
+som selv var 1180 px bredt inne i et 300 px kort.
+
