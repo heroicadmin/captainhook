@@ -315,6 +315,13 @@
         <span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ cloud.err }}</span>
       </span>
     </sc-if>
+    <sc-if value="{{ cloud.assetErr }}" hint-placeholder-val="{{ false }}">
+      <span title="{{ cloud.assetErrMsg }}" style="display:flex;align-items:center;gap:7px;max-width:400px;background:#FDECEA;border:1px solid #F3C9C5;border-radius:6px;padding:5px 9px;font-size:11.5px;color:#A8352C">
+        <span style="flex:none;font-weight:700">Bilder mangler</span>
+        <span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ cloud.assetErrMsg }}</span>
+        <button type="button" onClick="{{ cloud.onRetryAssets }}" style="flex:none;font-size:11px;font-weight:700;color:#A8352C;background:#FFFFFF;border:1px solid #F3C9C5;border-radius:5px;padding:3px 8px;cursor:pointer">Prøv igjen</button>
+      </span>
+    </sc-if>
     <sc-if value="{{ superadmin }}" hint-placeholder-val="{{ false }}">
       <button type="button" onClick="{{ onOwnerToggle }}" title="Eierskap for bildemapper (superadmin)" style="width:30px;height:30px;display:grid;place-items:center;border-radius:6px;cursor:pointer;background:#F2F0F7;border:1px solid #E6E4EE;color:#55506B;font-size:15px;line-height:1" style-hover="background:#EAE7F2">⚙</button>
     </sc-if>
@@ -1999,7 +2006,7 @@
 class Component extends DCLogic {
   state = {
     ready: false, hash: '#/', store: null,
-    gate: 'boot', gateErr: '', who: '', gEmail: '', gPw: '', saveErr: '', saving: false,
+    gate: 'boot', gateErr: '', who: '', gEmail: '', gPw: '', saveErr: '', saving: false, assetErr: '',
     clientMode: false, clientSlug: '', clientName: '',
     sharePw: '', shareExpiry: '', shareMsg: '', shareMsgBad: false, shareBusy: false,
     shareStats: null, shareLocked: null, shareCopied: false,
@@ -2090,7 +2097,7 @@ class Component extends DCLogic {
       if (!sess) return this.setState({ gate: 'login' });
       this.setState({ gate: null, gateErr: '', who: sess.user.email });
       A.onStatus(st => this.setState({ saving: !!st.saving, saveErr: st.error || '' }));
-      A.allAssets().then(assets => this.setState({ assets }));
+      this.loadAssetMap();
       let store = null;
       try { store = await A.loadStore(); } catch (e) { return this.setState({ gate: 'login', gateErr: e.message || String(e) }); }
       const seeded = this.seed(D);
@@ -2685,6 +2692,13 @@ class Component extends DCLogic {
     this.setState({ renameId: null, renameVal: null });
     this.save(st);
   }
+  /* Ett sted for bildereferansene, brukt både ved oppstart og av «Prøv igjen». */
+  loadAssetMap() {
+    this.setState({ assetErr: '' });
+    return this.A.allAssets()
+      .then(assets => this.setState({ assets }))
+      .catch(e => this.setState({ assetErr: (e && e.message) || String(e) }));
+  }
   resolve(src) { const u = this.D ? this.D.resolveSrc(src, this.state.assets) : (src || ''); return window.__resURL(u); }
   cssUrl(src) { const u = this.resolve(src); return u ? 'url("' + u + '")' : 'none'; }
   /* Opplastinger går til IndexedDB. Tidligere lå de som data-URL i localStorage,
@@ -3255,6 +3269,17 @@ class Component extends DCLogic {
     };
     const myLogoCat = (store.imageCats || D.IMAGE_CATS).find(c => isLogoCat(c) && catOwned(c)) || D.LOGO_CAT;
     const myProfileCats = profileCats.filter(catOwned);
+    /* Bildeutfylling må følge PITCHENS selskap, ikke den innloggedes — samme regel som
+       prismodellen allerede følger. Ellers fyller en superadmin med «Alt» valgt en
+       Skagerrak-pitch fra sitt eget domene: 6 brukbare Malta-bilder på 11 bildeflater,
+       altså feriebilder på et Gjensidige-forslag. Selskapet leses av pitchen selv, med
+       avsenderens domene som reserve for pitcher fra før selskapsfeltet fantes. */
+    const pitchDomain = pitch
+      ? (pitchCompanyOf(pitch) || senderDomainOf(pitch.meta) || myDomain)
+      : myDomain;
+    const inDomain = dom => c => { const d = (catDomains[c] || '').toLowerCase(); return !d || !dom || d === dom; };
+    const pitchImages = (store.images || []).filter(im => inDomain(pitchDomain)(im.cat));
+    const pitchProfileCats = profileCats.filter(inDomain(pitchDomain));
 
     /* Levende bakgrunn: ett lag bak hele presentasjonen, ikke ett per slide.
        Tre nivåer styrer tetthet, fart og hvor mye laget slipper igjennom. */
@@ -4108,10 +4133,10 @@ class Component extends DCLogic {
         noLogo: !pitch.meta.logo,
         logoPlateBg: pitch.meta.logoPlate === 'dark' ? '#12101A' : pitch.meta.logoPlate === 'none' ? '#ECEAF3' : '#FFFFFF',
         senderOpts: ownSenders.map(sd => ({ label: sd.name, ...pill(sd.id === (pitch.meta.sender || (ownSenders[0] || {}).id)), on: () => this.updatePitch(p => { p.meta.sender = sd.id; }) })),
-        profileOpts: ['Alle', ...myProfileCats].map(c => ({ label: catLabel(c), ...pill(c === (pitch.meta.imageProfile || 'Alle')), on: () => this.updatePitch(p => { p.meta.imageProfile = c; }) })),
+        profileOpts: ['Alle', ...pitchProfileCats].map(c => ({ label: catLabel(c), ...pill(c === (pitch.meta.imageProfile || 'Alle')), on: () => this.updatePitch(p => { p.meta.imageProfile = c; }) })),
         profileNote: 'Fyller bare tomme flater. «Fyll på nytt» bytter alle bildene i pitchen til profilen.',
         onFillImages: () => this.updatePitch(p => {
-          D.applyImageProfile(p, myImages, p.meta.imageProfile || 'Alle', true, store.library, noFill);
+          D.applyImageProfile(p, pitchImages, p.meta.imageProfile || 'Alle', true, store.library, noFill);
           if (senderOf(p.meta).closingImg) p.blocks.forEach(b => { if (b.type === 'closing') b.data.img = ''; });
         }),
         viewHref: '#/p/' + pitch.meta.slug,
@@ -5126,7 +5151,10 @@ class Component extends DCLogic {
     return {
       gate: this.gateVals(),
       share: this.shareVals(pitch),
-      cloud: { saving: !!S.saving, err: S.saveErr || '', hasErr: !!S.saveErr, who: S.who || '' },
+      cloud: { saving: !!S.saving, err: S.saveErr || '', hasErr: !!S.saveErr, who: S.who || '',
+        /* Uten bildereferansene blir hvert bilde svart. Det skal SES, ikke gjettes. */
+        assetErr: !!S.assetErr, assetErrMsg: S.assetErr || '',
+        onRetryAssets: () => this.loadAssetMap() },
       routeAnim: (this._rf ? 'om-fade-a' : 'om-fade-b') + ' .42s cubic-bezier(.22,.61,.36,1) both',
       tabAnim: (this._tf ? 'om-fade-ta' : 'om-fade-tb') + ' .3s cubic-bezier(.22,.61,.36,1) both',
       subAnim: (this._sf ? 'om-fade-pa' : 'om-fade-pb') + ' .18s cubic-bezier(.22,.61,.36,1) both',

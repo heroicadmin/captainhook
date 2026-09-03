@@ -329,15 +329,29 @@ export function publicURL(path) {
 export function toURL(rec) { return publicURL(rec && (rec.path || rec.src)); }
 
 /* { id: url } — samme form som IndexedDB-laget ga, så resolveSrc() er uendret */
+/* ⚠️  Dette kartet er ENESTE måte «asset:<id>»-referanser blir en URL for en innlogget
+   bruker. Feiler oppslaget, blir hvert bilde i galleriet, velgeren og pitchene svart —
+   fordi cssUrl() da gir «none» og bare den mørke flisbakgrunnen står igjen.
+   Før svelget denne funksjonen alle feil og returnerte {}, så en 401 på grunn av en
+   token som ikke var klar ennå ga et permanent svart galleri uten et eneste spor.
+   Nå prøver den på nytt, og en endelig feil BOBLER OPP så den kan vises. */
 export async function allAssets() {
-  try {
-    const sb = await client();
-    const { data, error } = await sb.from('assets').select('id, path');
-    if (error) throw error;
-    const map = {};
-    (data || []).forEach(r => { map[r.id] = publicURL(r.path); });
-    return map;
-  } catch (e) { return {}; }
+  let last = null;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const sb = await client();
+      const { data, error } = await sb.from('assets').select('id, path');
+      if (error) throw error;
+      const map = {};
+      (data || []).forEach(r => { map[r.id] = publicURL(r.path); });
+      return map;
+    } catch (e) {
+      last = e;
+      /* kort, økende pause: den vanlige årsaken er at økten ikke er ferdig etablert */
+      if (attempt < 2) await new Promise(r => setTimeout(r, 400 * (attempt + 1)));
+    }
+  }
+  throw new Error('Kunne ikke hente bildereferansene: ' + ((last && last.message) || last));
 }
 
 export async function delAsset(id) {

@@ -136,3 +136,25 @@ Utvidet man kortform per tegn, ville «FF8800» skrevet hvit farge på vei gjenn
 synlig blink og en unødvendig skriving til pitchen. Det ble fanget av
 `scratchpad/hextest.mjs`, som klipper `hexField` ordrett ut av index.html og kjører 15 tilfeller.
 
+## Bildeutfylling følger PITCHENS selskap
+
+`applyImageProfile` for en åpen pitch bruker `pitchImages`, scoped til pitchens eget
+selskap (`pitch.company`, med avsenderens domene som reserve) — ikke den innloggedes
+`myImages`. Samme regel som prismodellen. Før fylte en superadmin med «Alt» valgt en
+Skagerrak-pitch fra sitt eget domene: 6 brukbare Malta-bilder på 11 flater.
+
+`myImages` er fortsatt riktig når en NY pitch lages, siden den da tilhører den som lager den.
+
+## allAssets() er et enkeltpunktsfeil — den må ikke svelge feil
+
+`state.assets` (id → offentlig URL) er ENESTE måte «asset:<id>» blir en URL for en
+innlogget bruker. Klientlenken bruker en annen sti (`pitch_public`-RPC-en leverer sine egne
+assets), så et brudd her rammer bare admin og redigering — pitchen ser fin ut utenfra
+mens galleriet er svart.
+
+Feiler oppslaget, gir `cssUrl()` «none», og da står bare den mørke flisbakgrunnen igjen:
+**alle bilder ser svarte ut**. Funksjonen svelget før alle feil og returnerte `{}`, så en 401
+på en token som ikke var klar ga et permanent svart galleri uten et eneste spor. Nå: tre
+forsøk med økende pause, feilen bobler opp, og et «Bilder mangler»-banner med «Prøv igjen»
+vises i toppfeltet.
+
