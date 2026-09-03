@@ -569,7 +569,7 @@
               <button type="button" onClick="{{ c.on }}" title="{{ c.hex }}" style="width:34px;height:34px;border-radius:6px;cursor:pointer;background:{{ c.hex }};border:2px solid {{ c.border }}"></button>
             </sc-for>
             <input type="color" value="{{ nw.accent }}" onInput="{{ nw.onAccent }}" style="width:44px;height:34px;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:6px;cursor:pointer;padding:2px">
-            <span style="font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#6E6883">{{ nw.accent }}</span>
+            <input type="text" value="{{ nw.accentHex.value }}" onInput="{{ nw.accentHex.onInput }}" onKeyDown="{{ nw.accentHex.onKey }}" onBlur="{{ nw.accentHex.onBlur }}" spellcheck="false" maxlength="7" placeholder="#RRGGBB" aria-label="Hex-farge" style="width:86px;font-family:ui-monospace,Menlo,monospace;font-size:12px;text-transform:uppercase;background:#FFFFFF;border:1px solid {{ nw.accentHex.border }};border-radius:5px;padding:6px 7px;color:#16131F">
           </div>
           <div style="font-size:11.5px;color:{{ nw.contrastColor }};margin-top:8px;line-height:1.5">{{ nw.contrastNote }}</div>
         </div>
@@ -654,12 +654,12 @@
         <div style="position:sticky;top:0;z-index:40;margin:0 -26px;padding:12px 26px;background:#EEEDF4;border-bottom:1px solid #E0DEEA;display:flex;align-items:center;gap:18px;flex-wrap:wrap">
           <div style="display:flex;align-items:center;gap:7px">
             <label style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#8A85A0">Aksent</label>
-            <input type="color" value="{{ ed.accent }}" onInput="{{ ed.onAccent }}" style="width:30px;height:30px;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:6px;cursor:pointer;padding:2px">
+            <input type="color" value="{{ ed.accent }}" onInput="{{ ed.onAccent }}" style="width:30px;height:30px;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:6px;cursor:pointer;padding:2px"><input type="text" value="{{ ed.accentHex.value }}" onInput="{{ ed.accentHex.onInput }}" onKeyDown="{{ ed.accentHex.onKey }}" onBlur="{{ ed.accentHex.onBlur }}" spellcheck="false" maxlength="7" placeholder="#RRGGBB" aria-label="Hex-farge" style="width:74px;font-family:ui-monospace,Menlo,monospace;font-size:11px;text-transform:uppercase;background:#FFFFFF;border:1px solid {{ ed.accentHex.border }};border-radius:5px;padding:5px 6px;color:#16131F">
           </div>
           <sc-if value="{{ ed.showBoxAccent }}" hint-placeholder-val="{{ false }}">
             <div style="display:flex;align-items:center;gap:7px">
               <label style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#8A85A0">Boksaksent</label>
-              <input type="color" value="{{ ed.boxAccent }}" onInput="{{ ed.onBoxAccent }}" style="width:30px;height:30px;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:6px;cursor:pointer;padding:2px">
+              <input type="color" value="{{ ed.boxAccent }}" onInput="{{ ed.onBoxAccent }}" style="width:30px;height:30px;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:6px;cursor:pointer;padding:2px"><input type="text" value="{{ ed.boxAccentHex.value }}" onInput="{{ ed.boxAccentHex.onInput }}" onKeyDown="{{ ed.boxAccentHex.onKey }}" onBlur="{{ ed.boxAccentHex.onBlur }}" spellcheck="false" maxlength="7" placeholder="#RRGGBB" aria-label="Hex-farge" style="width:82px;font-family:ui-monospace,Menlo,monospace;font-size:12px;text-transform:uppercase;background:#FFFFFF;border:1px solid {{ ed.boxAccentHex.border }};border-radius:5px;padding:6px 7px;color:#16131F">
               <sc-if value="{{ ed.boxAccentCustom }}" hint-placeholder-val="{{ false }}">
                 <button type="button" onClick="{{ ed.onBoxAccentReset }}" style="font-size:11px;font-weight:600;color:#6E6883;background:transparent;border:1px solid #E0DEEA;border-radius:5px;padding:5px 9px;cursor:pointer">Følg pitchen</button>
               </sc-if>
@@ -818,7 +818,7 @@
               <sc-if value="{{ f.isColor }}" hint-placeholder-val="{{ false }}">
                 <div style="display:flex;gap:8px;align-items:center">
                   <input type="color" value="{{ f.value }}" onInput="{{ f.on }}" style="width:44px;height:34px;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:6px;cursor:pointer;padding:2px">
-                  <span style="font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#6E6883">{{ f.value }}</span>
+                  <input type="text" value="{{ f.hex.value }}" onInput="{{ f.hex.onInput }}" onKeyDown="{{ f.hex.onKey }}" onBlur="{{ f.hex.onBlur }}" spellcheck="false" maxlength="7" placeholder="#RRGGBB" aria-label="Hex-farge" style="width:86px;font-family:ui-monospace,Menlo,monospace;font-size:12px;text-transform:uppercase;background:#FFFFFF;border:1px solid {{ f.hex.border }};border-radius:5px;padding:6px 7px;color:#16131F">
                   <sc-if value="{{ f.isCustom }}" hint-placeholder-val="{{ false }}">
                     <button type="button" onClick="{{ f.onReset }}" style="font-size:11px;font-weight:600;color:#6E6883;background:transparent;border:1px solid #E6E4EE;border-radius:5px;padding:5px 9px;cursor:pointer">Følg pitchen</button>
                   </sc-if>
@@ -1019,7 +1019,7 @@
               <label style="display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#55506B;margin-bottom:7px">Aksentfarge</label>
               <div style="display:flex;gap:8px;align-items:center">
                 <input type="color" value="{{ ed.accent }}" onInput="{{ ed.onAccent }}" style="width:48px;height:34px;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:6px;cursor:pointer;padding:2px">
-                <span style="font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#6E6883">{{ ed.accent }}</span>
+                <input type="text" value="{{ ed.accentHex.value }}" onInput="{{ ed.accentHex.onInput }}" onKeyDown="{{ ed.accentHex.onKey }}" onBlur="{{ ed.accentHex.onBlur }}" spellcheck="false" maxlength="7" placeholder="#RRGGBB" aria-label="Hex-farge" style="width:86px;font-family:ui-monospace,Menlo,monospace;font-size:12px;text-transform:uppercase;background:#FFFFFF;border:1px solid {{ ed.accentHex.border }};border-radius:5px;padding:6px 7px;color:#16131F">
               </div>
               <div style="font-size:11px;color:{{ ed.contrastColor }};margin-top:7px;line-height:1.5">{{ ed.contrastNote }}</div>
             </div>
@@ -1613,7 +1613,7 @@
                   <div style="position:relative;border:1px solid #D5D2E0;border-radius:6px;height:64px;background-color:#1B1826;background-size:contain;background-repeat:no-repeat;background-position:center;background-origin:content-box;padding:10px;background-image:{{ br.iconThumb }}"><span style="position:absolute;left:5px;top:4px;font-size:8.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6E6883">Ikon</span></div>
                 </div>
                 <div style="display:flex;gap:8px;align-items:center">
-                  <input type="color" value="{{ br.color }}" onInput="{{ br.onColor }}" title="Produktfarge" style="width:40px;height:32px;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:5px;cursor:pointer;padding:2px">
+                  <input type="color" value="{{ br.color }}" onInput="{{ br.onColor }}" title="Produktfarge" style="width:40px;height:32px;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:5px;cursor:pointer;padding:2px"><input type="text" value="{{ br.colorHex.value }}" onInput="{{ br.colorHex.onInput }}" onKeyDown="{{ br.colorHex.onKey }}" onBlur="{{ br.colorHex.onBlur }}" spellcheck="false" maxlength="7" placeholder="#RRGGBB" aria-label="Hex-farge" style="width:82px;font-family:ui-monospace,Menlo,monospace;font-size:12px;text-transform:uppercase;background:#FFFFFF;border:1px solid {{ br.colorHex.border }};border-radius:5px;padding:6px 7px;color:#16131F">
                   <button type="button" onClick="{{ br.onLogo }}" style="flex:1;font-size:11.5px;font-weight:600;border-radius:5px;padding:7px;cursor:pointer;background:#F2F0F7;border:1px solid #D5D2E0;color:#322D45">Bytt logo</button>
                   <button type="button" onClick="{{ br.onIcon }}" style="flex:1;font-size:11.5px;font-weight:600;border-radius:5px;padding:7px;cursor:pointer;background:#F2F0F7;border:1px solid #D5D2E0;color:#322D45">Bytt ikon</button>
                 </div>
@@ -2005,7 +2005,7 @@ class Component extends DCLogic {
     shareStats: null, shareLocked: null, shareCopied: false,
     sel: 0, tab: 'content', showLib: false, insertAt: null, showCheck: false,
     adminTab: 'facts', adminTpl: 'master', nw: null, scroll: 0, libSel: null, caseSel: null,
-    renameId: null, renameVal: null, armed: null, naming: null, nameVal: null,
+    renameId: null, renameVal: null, armed: null, naming: null, nameVal: null, hexDraft: {},
     assets: {}, picker: null, pickerCat: 'Alle', adminCat: 'Alle', arcTab: 'all',
     uiLang: 'no'
   };
@@ -2588,6 +2588,42 @@ class Component extends DCLogic {
      Det var halve årsaken til at slettknappen for bilder var «ødelagt». Derfor bor
      både bekreftelse og navngiving i grensesnittet nå. Se NOTES.md. */
 
+  /* Hex-felt ved siden av hver fargevelger. Skriver man i et tekstfelt, kommer verdien
+     tegn for tegn — «#1a» er ikke en farge. Derfor holdes det man taster som et utkast,
+     og fargen skrives bare når utkastet er en gyldig hex. Utkastet slettes ved blur,
+     Enter og Escape, slik at feltet faller tilbake til den faktiske verdien.
+     `apply` får ferdig normalisert «#RRGGBB» og kalles gjennom den EKSISTERENDE
+     skrivehandleren for hvert sted — ingen av de seks skrivestiene er duplisert her. */
+  hexField(token, value, apply) {
+    const drafts = this.state.hexDraft || {};
+    const draft = drafts[token];
+    const shown = draft == null ? String(value || '').toUpperCase() : draft;
+    const clean = v => String(v).trim().replace(/^#/, '');
+    /* Streng form: nøyaktig seks siffer. Brukes mens man taster. */
+    const strict = v => (/^[0-9a-fA-F]{6}$/.test(clean(v)) ? '#' + clean(v).toUpperCase() : null);
+    /* Løs form: godtar også kortform. Brukes BARE når man er ferdig (Enter/blur).
+       Utvidet man kortform per tegn, ville «FF8800» skrevet hvit farge på vei
+       gjennom «FFF» — en synlig blink og en unødvendig skriving til pitchen. */
+    const loose = v => {
+      const t = clean(v);
+      if (/^[0-9a-fA-F]{3}$/.test(t)) return '#' + t.split('').map(c => c + c).join('').toUpperCase();
+      return strict(t);
+    };
+    const setDraft = d => this.setState(st => ({ hexDraft: { ...(st.hexDraft || {}), [token]: d } }));
+    const ok = loose(shown) != null;
+    const commit = v => { const n = loose(v); if (n) apply(n); setDraft(null); };
+    return {
+      value: shown, valid: ok, invalid: !ok,
+      border: ok ? '#D5D2E0' : '#E9376E',
+      onInput: e => { const v = e.target.value; setDraft(v); const n = strict(v); if (n) apply(n); },
+      onKey: e => {
+        if (e.key === 'Enter') { e.preventDefault(); commit(e.target.value); }
+        else if (e.key === 'Escape') { e.preventDefault(); setDraft(null); }
+      },
+      /* blur skriver også, ellers mister man en kortform man nettopp skrev */
+      onBlur: e => commit(e && e.target ? e.target.value : shown)
+    };
+  }
   /* To-trinns sletting: første klikk armerer knappen, andre utfører. Armeringen er
      én tilstand for hele appen, så det aldri står to armerte knapper samtidig. */
   armDel(token, run, word) {
@@ -3356,6 +3392,8 @@ class Component extends DCLogic {
       // funksjonell setState overalt: ellers overskriver ett felt et annet som ble satt etter siste render
       onClient: e => { const v = e.target.value; this.setState(st => ({ nw: { ...st.nw, client: v } })); },
       onAccent: e => { const v = e.target.value; this.setState(st => ({ nw: { ...st.nw, accent: v, accentTouched: true } })); },
+      accentHex: this.hexField('nw.accent', nwS.accent,
+        hex => this.setState(st => ({ nw: { ...st.nw, accent: hex, accentTouched: true } }))),
       onLogo: () => this.upload((ref, rec) => {
         this.setState(st => ({ nw: { ...st.nw, logo: ref } }));
         this.extractColors(rec.src, cols => this.setState(st => ({ nw: { ...st.nw, swatches: cols, accent: cols[0] || st.nw.accent } })));
@@ -4007,6 +4045,7 @@ class Component extends DCLogic {
           isList: false, isStats: false, isRepeat: false, isColor: true, canAdd: true, items: [], factOptions: [], options: [],
           value: ba || accent, isCustom: !!ba,
           on: e => this.editData(['boxAccent'], e.target.value),
+          hex: this.hexField('f.boxAccent', ba || accent, hex => this.editData(['boxAccent'], hex)),
           onReset: () => this.editData(['boxAccent'], '') });
       }
 
@@ -4085,10 +4124,14 @@ class Component extends DCLogic {
         onSubtitle: e => this.updatePitch(p => { p.meta.subtitle = e.target.value; }),
         onSlug: e => this.updatePitch(p => { p.meta.slug = D.slugify(e.target.value); }),
         onAccent: e => this.updatePitch(p => { p.meta.accent = e.target.value; }),
+        accentHex: this.hexField('ed.accent', pitch.meta.accent,
+          hex => this.updatePitch(p => { p.meta.accent = hex; })),
         showBoxAccent: block.type === 'pillars',
         boxAccent: block.data.boxAccent || accent,
         boxAccentCustom: !!block.data.boxAccent,
         onBoxAccent: e => this.editData(['boxAccent'], e.target.value),
+        boxAccentHex: this.hexField('ed.boxAccent', block.data.boxAccent || accent,
+          hex => this.editData(['boxAccent'], hex)),
         onBoxAccentReset: () => this.editData(['boxAccent'], ''),
         onLogo: () => this.upload(ref => this.updatePitch(p => { p.meta.logo = ref; }), { maxEdge: 900 }),
         plateOpts: [['light', 'Lys'], ['dark', 'Mørk'], ['none', 'Ingen']].map(([v, l]) => ({ label: l, ...pill(pitch.meta.logoPlate === v), on: () => this.updatePitch(p => { p.meta.logoPlate = v; }) })),
@@ -4926,6 +4969,7 @@ class Component extends DCLogic {
           use: used ? 'på ' + used + (used === 1 ? ' slide' : ' slides') : 'ikke i bruk',
           onName: e => set({ name: e.target.value }),
           onColor: e => set({ color: e.target.value }),
+          colorHex: this.hexField('brand.' + k, br.color, hex => set({ color: hex })),
           onScale: e => set({ scale: Number(e.target.value) || 1 }),
           onLogo: () => this.upload(ref => set({ logo: ref }), { maxEdge: 900 }),
           canDel: Object.keys(BR).length > 1,

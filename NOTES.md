@@ -121,3 +121,18 @@ stedet for å vise en alert.
 faktabasen (4 prompts), ny slide i biblioteket (3 prompts), og begrunnelse ved overstyring av
 et faktatall (1 prompt, men midt i en annen flyt). `alert()` brukes ellers bare til
 feilmeldinger og kvitteringer, der stille bortfall ikke ødelegger data.
+
+## Hex-felt ved fargevelgerne
+
+Alle seks `input[type=color]` har et hex-tekstfelt ved siden av, drevet av `hexField(token, value, apply)`
+på komponenten. `apply` kalles gjennom den eksisterende skrivehandleren for hvert sted, så
+ingen av skrivestiene er duplisert.
+
+Det som må holdes i hodet: et tekstfelt gir verdien **tegn for tegn**. Derfor
+- `strict` (nøyaktig seks siffer) brukes mens man taster,
+- `loose` (godtar også kortform) brukes bare ved Enter og blur.
+
+Utvidet man kortform per tegn, ville «FF8800» skrevet hvit farge på vei gjennom «FFF» — en
+synlig blink og en unødvendig skriving til pitchen. Det ble fanget av
+`scratchpad/hextest.mjs`, som klipper `hexField` ordrett ut av index.html og kjører 15 tilfeller.
+
