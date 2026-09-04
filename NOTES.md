@@ -179,3 +179,20 @@ Merk: `hint-size` er BARE en skjelett-hint under strømming (`minWidth`/`minHeig
 placeholderen), ikke rendringsstørrelsen. `hint-size="1180px,664px"` ga derfor et skjelett
 som selv var 1180 px bredt inne i et 300 px kort.
 
+## Forhåndsvisningen ble krympet av flex, ikke av avrunding
+
+Redigeringsvisningens forhåndsvisning er et flex-element i en kolonne
+(`display:flex;flex-direction:column` med `overflow-y:auto`). Et flex-element kan krympes
+under sin naturlige høyde, og da klipper `overflow:hidden` nederkanten av sliden — på hver
+slide, «litt» nederst. Reprodusert med kolonnestrukturen: **74,75 px krympet, 74,75 px
+klippet**. Med `flex:none`: 0 og 0.
+
+Boksen har også fått `aspect-ratio:16/9`, så høyden er definert av boksen selv i stedet for
+å bli utledet av barnet. Samme grep på de to fullskjerm-forhåndsvisningene i admin.
+
+**Feilspor verdt å huske:** jeg trodde først det var avrunding — at boksens høyde ble utledet
+fra barnets `aspect-ratio` og rundet ned med `overflow:hidden`. Målt før/etter var det
+0 px i BEGGE, altså ingen forskjell. Sub-piksel-avrunding er ikke årsaken her; flex-krymping er.
+Klientvisningen (`[data-page]`) er ikke rammet — den er ikke et flex-element, og målt passer
+sliden eksakt (`stikkerUnder: 0`).
+
