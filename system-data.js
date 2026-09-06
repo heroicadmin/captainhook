@@ -29,13 +29,14 @@ export const senderContact = sd =>
   [(sd||{}).email, (sd||{}).phone, (sd||{}).contact].filter(Boolean).join(' · ');
 
 /* Bildebase. Kategorien styrer hvilke bilder en pitch fylles med. */
-export const IMAGE_CATS = ['Generelt', 'Hardcore Esport', 'Casual Gaming', 'Malta', 'Logoer', 'Heroic Logoer', 'Heroic Generelt'];
+export const IMAGE_CATS = ['Generelt', 'Hardcore Esport', 'Casual Gaming', 'Malta', 'Logoer', 'Heroic Logoer', 'Heroic Generelt', 'Mockups'];
 /* Logoer hører til logoveggen, ikke til bildeflatene — de holdes utenfor bildeprofilene.
    Hvert selskap har sin egen logomappe (eierskap settes i Admin → Bilder); utad vises
    alle logomapper bare som «Logoer». */
 export const LOGO_CAT = 'Logoer';
 /* Kategorier som ikke skal fylle bildeflater i pitcher (logomapper). Redigeres i Admin → Bilder. */
-export const NOFILL_CATS = [LOGO_CAT, 'Heroic Logoer'];
+/* «Mockups» holdes utenfor bildeflater — en artikkelskjerm er ikke et stemningsfoto. */
+export const NOFILL_CATS = [LOGO_CAT, 'Heroic Logoer', 'Mockups'];
 export const IMAGES = [
   { id:'img-ashes',    name:'Rise from the ashes',   cat:'Hardcore Esport', src:'images/heroic-ashes-banner.jpg' },
   { id:'img-jersey',   name:'Draktdetalj',           cat:'Hardcore Esport', src:'images/jersey-detalj.jpg' },
@@ -608,6 +609,21 @@ export const LIBRARY = [
   { type:'closing', cat:'Avslutning', name:'Avslutning', desc:'Delt flate: bilde og takk. Kontaktinfo hentes fra avsenderen.',
     fields:[['text','Tekst','text'],['contact','Kontakt (tom = fra avsender)','text'],['img','Bilde','image'],['imgHint','Bildeanvisning','text']],
     defaults:{ text:'Takk', contact:'', imgHint:'Arrangementsbilde — spillere i aksjon' } },
+
+  /* Konseptforslag: gjenbygget fra Skagerraks IKEA-deck. Merkevarelogo øverst, stor
+     versaltittel, punkter, og et høyt skjermbilde som dekker høyre del av flaten og
+     blør litt over topp og bunn — slik artikkelmockupen gjorde i originalen.
+     Eid av skagerrak.tech, så den ligger bare i Skagerraks bibliotek. */
+  { type:'concept', cat:'Bevis', name:'Konseptforslag', domain:'skagerrak.tech',
+    desc:'Ett konsept forklart med punkter, med en høy artikkel- eller videomockup til høyre.',
+    fields:[['brand','Merkevare','brand'],['title','Tittel','area'],['body','Punkter','list'],
+            ['img','Mockup til høyre','image'],['imgHint','Bildeanvisning','text'],['note','Notatlinje','text']],
+    defaults:{ brand:'gamer', title:'Norges styggeste\ngamingrom',
+      body:['Bygger på en gammel artikkelserie fra Gamer.no som fra 2026 skaleres kraftig opp',
+            'Deltakere og lesere i Gamer.no sitt community sender inn bilder av sine egne gamingrom',
+            'En serie mikroepisoder over tid, med mulighet for at Gamer.no besøker de tre beste forslagene',
+            'Vinneren premieres med bidrag til oppdatering fra partnerne, og Gamer.no får besøke før og etter'],
+      imgHint:'Artikkelmockup — Gamer.no i mobilbredde' } },
 
   { type:'divider', cat:'Vedlegg', name:'Seksjonsskille', desc:'Ett ord stort på fullbleed bilde.',
     fields:[['word','Ord','text'],['sub','Undertekst','text'],['img','Bilde','image'],['imgHint','Bildeanvisning','text']],
@@ -1721,7 +1737,7 @@ export function veilBg(veil, isHero, ambientOn, paper) {
 export const MOVABLE_BASES = ['cover', 'umbrella', 'statement', 'brand', 'metrics', 'membership', 'table', 'matrix',
   'showcase', 'case', 'cases', 'tiers', 'configurator', 'adrates', 'placement', 'timeline',
   'logowall', 'next', 'fullbleed', 'closing', 'divider', 'benchmark', 'audience', 'spotlight', 'frames', 'proof', 'pillars',
-  'briefing', 'activation', 'partnership', 'formation', 'productscene', 'montage'];
+  'briefing', 'activation', 'partnership', 'formation', 'productscene', 'montage', 'concept'];
 export function canMove(base) { return MOVABLE_BASES.includes(base); }
 
 /* en slide er tom for egne plasseringer når ingenting er flyttet, skalert eller skjult */

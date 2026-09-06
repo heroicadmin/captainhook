@@ -1148,6 +1148,36 @@
     </div>
   </sc-if>
 
+  <!-- Konseptforslag: målene er hentet rett fra originalen (13,33 x 7,5 in).
+       Bildet startet på 60,5 % av bredden og dekket 41,6 %, med 7,56 in høyde mot
+       slidens 7,5 — derfor blør det litt over topp og bunn. -->
+  <sc-if value="{{ is.concept }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;overflow:hidden">
+      <div data-el="img" data-el-name="Mockup til høyre" style="position:absolute;left:60.5%;width:41.6%;top:-.6%;bottom:-.6%;overflow:hidden">
+        <sc-if value="{{ hasImg }}" hint-placeholder-val="{{ true }}">
+          <img src="{{ imgSrc }}" alt="" style="width:100%;height:100%;object-fit:cover;object-position:top center;display:block">
+        </sc-if>
+        <sc-if value="{{ noImg }}" hint-placeholder-val="{{ false }}">
+          <span style="position:absolute;inset:0;display:grid;place-items:center;background:var(--plate2,#23202F);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.72cqw;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-mute,#8E88A3);text-align:center;padding:4cqw">{{ s.imgHint }}</span>
+        </sc-if>
+      </div>
+      <div style="position:absolute;left:5.9%;top:0;bottom:0;width:48%;display:flex;flex-direction:column;justify-content:center">
+        <sc-if value="{{ b.logo }}" hint-placeholder-val="{{ true }}">
+          <img data-el="brandLogo" data-el-name="Merkevarelogo" src="{{ b.logo }}" alt="{{ b.name }}" data-in="1" style="height:2.1cqw;width:auto;max-width:16cqw;object-fit:contain;display:block;margin-bottom:2.4cqw;filter:{{ b.logoFilter }}">
+        </sc-if>
+        <h1 data-el="title" data-el-name="Tittel" data-in="2" style="font-size:3.05cqw;font-weight:700;letter-spacing:-.01em;line-height:1.06;text-transform:uppercase;margin:0 0 2.6cqw;white-space:pre-line">{{ s.title }}</h1>
+        <ul data-el="body" data-el-name="Punkter" style="list-style:none;display:flex;flex-direction:column;gap:1.05cqw;margin:0;padding:0;max-width:39cqw">
+          <sc-for list="{{ bullets }}" as="li" hint-placeholder-count="4">
+            <li data-in="4" style="font-size:.94cqw;line-height:1.5;color:var(--ink-body,#E4E1EC);padding-left:1.3cqw;position:relative;text-wrap:pretty" style-before="content:'';position:absolute;left:0;top:.44cqw;width:.42cqw;height:.42cqw;background:var(--accent,#1434CB)">{{ li.text }}</li>
+          </sc-for>
+        </ul>
+        <sc-if value="{{ hasNote }}" hint-placeholder-val="{{ false }}">
+          <p data-el="note" data-el-name="Notatlinje" data-in="3" style="font-size:.78cqw;font-weight:700;color:var(--ink,#FFFFFF);margin:2.2cqw 0 0">{{ s.note }}</p>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
   <sc-if value="{{ is.montage }}" hint-placeholder-val="{{ false }}">
     <div style="position:absolute;inset:0;overflow:{{ montOverflow }}">
       <!-- polaroids strødd utover til venstre; hver ramme, tapebit og sticker velges hver for seg -->
@@ -2431,7 +2461,7 @@ class Component extends DCLogic {
        En aksenttone her ble for sterk på lys flate — den ble rosa.) */
     const panelBg = 'var(--plate2, #23202F)';
 
-    const types = ['cover','umbrella','statement','brand','metrics','membership','table','matrix','showcase','tiers','configurator','timeline','logowall','next','closing','divider','fullbleed','adrates','placement','case','cases','benchmark','audience','spotlight','frames','proof','pillars','invest','options','homebase','briefing','activation','partnership','formation','loyaltyapp','productscene','montage'];
+    const types = ['cover','umbrella','statement','brand','metrics','membership','table','matrix','showcase','tiers','configurator','timeline','logowall','next','closing','divider','fullbleed','adrates','placement','case','cases','benchmark','audience','spotlight','frames','proof','pillars','invest','options','homebase','briefing','activation','partnership','formation','loyaltyapp','productscene','montage','concept'];
     const is = {};
     /* base er utformingen — egendefinerte slides i biblioteket peker på en av disse */
     const baseType = blk.base || blk.type;
