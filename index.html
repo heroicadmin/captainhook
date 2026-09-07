@@ -240,7 +240,7 @@
             <button type="button" onClick="{{ view.onNext }}" title="Neste seksjon" style="width:28px;height:28px;display:grid;place-items:center;border-radius:5px;cursor:pointer;background:transparent;border:1px solid rgba(255,255,255,.12);color:#C9C4D6;font-size:12px;line-height:1;transition:background .14s,border-color .14s" style-hover="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.24)">↓</button>
           </div>
           <span data-hide-sm="1" data-pos="1" style="font-size:11px;color:#6E6883;letter-spacing:.08em;font-variant-numeric:tabular-nums;flex:none"></span>
-          <button type="button" onClick="{{ view.onEdit }}" title="Tilbake til redigering på samme slide" style="font-size:12px;font-weight:600;color:#C9C4D6;background:transparent;border:1px solid rgba(255,255,255,.14);border-radius:5px;padding:8px 12px;white-space:nowrap;flex:none;cursor:pointer;transition:background .14s,border-color .14s" style-hover="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.28)">Rediger</button>
+          <sc-if value="{{ view.canEdit }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ view.onEdit }}" title="Tilbake til redigering på samme slide" style="font-size:12px;font-weight:600;color:#C9C4D6;background:transparent;border:1px solid rgba(255,255,255,.14);border-radius:5px;padding:8px 12px;white-space:nowrap;flex:none;cursor:pointer;transition:background .14s,border-color .14s" style-hover="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.28)">Rediger</button></sc-if>
           <a href="{{ view.mailto }}" style="font-size:12px;font-weight:700;color:var(--accent-ink);background:var(--accent);border-radius:5px;padding:9px 15px;white-space:nowrap;flex:none;transition:filter .14s" style-hover="filter:brightness(1.1)">Ta kontakt</a>
         </div>
         <div data-progress="1" style="height:2px;background:var(--accent);width:0%;transition:width .18s linear"></div>
@@ -5121,6 +5121,10 @@ class Component extends DCLogic {
         senderLogoCss: this.cssUrl(sd.logo), senderName: sd.name, hasSenderLogo: !!sd.logo, contact: sd.contactLine || sd.name,
         amb: ambFor(pitch.meta), page: pageStyle(pitch.meta),
         onPrev: () => this.jumpBand(-1), onNext: () => this.jumpBand(1),
+        /* Rediger-knappen er bare for oss. clientMode settes utelukkende i
+           loadClientPitch, altså den anonyme klientlenken, så dette skiller kunden
+           fra en innlogget som forhåndsviser sin egen pitch. */
+        canEdit: !S.clientMode,
         onEdit: () => { this._selOnRoute = this.curBand(); this.setState({ tab: 'content' }); location.hash = '#/edit/' + pitch.id; },
         mailto: mail ? 'mailto:' + mail[0] + '?subject=' + encodeURIComponent(pitch.meta.client + ' × ' + sd.name) : '#',
         /* grunnflaten males på arket, ikke på laget som toner inn — da står den mørke
