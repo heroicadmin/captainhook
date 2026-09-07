@@ -1148,6 +1148,30 @@
     </div>
   </sc-if>
 
+  <sc-if value="{{ is.grid9 }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;padding:4.4cqw 4.6cqw;display:flex;flex-direction:column">
+      <div style="flex:none;margin-bottom:2.2cqw">
+        <div data-el="eyebrow" data-el-name="Stikktittel" data-in="1" style="font-size:.68cqw;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--accent,#1434CB)">{{ s.eyebrow }}</div>
+        <h1 data-el="title" data-el-name="Tittel" data-in="2" style="font-size:2.15cqw;font-weight:700;letter-spacing:-.02em;line-height:1.12;margin:.6cqw 0 0">{{ s.title }}</h1>
+      </div>
+      <div style="flex:1;min-height:0;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:.55cqw">
+        <sc-for list="{{ grid9 }}" as="gi" hint-placeholder-count="9">
+          <div data-el="{{ gi.key }}" data-el-name="{{ gi.name }}" style="position:relative;overflow:hidden;border-radius:.3cqw;background:var(--plate2,#23202F)">
+            <sc-if value="{{ gi.has }}" hint-placeholder-val="{{ true }}">
+              <img src="{{ gi.src }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
+            </sc-if>
+            <sc-if value="{{ gi.tom }}" hint-placeholder-val="{{ false }}">
+              <span style="position:absolute;inset:0;display:grid;place-items:center;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.6cqw;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-mute,#8E88A3);text-align:center;padding:1cqw">{{ gi.name }}</span>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+      <sc-if value="{{ hasNote }}" hint-placeholder-val="{{ false }}">
+        <p data-el="note" data-el-name="Notatlinje" data-in="3" style="flex:none;font-size:.72cqw;color:var(--ink-mute,#8E88A3);margin:1.5cqw 0 0">{{ s.note }}</p>
+      </sc-if>
+    </div>
+  </sc-if>
+
   <!-- Konseptforslag: målene er hentet rett fra originalen (13,33 x 7,5 in).
        Bildet startet på 60,5 % av bredden og dekket 41,6 %, med 7,56 in høyde mot
        slidens 7,5 — derfor blør det litt over topp og bunn. -->
@@ -2461,7 +2485,7 @@ class Component extends DCLogic {
        En aksenttone her ble for sterk på lys flate — den ble rosa.) */
     const panelBg = 'var(--plate2, #23202F)';
 
-    const types = ['cover','umbrella','statement','brand','metrics','membership','table','matrix','showcase','tiers','configurator','timeline','logowall','next','closing','divider','fullbleed','adrates','placement','case','cases','benchmark','audience','spotlight','frames','proof','pillars','invest','options','homebase','briefing','activation','partnership','formation','loyaltyapp','productscene','montage','concept'];
+    const types = ['cover','umbrella','statement','brand','metrics','membership','table','matrix','showcase','tiers','configurator','timeline','logowall','next','closing','divider','fullbleed','adrates','placement','case','cases','benchmark','audience','spotlight','frames','proof','pillars','invest','options','homebase','briefing','activation','partnership','formation','loyaltyapp','productscene','montage','concept','grid9'];
     const is = {};
     /* base er utformingen — egendefinerte slides i biblioteket peker på en av disse */
     const baseType = blk.base || blk.type;
@@ -2835,6 +2859,13 @@ class Component extends DCLogic {
           .map((x, i) => ({ ...x, ...SLOTS[i] }));
       })(),
       montEmpty: ![s.img, s.img2, s.img3, s.img4, s.img5, s.img6].some(Boolean),
+      /* Bildevegg: alltid ni ruter, også de tomme. Filtrerte man bort de tomme, ville
+         rutenettet endret form mens man fyller det, og bilde 7 hoppet til en annen plass. */
+      grid9: [1,2,3,4,5,6,7,8,9].map(i => {
+        const key = i === 1 ? 'img' : 'img' + i;
+        return { key: 'gimg' + i, name: 'Bilde ' + i, src: resolveImg(s[key]),
+          has: !!resolveImg(s[key]), tom: !resolveImg(s[key]) };
+      }),
       /* Blødningen ligger i GEOMETRIEN, ikke i rammen: øverste og nederste rad går selv
          litt utenfor 0 % og 100 %. Før strakk rammen seg -7cqw ut i landingsside-modus,
          men da målte slot-prosentene mot en boks 25 % høyere enn sliden, og de samme

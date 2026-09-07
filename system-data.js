@@ -610,6 +610,24 @@ export const LIBRARY = [
     fields:[['text','Tekst','text'],['contact','Kontakt (tom = fra avsender)','text'],['img','Bilde','image'],['imgHint','Bildeanvisning','text']],
     defaults:{ text:'Takk', contact:'', imgHint:'Arrangementsbilde — spillere i aksjon' } },
 
+  /* Bildevegg: ni bilder i et 3x3-rutenett, hvert felt valgbart for seg. Tittel over.
+     Eid av skagerrak.tech, som de andre nye templatene. */
+  { type:'grid9', cat:'Bevis', name:'Bildevegg — 9 bilder', domain:'skagerrak.tech',
+    desc:'Ni bilder i et 3x3-rutenett med tittel over. Hvert felt velges for seg.',
+    fields:[['eyebrow','Stikktittel','text'],['title','Tittel','text'],
+            ['img','Bilde 1','image'],
+            ['img2','Bilde 2','image'],
+            ['img3','Bilde 3','image'],
+            ['img4','Bilde 4','image'],
+            ['img5','Bilde 5','image'],
+            ['img6','Bilde 6','image'],
+            ['img7','Bilde 7','image'],
+            ['img8','Bilde 8','image'],
+            ['img9','Bilde 9','image'],
+            ['imgHint','Bildeanvisning','text'],['note','Notatlinje','text']],
+    defaults:{ eyebrow:'Innhold', title:'Slik ser det ut i praksis',
+      imgHint:'Velg bilde' } },
+
   /* Konseptforslag: gjenbygget fra Skagerraks IKEA-deck. Merkevarelogo øverst, stor
      versaltittel, punkter, og et høyt skjermbilde som dekker høyre del av flaten og
      blør litt over topp og bunn — slik artikkelmockupen gjorde i originalen.
@@ -1737,7 +1755,7 @@ export function veilBg(veil, isHero, ambientOn, paper) {
 export const MOVABLE_BASES = ['cover', 'umbrella', 'statement', 'brand', 'metrics', 'membership', 'table', 'matrix',
   'showcase', 'case', 'cases', 'tiers', 'configurator', 'adrates', 'placement', 'timeline',
   'logowall', 'next', 'fullbleed', 'closing', 'divider', 'benchmark', 'audience', 'spotlight', 'frames', 'proof', 'pillars',
-  'briefing', 'activation', 'partnership', 'formation', 'productscene', 'montage', 'concept'];
+  'briefing', 'activation', 'partnership', 'formation', 'productscene', 'montage', 'concept', 'grid9'];
 export function canMove(base) { return MOVABLE_BASES.includes(base); }
 
 /* en slide er tom for egne plasseringer når ingenting er flyttet, skalert eller skjult */
