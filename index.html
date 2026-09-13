@@ -103,7 +103,10 @@
   :root{--t-fast:120ms;--t-base:160ms;--t-slow:220ms;--ease:cubic-bezier(.22,.61,.36,1)}
   [data-ui="edit"] button{transition:filter var(--t-fast) var(--ease),transform var(--t-fast) var(--ease),box-shadow var(--t-base) var(--ease)}
   [data-ui="edit"] button:hover{filter:brightness(1.06)}
-  [data-ui="edit"] button:active{transform:scale(.97)}
+  /* 40ms ned, normal fart tilbake: et raskt klikk rekker å vises. !important fordi
+     motoren skriver style-hover som INLINE stil, og én knapp har transform der —
+     uten det ville den ene knappen aldri fått trykkfølelse. */
+  [data-ui="edit"] button:active{transform:scale(.94)!important;filter:brightness(.97);transition-duration:40ms}
   @keyframes ps-swap-up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
   @keyframes ps-swap-down{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
   .is-swap-up{animation:ps-swap-up var(--t-slow) var(--ease) both}
@@ -695,7 +698,10 @@
           </div>
           <span style="flex:1"></span>
             <sc-if value="{{ cloud.showSave }}" hint-placeholder-val="{{ false }}">
-              <span style="margin-left:auto;font-size:11px;color:#8A85A0;letter-spacing:.04em;transition:color var(--t-base) var(--ease)">{{ cloud.saveLabel }}</span>
+              <span style="display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:#55506B;letter-spacing:.04em">
+                <span style="width:6px;height:6px;border-radius:50%;flex:none;background:{{ cloud.saveDot }};transition:background var(--t-base) var(--ease)"></span>
+                {{ cloud.saveLabel }}
+              </span>
             </sc-if>
         </div>
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:20px">
@@ -5289,6 +5295,7 @@ class Component extends DCLogic {
         /* «Lagret» står til neste lagring starter — ingen tidsstyrt uttoning, én tilstand mindre */
         saveLabel: S.saving ? 'Lagrer…' : (S.savedOnce ? 'Lagret' : ''),
         showSave: !S.saveErr && (S.saving || !!S.savedOnce),
+        saveDot: S.saving ? 'var(--accent)' : '#3FA96A',
         /* Uten bildereferansene blir hvert bilde svart. Det skal SES, ikke gjettes. */
         assetErr: !!S.assetErr, assetErrMsg: S.assetErr || '',
         onRetryAssets: () => this.loadAssetMap() },
