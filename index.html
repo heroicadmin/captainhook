@@ -2100,6 +2100,17 @@ class Component extends DCLogic {
        direkte — via setState ville den utløst en ny render, og dermed seg selv. */
     const origSetState = this.setState.bind(this);
     this.setState = (patch, cb) => { this._tickAt = performance.now(); return origSetState(patch, cb); };
+    /* Nøkkelen til sammenslåing er FELTET det skrives i, ikke feltets sti: minst 15
+       tekstfelt (kundenavn, slug, gradientskyverne, og i admin praktisk talt alt)
+       skriver via updatePitch/withStore direkte, utenom editData. Capture-fasen
+       kjører før Reacts egen handler, så _inputEl er satt når save() kalles. */
+    this._onInput = e => {
+      const t = e.target;
+      if (t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) {
+        this._inputEl = t; this._inputAt = this._now();
+      }
+    };
+    addEventListener('input', this._onInput, true);
     import(window.__modURL('./i18n.js')).then(I => {
       this.I = I;
       let lang = 'no';
@@ -2470,7 +2481,7 @@ class Component extends DCLogic {
     this._file.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0';
     document.body.appendChild(this._file);
   }
-  componentWillUnmount() { clearTimeout(this._saveTimer); if (this._dlg) Object.keys(this._dlg).forEach(k => { window[k] = this._dlg[k]; });
+  componentWillUnmount() { clearTimeout(this._saveTimer); removeEventListener('input', this._onInput, true); if (this._dlg) Object.keys(this._dlg).forEach(k => { window[k] = this._dlg[k]; });
     removeEventListener('hashchange', this._onHash); removeEventListener('keydown', this._onKey); this._file?.remove(); this._io?.disconnect(); clearTimeout(this._bandT); clearTimeout(this._bandFail); }
 
   /* seksjonene på kundesiden tones inn når de ruller inn i bildet */
@@ -2665,11 +2676,63 @@ class Component extends DCLogic {
     return f;
   }
 
-  save(store) {
+  save(store, opts) {
+    if (!opts || !opts.replay) {
+      const now = this._now();
+      /* 50 ms: kom denne skrivingen fra et felt? Et knappetrykk utløser ingen
+         input-hendelse, så _inputAt er gammel og handlingen blir sitt eget steg. */
+      const fromField = this._inputEl && (now - this._inputAt) < 50;
+      /* 800 ms: hører den til forrige steg? Målt fra forrige SKRIVING, ikke fra
+         forrige steg — ellers deles en sammenhengende setning hvert 800. ms.
+         Krever en ikke-tom stabel: uten det kan en skriving rett etter en tømming
+         slås sammen mot ingenting, og tilstanden før redigeringen er tapt. */
+      const merge = fromField && this._undo.length > 0
+        && this._inputEl === this._lastEl && (now - this._lastAt) < 800;
+      if (!merge) {
+        this._undo.push({ store: this.state.store, sel: this.state.sel });
+        if (this._undo.length > this._undoDepth) this._undo.shift();   /* dropp ELDSTE */
+      }
+      this._lastEl = fromField ? this._inputEl : null;
+      this._lastAt = now;
+      this._redo = [];              /* enhver reell endring, også en sammenslått */
+    }
     this.setState({ store });
     /* skrives til databasen, samlet noen hundre millisekunder om gangen slik at
        ett tastetrykk i et tekstfelt ikke blir én runde mot serveren */
     if (this.A) this.A.saveStore(store).catch(e => this.setState({ saveErr: e.message || String(e) }));
+  }
+  /* ── Angre/gjenta ────────────────────────────────────────────────────
+     Alle 184 skrivekall ender i save(), så historikken tas opp der og bare der.
+     Klonen som angre trenger lages allerede ved hver endring — den forrige
+     this.state.store slippes bare. Å beholde den koster minne, ikke CPU.
+     Stablene er instansfelt: render leser dem bare gjennom canUndo/canRedo. */
+  _undo = []; _redo = []; _undoDepth = 40;
+  _inputEl = null; _inputAt = -1e9; _lastEl = null; _lastAt = -1e9;
+  /* egen klokke, så tools/undo-test.mjs kan injisere tid uten å vente */
+  _now() { return performance.now(); }
+  resetHistory() {
+    this._undo = []; this._redo = [];
+    /* sammenslåingen må nullstilles sammen med stablene, ellers kan neste
+       skriving slås sammen mot et steg som ikke finnes lenger */
+    this._inputEl = null; this._lastEl = null; this._lastAt = -1e9;
+  }
+  undo() {
+    if (!this._undo.length) return;
+    const prev = this._undo.pop();
+    this._redo.push({ store: this.state.store, sel: this.state.sel });
+    if (this._redo.length > this._undoDepth) this._redo.shift();
+    this._inputEl = null; this._lastEl = null; this._lastAt = -1e9;
+    this.save(prev.store, { replay: true });
+    this.setState({ sel: prev.sel });
+  }
+  redo() {
+    if (!this._redo.length) return;
+    const next = this._redo.pop();
+    this._undo.push({ store: this.state.store, sel: this.state.sel });
+    if (this._undo.length > this._undoDepth) this._undo.shift();
+    this._inputEl = null; this._lastEl = null; this._lastAt = -1e9;
+    this.save(next.store, { replay: true });
+    this.setState({ sel: next.sel });
   }
   clone(o) { return JSON.parse(JSON.stringify(o)); }
 
