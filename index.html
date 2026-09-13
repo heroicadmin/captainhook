@@ -697,8 +697,8 @@
             </sc-for>
           </div>
           <span style="flex:1"></span>
-            <button type="button" onClick="{{ cloud.onUndo }}" title="Angre (Cmd+Z)" style="width:28px;height:26px;border-radius:5px;cursor:pointer;background:{{ cloud.undoBg }};border:1px solid #E0DEEA;color:{{ cloud.undoFg }};font-size:13px;line-height:1;padding:0">↶</button>
-            <button type="button" onClick="{{ cloud.onRedo }}" title="Gjenta (Cmd+Shift+Z)" style="width:28px;height:26px;border-radius:5px;cursor:pointer;background:{{ cloud.redoBg }};border:1px solid #E0DEEA;color:{{ cloud.redoFg }};font-size:13px;line-height:1;padding:0;margin-right:10px">↷</button>
+            <button type="button" onClick="{{ cloud.onUndo }}" title="Angre (Cmd+Z)" style="width:28px;height:26px;border-radius:5px;cursor:pointer;background:{{ cloud.undoBg }};border:1px solid {{ cloud.undoBorder }};color:{{ cloud.undoFg }};font-size:13px;line-height:1;padding:0">↶</button>
+            <button type="button" onClick="{{ cloud.onRedo }}" title="Gjenta (Cmd+Shift+Z)" style="width:28px;height:26px;border-radius:5px;cursor:pointer;background:{{ cloud.redoBg }};border:1px solid {{ cloud.redoBorder }};color:{{ cloud.redoFg }};font-size:13px;line-height:1;padding:0;margin-right:10px">↷</button>
             <sc-if value="{{ cloud.showSave }}" hint-placeholder-val="{{ false }}">
               <span style="display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:#55506B;letter-spacing:.04em">
                 <span style="width:6px;height:6px;border-radius:50%;flex:none;background:{{ cloud.saveDot }};transition:background var(--t-base) var(--ease)"></span>
@@ -5376,10 +5376,15 @@ class Component extends DCLogic {
         /* Oppdateres fordi hver endring av stabelen faller sammen med et setState.
            Endrer noen det, slutter knappene stilltiende å følge med. */
         canUndo: this._undo.length > 0, canRedo: this._redo.length > 0,
+        /* Nedtonet skal LESES som inaktiv, ikke som borte: #C9C5D6 målte 1,45:1 mot
+           verktøylinjen og var i praksis usynlig, noe som opphever hele grunnen til at
+           knappene finnes. #8A85A0 er 3,04:1 — tydelig til stede, tydelig inaktiv. */
         undoBg: this._undo.length ? '#F2F0F7' : 'transparent',
         redoBg: this._redo.length ? '#F2F0F7' : 'transparent',
-        undoFg: this._undo.length ? '#322D45' : '#C9C5D6',
-        redoFg: this._redo.length ? '#322D45' : '#C9C5D6',
+        undoFg: this._undo.length ? '#322D45' : '#8A85A0',
+        redoFg: this._redo.length ? '#322D45' : '#8A85A0',
+        undoBorder: this._undo.length ? '#C9C5D6' : '#D5D2E0',
+        redoBorder: this._redo.length ? '#C9C5D6' : '#D5D2E0',
         onUndo: () => this.undo(), onRedo: () => this.redo(),
         /* Uten bildereferansene blir hvert bilde svart. Det skal SES, ikke gjettes. */
         assetErr: !!S.assetErr, assetErrMsg: S.assetErr || '',
