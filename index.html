@@ -659,7 +659,7 @@
                 <span style="font-size:10.5px;color:#8A85A0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ o.sub }}</span>
               </span>
               <button type="button" onClick="{{ o.onDup }}" title="Dupliser" style="border:0;background:transparent;color:#9A96AC;cursor:pointer;font-size:12px;padding:2px">⧉</button>
-              <button type="button" onClick="{{ o.onDel }}" title="Slett" style="border:0;background:transparent;color:#9A96AC;cursor:pointer;font-size:13px;padding:2px">×</button>
+              <button type="button" onClick="{{ o.del.on }}" title="Slett — klikk én gang til for å bekrefte" style="border:0;background:{{ o.del.bg }};color:{{ o.del.fg }};cursor:pointer;font-size:11px;font-weight:600;padding:2px 6px;border-radius:4px;white-space:nowrap">{{ o.del.label }}</button>
             </div>
           </div>
         </sc-for>
@@ -2398,12 +2398,35 @@ class Component extends DCLogic {
     }).catch(e => console.error('system-data', e));
     /* Escape lukker det øverste åpne laget. Rekkefølgen er den samme som z-indeksen. */
     this._onKey = e => {
-      if (e.key !== 'Escape') return;
       const S = this.state;
-      if (S.picker) return this.setState({ picker: null });
-      if (S.libFull) return this._closeLibFull ? this._closeLibFull() : this.setState({ libFull: false });
-      if (S.tplFull != null) return this.setState({ tplFull: null });
-      if (S.showLib) return this.setState({ showLib: false });
+      /* Escape først, uansett fokus: lukker overlegg, ellers avbryter armert sletting */
+      if (e.key === 'Escape') {
+        if (S.picker) return this.setState({ picker: null });
+        if (S.libFull) return this._closeLibFull ? this._closeLibFull() : this.setState({ libFull: false });
+        if (S.tplFull != null) return this.setState({ tplFull: null });
+        if (S.showLib) return this.setState({ showLib: false });
+        if (S.armed) return this.setState({ armed: null });
+        return;
+      }
+      /* resten gjelder bare redigering, utenfor tekstfelt, uten overlegg */
+      if (!/^#\/edit\//.test(location.hash)) return;
+      const t = e.target;
+      if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+      if (S.picker || S.libFull || S.tplFull != null || S.showLib) return;
+      const p = this.currentPitch(); if (!p) return;
+      const n = p.blocks.length, sel = S.sel, meta = e.metaKey || e.ctrlKey;
+      const go = i => { e.preventDefault(); this.selectSlide(i); };
+      if (e.key === 'ArrowUp')   return meta ? (e.preventDefault(), this.moveBlock(sel, sel - 1)) : go(sel - 1);
+      if (e.key === 'ArrowDown') return meta ? (e.preventDefault(), this.moveBlock(sel, sel + 1)) : go(sel + 1);
+      if (e.key === 'Home')      return go(0);
+      if (e.key === 'End')       return go(n - 1);
+      if (meta && (e.key === 'd' || e.key === 'D')) { e.preventDefault(); return this.dupBlock(sel); }   /* stopper bokmerke-snarveien */
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        e.preventDefault();
+        const id = (p.blocks[sel] || {}).id, token = 'block:' + id;
+        if (S.armed === token) return this.delBlock(sel);       /* andre trykk: utfør */
+        return this.setState({ armed: token });                  /* første trykk: «Slett?» */
+      }
     };
     addEventListener('keydown', this._onKey);
     /* _selOnRoute lar en navigering bestemme hvilken slide man lander på — ellers
@@ -2733,6 +2756,30 @@ class Component extends DCLogic {
     if (to === this.state.sel) return;
     this._swapDir = to > this.state.sel ? 'up' : 'down';
     this.setState({ sel: to, showLib: false });
+  }
+  /* Blokkoperasjoner som både slidekortene og tastaturet bruker. Lå før som
+     closures inne i renderVals, utilgjengelige for _onKey. */
+  moveBlock(from, to) {
+    const p = this.currentPitch(); if (!p) return;
+    const n = p.blocks.length;
+    if (from === to || from < 0 || to < 0 || from >= n || to >= n) return;
+    /* FLIP: husk hvor kortene STÅR før de flyttes (Task 5 leser dette) */
+    this._flipFrom = {};
+    Object.entries(this._cardEls || {}).forEach(([id, el]) => { if (el) this._flipFrom[id] = el.getBoundingClientRect().top; });
+    this.updatePitch(pp => { const b = pp.blocks.splice(from, 1)[0]; pp.blocks.splice(to, 0, b); });
+    /* Markeringen følger sliden som ble flyttet — men IKKE via selectSlide: den ville
+       satt _swapDir og spilt slidebytte-animasjonen på forhåndsvisningen, selv om det
+       er samme slide som står der. Her skal bare kortene gli (FLIP, Task 5). */
+    this.setState({ sel: to, showLib: false });
+  }
+  dupBlock(i) {
+    this.updatePitch(p => { const c = this.clone(p.blocks[i]); c.id = this.D.uid(); p.blocks.splice(i + 1, 0, c); });
+  }
+  delBlock(i) {
+    const p = this.currentPitch(); if (!p || p.blocks.length < 2) return;   /* siste slide kan ikke slettes */
+    const sel = this.state.sel;
+    this.updatePitch(pp => pp.blocks.splice(i, 1));
+    this.setState({ sel: Math.max(0, sel - (i <= sel ? 1 : 0)), armed: null });
   }
   resolve(src) { const u = this.D ? this.D.resolveSrc(src, this.state.assets) : (src || ''); return window.__resURL(u); }
   cssUrl(src) { const u = this.resolve(src); return u ? 'url("' + u + '")' : 'none'; }
@@ -3509,10 +3556,6 @@ class Component extends DCLogic {
       /* årshjulet har i tillegg kundens egen linje, som henter navn og logo fra pitchen */
       const trackOpts = [{ v: 'client', label: (pitch.meta.client || 'Kunden') + ' — kundens linje' }, ...brandOpts];
 
-      const move = (from, to) => this.updatePitch(p => {
-        const b = p.blocks.splice(from, 1)[0]; p.blocks.splice(to, 0, b);
-      });
-
       const outline = pitch.blocks.map((b, i) => {
         const d = LIB(b.type) || { name: b.type };
         const bd = BR[b.data.brand];
@@ -3525,14 +3568,15 @@ class Component extends DCLogic {
           fg: on ? '#16131F' : '#322D45', numColor: on ? 'var(--accent)' : '#9A96AC',
           tick: bd ? bd.color : '#D5D2E0',
           onSelect: () => this.selectSlide(i),
-          onDup: e => { e.stopPropagation(); this.updatePitch(p => { const c = this.clone(p.blocks[i]); c.id = D.uid(); p.blocks.splice(i + 1, 0, c); }); },
-          onDel: e => { e.stopPropagation(); if (pitch.blocks.length < 2) return;
-            this.updatePitch(p => p.blocks.splice(i, 1)); this.setState({ sel: Math.max(0, sel - (i <= sel ? 1 : 0)) }); },
+          onDup: e => { e.stopPropagation(); this.dupBlock(i); },
+          /* to-trinns, som alle andre slett-knapper: første klikk «Slett?», andre utfører.
+             Delete-tasten armerer samme token, så tast og mus deler tilstand. */
+          del: this.armDel('block:' + b.id, () => this.delBlock(i)),
           onAddHere: e => { e.stopPropagation(); this.setState({ showLib: true, insertAt: i }); },
           onDragStart: e => { this._drag = i; e.dataTransfer.effectAllowed = 'move'; },
           onDragOver: e => e.preventDefault(),
           onDrop: e => { e.preventDefault(); if (this._drag == null || this._drag === i) return;
-            move(this._drag, i); this.setState({ sel: i }); this._drag = null; }
+            this.moveBlock(this._drag, i); this._drag = null; }
         };
       });
 
