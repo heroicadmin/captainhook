@@ -722,7 +722,7 @@
               </sc-if>
             </div>
           </sc-if>
-          <div data-noi18n="1" style="position:absolute;inset:0;z-index:1">
+          <div data-noi18n="1" ref="{{ ed.swapRef }}" style="position:absolute;inset:0;z-index:1">
             <dc-import name="PitchSlide" slide="{{ ed.sel.block }}" meta="{{ ed.meta }}" system="{{ system }}" index="{{ ed.sel.i }}" total="{{ ed.count }}" onConfig="{{ ed.onConfig }}" onLayout="{{ ed.onLayout }}" hint-size="100%,100%"></dc-import>
           </div>
         </div>
@@ -2458,6 +2458,15 @@ class Component extends DCLogic {
     return true;
   }
   componentDidUpdate() {
+    /* slidebytte: retningen ble satt av selectSlide før render */
+    if (this._swapDir && this._swapEl) {
+      const el = this._swapEl, cls = 'is-swap-' + this._swapDir;
+      this._swapDir = null;
+      el.classList.remove('is-swap-up', 'is-swap-down');
+      void el.offsetWidth;                       /* restart animasjonen om klassen alt sto */
+      el.classList.add(cls);
+      el.addEventListener('animationend', () => el.classList.remove(cls), { once: true });
+    }
     this.applyLang();
     this.observeBands(); this.syncViewChrome();
     if (this._jumpTo != null) {
@@ -2711,6 +2720,19 @@ class Component extends DCLogic {
     return this.A.allAssets()
       .then(assets => this.setState({ assets }))
       .catch(e => this.setState({ assetErr: (e && e.message) || String(e) }));
+  }
+  /* ── Alle sel-endringer går gjennom denne ────────────────────────────
+     Motoren kaller componentDidUpdate(prevProps) UTEN prevState, og
+     overskriver this.state før render — forrige sel er borte når vi vil
+     lese den. Derfor settes retningen HER, før setState, og leses i
+     componentDidUpdate. Bevisst unntak: _onHash setter sel ved rutebytte
+     og skal IKKE animere som et slidebytte. */
+  selectSlide(i) {
+    const n = ((this.currentPitch() || {}).blocks || []).length;
+    const to = Math.max(0, Math.min(n - 1, i));
+    if (to === this.state.sel) return;
+    this._swapDir = to > this.state.sel ? 'up' : 'down';
+    this.setState({ sel: to, showLib: false });
   }
   resolve(src) { const u = this.D ? this.D.resolveSrc(src, this.state.assets) : (src || ''); return window.__resURL(u); }
   cssUrl(src) { const u = this.resolve(src); return u ? 'url("' + u + '")' : 'none'; }
@@ -3502,7 +3524,7 @@ class Component extends DCLogic {
           border: on ? 'var(--accent)' : 'transparent',
           fg: on ? '#16131F' : '#322D45', numColor: on ? 'var(--accent)' : '#9A96AC',
           tick: bd ? bd.color : '#D5D2E0',
-          onSelect: () => this.setState({ sel: i, showLib: false }),
+          onSelect: () => this.selectSlide(i),
           onDup: e => { e.stopPropagation(); this.updatePitch(p => { const c = this.clone(p.blocks[i]); c.id = D.uid(); p.blocks.splice(i + 1, 0, c); }); },
           onDel: e => { e.stopPropagation(); if (pitch.blocks.length < 2) return;
             this.updatePitch(p => p.blocks.splice(i, 1)); this.setState({ sel: Math.max(0, sel - (i <= sel ? 1 : 0)) }); },
@@ -4086,6 +4108,7 @@ class Component extends DCLogic {
       }
 
       ed = {
+        swapRef: el => { this._swapEl = el; },
         count: pitch.blocks.length, outline, fields: F, library: libGroups,
         showLib: S.showLib, insertAt: (S.insertAt == null ? pitch.blocks.length : S.insertAt) + 1,
         showCheck: S.showCheck, checks,
