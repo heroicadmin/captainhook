@@ -337,6 +337,7 @@
     </sc-if>
     <sc-if value="{{ superadmin }}" hint-placeholder-val="{{ false }}">
       <button type="button" onClick="{{ onOwnerToggle }}" title="Eierskap for bildemapper (superadmin)" style="width:30px;height:30px;display:grid;place-items:center;border-radius:6px;cursor:pointer;background:#F2F0F7;border:1px solid #E6E4EE;color:#55506B;font-size:15px;line-height:1" style-hover="background:#EAE7F2">⚙</button>
+      <span ref="{{ msRef }}" title="Siste tilstandsendring → tegnet" style="font-size:10px;color:#8A85A0;font-variant-numeric:tabular-nums;min-width:38px;text-align:right"></span>
     </sc-if>
     <div data-noi18n="1" title="Språk i grensesnittet" style="display:flex;gap:3px;background:#F2F0F7;border:1px solid #E6E4EE;border-radius:6px;padding:3px">
       <sc-for list="{{ ui.langs }}" as="l" hint-placeholder-count="2">
@@ -2089,6 +2090,10 @@ class Component extends DCLogic {
   }
 
   componentDidMount() {
+    /* Tidsmåler: stempler hver setState, avleses i componentDidUpdate. Skriver til DOM
+       direkte — via setState ville den utløst en ny render, og dermed seg selv. */
+    const origSetState = this.setState.bind(this);
+    this.setState = (patch, cb) => { this._tickAt = performance.now(); return origSetState(patch, cb); };
     import(window.__modURL('./i18n.js')).then(I => {
       this.I = I;
       let lang = 'no';
@@ -2523,6 +2528,13 @@ class Component extends DCLogic {
         const dy = from[id] - el.getBoundingClientRect().top;
         if (Math.abs(dy) > 1 && dur > 0) el.animate([{ transform: `translateY(${dy}px)` }, { transform: 'none' }], { duration: dur, easing: ease });
       });
+    }
+    if (this._tickAt != null && this._msEl) {
+      const t0 = this._tickAt; this._tickAt = null;
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        this._lastPaintMs = performance.now() - t0;
+        if (this._msEl) this._msEl.textContent = Math.round(this._lastPaintMs) + ' ms';
+      }));
     }
     this.applyLang();
     this.observeBands(); this.syncViewChrome();
@@ -3219,6 +3231,7 @@ class Component extends DCLogic {
     if (!D || !store) {
       return { gate: this.gateVals(), share: this.shareVals(null),
         superadmin: false,
+        msRef: () => {},
         viewAs: { active: false, current: '', label: '—', options: [], onPick: () => {}, onReset: () => {} },
         domainOptions: [],
         /* skjelettet før innlasting/innlogging viser landingssiden, ikke arkivet */
@@ -5315,6 +5328,7 @@ class Component extends DCLogic {
         };
       })(),
       superadmin: isSuperadmin,
+      msRef: el => { this._msEl = el; },
       /* «Se som»-bytte. Verdien '' betyr «meg selv / alle», ellers et selskapsdomene. */
       viewAs: {
         active: !!viewAs,
