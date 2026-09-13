@@ -3973,7 +3973,7 @@ class Component extends DCLogic {
           name: b.name, desc: b.desc,
           on: () => { const at = S.insertAt == null ? pitch.blocks.length : S.insertAt;
             this.updatePitch(p => p.blocks.splice(at, 0, D.makeBlock(b.type, null, store.library)));
-            this.setState({ showLib: false, sel: at }); }
+            this.selectSlide(at); }
         }))
       }));
 
