@@ -2776,7 +2776,10 @@ class Component extends DCLogic {
     this.updatePitch(p => { const c = this.clone(p.blocks[i]); c.id = this.D.uid(); p.blocks.splice(i + 1, 0, c); });
   }
   delBlock(i) {
-    const p = this.currentPitch(); if (!p || p.blocks.length < 2) return;   /* siste slide kan ikke slettes */
+    const p = this.currentPitch();
+    /* Siste slide kan ikke slettes — men armeringen må ryddes, ellers blir kortet
+       stående rødt med «Slett?» og videre Delete-trykk gjør stille ingenting. */
+    if (!p || p.blocks.length < 2) { if (this.state.armed) this.setState({ armed: null }); return; }
     const sel = this.state.sel;
     this.updatePitch(pp => pp.blocks.splice(i, 1));
     this.setState({ sel: Math.max(0, sel - (i <= sel ? 1 : 0)), armed: null });
