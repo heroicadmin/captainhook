@@ -2500,6 +2500,10 @@ class Component extends DCLogic {
       const ease = getComputedStyle(document.documentElement).getPropertyValue('--ease').trim() || 'ease';
       Object.entries(this._cardEls || {}).forEach(([id, el]) => {
         if (!el || from[id] == null) return;
+        /* En pågående FLIP ligger i getBoundingClientRect(). Uten denne måler vi
+           posisjonen MED forrige animasjons transform, og kortet starter feil sted
+           når man holder Cmd+pil. */
+        el.getAnimations().forEach(a => a.cancel());
         const dy = from[id] - el.getBoundingClientRect().top;
         if (Math.abs(dy) > 1 && dur > 0) el.animate([{ transform: `translateY(${dy}px)` }, { transform: 'none' }], { duration: dur, easing: ease });
       });
