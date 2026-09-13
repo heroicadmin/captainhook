@@ -20,6 +20,8 @@ push innholdet til `main`. Disse må med:
     logos/  images/  assets/
     supabase/schema.sql   (kun referanse, kjøres i Supabase)
 
+Ikke med: tools/  (verifiseringsverktøy — kjøres lokalt, skal aldri serveres)
+
 ## 2. Publiser
 
 **Cloudflare Pages** eller **Vercel** — begge kobles rett på repoet:

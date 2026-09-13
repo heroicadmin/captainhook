@@ -196,3 +196,48 @@ fra barnets `aspect-ratio` og rundet ned med `overflow:hidden`. Målt før/etter
 Klientvisningen (`[data-page]`) er ikke rammet — den er ikke et flex-element, og målt passer
 sliden eksakt (`stikkerUnder: 0`).
 
+## Verifiser før push: `node tools/check.mjs`
+
+Trekker ut skriptet, kjører `node --check`, kjører `renderVals()` for hver rute mot en
+syntetisk fixture bygget av komponentens egen `seed(D)` (ingen databasedata), og teller
+`<sc-if>`/`<sc-for>`/`<button>`. Rød = ikke push. Fanger
+`Cannot access X before initialization`-klassen som tok ned hele appen én gang —
+bevist ved å plante feilen inn: alle fire ruter ble røde, exit 1.
+
+`tools/` ligger i kildemappen og kopieres **ikke** til captainhook (DEPLOY.md §1) —
+en fixture i utrullingsrepoet ville vært offentlig lesbar, siden nginx serverer rota.
+
+## Sett før render, les etter
+
+Motoren kaller `componentDidUpdate(prevProps)` **uten** `prevState`, og
+`__setLogicState` overskriver `this.state` *før* render. Alt som skal leses etter
+render må derfor settes som instansfelt *før* `setState`:
+
+| Felt | Settes i | Leses i |
+|---|---|---|
+| `_swapDir` | `selectSlide` | slidebytte-animasjonen |
+| `_flipFrom` | `moveBlock` | FLIP-en som lar kortene gli |
+| `_tickAt` | `setState`-omslutningen | tidsmåleren |
+
+`selectSlide(i)` er den ene veien alle sel-endringer går. Tre unntak, med vilje:
+`_onHash` (å lande på en rute skal ikke animere), omordning (samme slide blir stående,
+bare kortene glir) og sletting (ingen retning).
+
+## Tastatur i redigering
+
+`↑/↓` slide · `Home/End` første/siste · `Cmd+↑/↓` flytt · `Cmd+D` dupliser ·
+`Delete` armerer («Slett?»), nytt trykk sletter, `Esc` avbryter. Ingenting fyrer mens
+fokus står i et felt eller et overlegg er åpent. Slidekortets slett-knapp er to-trinns
+også med mus — samme `armDel`-token, så tast og mus deler tilstand.
+
+## Bevegelse: ett sted for varighetene
+
+`--t-fast/--t-base/--t-slow` og `--ease` på `:root`, nullstilt i den eksisterende
+`prefers-reduced-motion`-blokken. FLIP-en leser `--t-slow` med `getComputedStyle`
+i stedet for å hardkode 220 ms — ellers ville `element.animate` ignorert
+reduced-motion, som CSS-variabler alene ikke når.
+
+Knapperegelen er scopet til `[data-ui="edit"]` og animerer **bare** `filter`,
+`transform` og `box-shadow`: `background`/`border-color` står inline på nesten alle
+knapper, og inline vinner over stilark.
+
