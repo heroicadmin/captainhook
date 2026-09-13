@@ -651,7 +651,8 @@
         <sc-for list="{{ ed.outline }}" as="o" hint-placeholder-count="8">
           <div style="display:flex;flex-direction:column">
             <button type="button" onClick="{{ o.onAddHere }}" title="Sett inn blokk her" style="height:14px;border:0;background:transparent;cursor:pointer;color:#D5D2E0;font-size:11px;line-height:1;padding:0">＋</button>
-            <div draggable="true" onDragStart="{{ o.onDragStart }}" onDragOver="{{ o.onDragOver }}" onDrop="{{ o.onDrop }}" onClick="{{ o.onSelect }}" style="display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:7px;cursor:pointer;background:{{ o.bg }};border:1px solid {{ o.border }};transition:background var(--t-base) var(--ease),border-color var(--t-base) var(--ease),transform var(--t-base) var(--ease),color var(--t-base) var(--ease)" style-hover="background:color-mix(in srgb, var(--accent) 8%, #FFFFFF);border-color:#D5D2E0;transform:translateX(2px)">
+            <div style="height:2px;margin:0 6px;border-radius:1px;background:{{ o.dropLine }};transition:background var(--t-fast) var(--ease)"></div>
+            <div draggable="true" ref="{{ o.ref }}" onDragStart="{{ o.onDragStart }}" onDragOver="{{ o.onDragOver }}" onDrop="{{ o.onDrop }}" onDragEnd="{{ o.onDragEnd }}" onClick="{{ o.onSelect }}" style="display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:7px;cursor:pointer;background:{{ o.bg }};border:1px solid {{ o.border }};transition:background var(--t-base) var(--ease),border-color var(--t-base) var(--ease),transform var(--t-base) var(--ease),color var(--t-base) var(--ease)" style-hover="background:color-mix(in srgb, var(--accent) 8%, #FFFFFF);border-color:#D5D2E0;transform:translateX(2px)">
               <span style="font-size:10px;font-weight:700;font-variant-numeric:tabular-nums;color:{{ o.numColor }};min-width:16px">{{ o.num }}</span>
               <span style="width:3px;height:26px;border-radius:2px;background:{{ o.tick }};flex:none"></span>
               <span style="display:flex;flex-direction:column;gap:2px;min-width:0;flex:1">
@@ -2025,7 +2026,7 @@ class Component extends DCLogic {
     shareStats: null, shareLocked: null, shareCopied: false,
     sel: 0, tab: 'content', showLib: false, insertAt: null, showCheck: false,
     adminTab: 'facts', adminTpl: 'master', nw: null, scroll: 0, libSel: null, caseSel: null,
-    renameId: null, renameVal: null, armed: null, naming: null, nameVal: null, hexDraft: {},
+    renameId: null, renameVal: null, armed: null, naming: null, nameVal: null, hexDraft: {}, dragOver: null,
     assets: {}, picker: null, pickerCat: 'Alle', adminCat: 'Alle', arcTab: 'all',
     uiLang: 'no'
   };
@@ -2489,6 +2490,19 @@ class Component extends DCLogic {
       void el.offsetWidth;                       /* restart animasjonen om klassen alt sto */
       el.classList.add(cls);
       el.addEventListener('animationend', () => el.classList.remove(cls), { once: true });
+    }
+    /* FLIP: kortene glir fra der de STO (fanget i moveBlock) til der de står nå.
+       Nøklet på blokk-id — indeksen er nettopp det som flyttet seg. Varigheten
+       leses fra CSS-variabelen, så prefers-reduced-motion gjelder også her. */
+    if (this._flipFrom) {
+      const from = this._flipFrom; this._flipFrom = null;
+      const dur = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--t-slow')) || 0;
+      const ease = getComputedStyle(document.documentElement).getPropertyValue('--ease').trim() || 'ease';
+      Object.entries(this._cardEls || {}).forEach(([id, el]) => {
+        if (!el || from[id] == null) return;
+        const dy = from[id] - el.getBoundingClientRect().top;
+        if (Math.abs(dy) > 1 && dur > 0) el.animate([{ transform: `translateY(${dy}px)` }, { transform: 'none' }], { duration: dur, easing: ease });
+      });
     }
     this.applyLang();
     this.observeBands(); this.syncViewChrome();
@@ -3570,6 +3584,8 @@ class Component extends DCLogic {
           border: on ? 'var(--accent)' : 'transparent',
           fg: on ? '#16131F' : '#322D45', numColor: on ? 'var(--accent)' : '#9A96AC',
           tick: bd ? bd.color : '#D5D2E0',
+          ref: el => { if (!this._cardEls) this._cardEls = {}; if (el) this._cardEls[b.id] = el; else delete this._cardEls[b.id]; },
+          dropLine: S.dragOver === i ? 'var(--accent)' : 'transparent',
           onSelect: () => this.selectSlide(i),
           onDup: e => { e.stopPropagation(); this.dupBlock(i); },
           /* to-trinns, som alle andre slett-knapper: første klikk «Slett?», andre utfører.
@@ -3577,9 +3593,10 @@ class Component extends DCLogic {
           del: this.armDel('block:' + b.id, () => this.delBlock(i)),
           onAddHere: e => { e.stopPropagation(); this.setState({ showLib: true, insertAt: i }); },
           onDragStart: e => { this._drag = i; e.dataTransfer.effectAllowed = 'move'; },
-          onDragOver: e => e.preventDefault(),
-          onDrop: e => { e.preventDefault(); if (this._drag == null || this._drag === i) return;
-            this.moveBlock(this._drag, i); this._drag = null; }
+          onDragOver: e => { e.preventDefault(); if (this.state.dragOver !== i) this.setState({ dragOver: i }); },
+          onDragEnd: () => { this._drag = null; if (this.state.dragOver != null) this.setState({ dragOver: null }); },
+          onDrop: e => { e.preventDefault(); if (this._drag == null || this._drag === i) { this.setState({ dragOver: null }); return; }
+            this.moveBlock(this._drag, i); this._drag = null; this.setState({ dragOver: null }); }
         };
       });
 
