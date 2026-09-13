@@ -2433,6 +2433,7 @@ class Component extends DCLogic {
       }
       // migreringen må skrives tilbake, ellers kjører den på nytt og overkjører admin-endringer hver last
       A.saveStore(store, { immediate: true }).catch(e => console.warn('lagring', e));
+      this.resetHistory();
       this.setState({ store, ready: true, hash: location.hash || '#/', nw: this.freshNew(D) });
     }).catch(e => console.error('system-data', e));
     /* Escape lukker det øverste åpne laget. Rekkefølgen er den samme som z-indeksen. */
@@ -2473,6 +2474,7 @@ class Component extends DCLogic {
     this._onHash = () => {
       const s = this._selOnRoute != null ? this._selOnRoute : 0;
       this._selOnRoute = null;
+      this.resetHistory();     /* angre betyr «det siste jeg gjorde HER» */
       this.setState({ hash: location.hash || '#/', sel: s, showLib: false, showCheck: false });
     };
     addEventListener('hashchange', this._onHash);
@@ -3148,6 +3150,7 @@ class Component extends DCLogic {
       const store = { version: 1, ...(res.shared || {}), pitches: [pitch] };
       const seeded = this.seed(D);
       Object.keys(seeded).forEach(k => { if (k !== 'pitches' && store[k] === undefined) store[k] = seeded[k]; });
+      this.resetHistory();
       this.setState({ store, assets, gate: null, gateErr: '', clientMode: true,
                       ready: true, hash: location.hash || '#/', nw: this.freshNew(D) });
       this._tracker = A.tracker(slug);
