@@ -95,6 +95,19 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
 <style>
+  /* ── Bevegelseslag (redigering) ──────────────────────────────────────
+     Tre varigheter og én kurve, som alle overganger i redigering bruker.
+     Knapperegelen er scopet til [data-ui="edit"] og animerer BARE filter,
+     transform og box-shadow: background/border-color står inline på nesten
+     alle knapper, og inline vinner — en hover-regel på dem ville aldri slått til. */
+  :root{--t-fast:120ms;--t-base:160ms;--t-slow:220ms;--ease:cubic-bezier(.22,.61,.36,1)}
+  [data-ui="edit"] button{transition:filter var(--t-fast) var(--ease),transform var(--t-fast) var(--ease),box-shadow var(--t-base) var(--ease)}
+  [data-ui="edit"] button:hover{filter:brightness(1.06)}
+  [data-ui="edit"] button:active{transform:scale(.97)}
+  @keyframes ps-swap-up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @keyframes ps-swap-down{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+  .is-swap-up{animation:ps-swap-up var(--t-slow) var(--ease) both}
+  .is-swap-down{animation:ps-swap-down var(--t-slow) var(--ease) both}
   *{box-sizing:border-box}
   html,body{margin:0;padding:0;background:#EEEDF4;color:#16131F;font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
   a{color:#3E3952;text-decoration:none}
@@ -117,7 +130,7 @@
   @keyframes om-fade-pb{from{opacity:0}to{opacity:1}}
   @keyframes om-fade-ta{from{opacity:0}to{opacity:1}}
   @keyframes om-fade-tb{from{opacity:0}to{opacity:1}}
-  @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important}[data-band],[data-band] [data-in],[data-band] [data-fade]{opacity:1!important;transform:none!important;transition:none!important}}
+  @media (prefers-reduced-motion:reduce){:root{--t-fast:0ms;--t-base:0ms;--t-slow:0ms}*{animation-duration:.01ms!important}[data-band],[data-band] [data-in],[data-band] [data-fade]{opacity:1!important;transform:none!important;transition:none!important}}
   /* seksjonen toner inn uten å flytte seg — bevegelsen ligger i elementene, ellers
      kompenserer to lag med transform mot hverandre og teksten rykker */
   /* grunnflaten står ferdig malt på arket; det er innholdet oppå som toner inn */
@@ -625,7 +638,7 @@
 
   <!-- ══════════════ BUILDER ══════════════ -->
   <sc-if value="{{ route.isEdit }}" hint-placeholder-val="{{ false }}">
-    <div style="display:grid;grid-template-columns:250px 1fr 330px;min-height:0;height:calc(100vh - 54px);animation:{{ routeAnim }}">
+    <div data-ui="edit" style="display:grid;grid-template-columns:250px 1fr 330px;min-height:0;height:calc(100vh - 54px);animation:{{ routeAnim }}">
 
       <!-- outline -->
       <aside style="background:#FBFAFD;border-right:1px solid #E6E4EE;min-height:0;display:flex;flex-direction:column">
@@ -638,7 +651,7 @@
         <sc-for list="{{ ed.outline }}" as="o" hint-placeholder-count="8">
           <div style="display:flex;flex-direction:column">
             <button type="button" onClick="{{ o.onAddHere }}" title="Sett inn blokk her" style="height:14px;border:0;background:transparent;cursor:pointer;color:#D5D2E0;font-size:11px;line-height:1;padding:0">＋</button>
-            <div draggable="true" onDragStart="{{ o.onDragStart }}" onDragOver="{{ o.onDragOver }}" onDrop="{{ o.onDrop }}" onClick="{{ o.onSelect }}" style="display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:7px;cursor:pointer;background:{{ o.bg }};border:1px solid {{ o.border }};transition:background .14s,border-color .14s,transform .14s" style-hover="background:color-mix(in srgb, var(--accent) 8%, #FFFFFF);border-color:#D5D2E0;transform:translateX(2px)">
+            <div draggable="true" onDragStart="{{ o.onDragStart }}" onDragOver="{{ o.onDragOver }}" onDrop="{{ o.onDrop }}" onClick="{{ o.onSelect }}" style="display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:7px;cursor:pointer;background:{{ o.bg }};border:1px solid {{ o.border }};transition:background var(--t-base) var(--ease),border-color var(--t-base) var(--ease),transform var(--t-base) var(--ease),color var(--t-base) var(--ease)" style-hover="background:color-mix(in srgb, var(--accent) 8%, #FFFFFF);border-color:#D5D2E0;transform:translateX(2px)">
               <span style="font-size:10px;font-weight:700;font-variant-numeric:tabular-nums;color:{{ o.numColor }};min-width:16px">{{ o.num }}</span>
               <span style="width:3px;height:26px;border-radius:2px;background:{{ o.tick }};flex:none"></span>
               <span style="display:flex;flex-direction:column;gap:2px;min-width:0;flex:1">
@@ -764,7 +777,7 @@
                 <div style="font-size:10px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#8A85A0;margin-bottom:8px">{{ g.cat }}</div>
                 <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px">
                   <sc-for list="{{ g.blocks }}" as="bk" hint-placeholder-count="3">
-                    <button type="button" onClick="{{ bk.on }}" style-hover="background:#FFFFFF;border-color:var(--accent);box-shadow:0 8px 20px -14px rgba(30,26,48,.5)" style="text-align:left;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:7px;padding:11px 13px;cursor:pointer;transition:background .14s,border-color .14s,box-shadow .14s;display:flex;flex-direction:column;gap:5px;color:#16131F">
+                    <button type="button" onClick="{{ bk.on }}" style-hover="background:#FFFFFF;border-color:var(--accent);box-shadow:0 8px 20px -14px rgba(30,26,48,.5)" style="text-align:left;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:7px;padding:11px 13px;cursor:pointer;transition:background .14s,border-color .14s,box-shadow .14s,filter var(--t-fast) var(--ease),transform var(--t-fast) var(--ease);display:flex;flex-direction:column;gap:5px;color:#16131F">
                       <span style="font-size:12.5px;font-weight:700">{{ bk.name }}</span>
                       <span style="font-size:11.5px;line-height:1.5;color:#55506B">{{ bk.desc }}</span>
                     </button>
