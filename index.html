@@ -2448,13 +2448,22 @@ class Component extends DCLogic {
         if (S.armed) return this.setState({ armed: null });
         return;
       }
-      /* resten gjelder bare redigering, utenfor tekstfelt, uten overlegg */
-      if (!/^#\/edit\//.test(location.hash)) return;
+      /* Felles vakter først: aldri mens man skriver, aldri med et overlegg oppe. */
       const t = e.target;
       if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
       if (S.picker || S.libFull || S.tplFull != null || S.showLib) return;
+      const meta = e.metaKey || e.ctrlKey;
+      /* Angre/gjenta virker i redigering OG admin — begge skriver til samme butikk.
+         Må ligge FØR currentPitch-vakten: den treffer bare #/edit/ og #/p/, så i admin
+         ville angre havnet bak en vakt som alltid feiler. */
+      if (meta && (e.key === 'z' || e.key === 'Z') && /^#\/(edit\/|admin)/.test(location.hash)) {
+        e.preventDefault();
+        return e.shiftKey ? this.redo() : this.undo();
+      }
+      /* resten gjelder bare redigering */
+      if (!/^#\/edit\//.test(location.hash)) return;
       const p = this.currentPitch(); if (!p) return;
-      const n = p.blocks.length, sel = S.sel, meta = e.metaKey || e.ctrlKey;
+      const n = p.blocks.length, sel = S.sel;
       const go = i => { e.preventDefault(); this.selectSlide(i); };
       if (e.key === 'ArrowUp')   return meta ? (e.preventDefault(), this.moveBlock(sel, sel - 1)) : go(sel - 1);
       if (e.key === 'ArrowDown') return meta ? (e.preventDefault(), this.moveBlock(sel, sel + 1)) : go(sel + 1);
