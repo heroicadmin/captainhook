@@ -664,7 +664,7 @@
                 <span style="font-size:10.5px;color:#8A85A0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ o.sub }}</span>
               </span>
               <button type="button" onClick="{{ o.onDup }}" title="Dupliser" style="border:0;background:transparent;color:#9A96AC;cursor:pointer;font-size:12px;padding:2px">⧉</button>
-              <button type="button" onClick="{{ o.del.on }}" title="Slett — klikk én gang til for å bekrefte" style="border:0;background:{{ o.del.bg }};color:{{ o.del.fg }};cursor:pointer;font-size:11px;font-weight:600;padding:2px 6px;border-radius:4px;white-space:nowrap">{{ o.del.label }}</button>
+              <button type="button" onClick="{{ o.del.on }}" title="Slett sliden" style="border:0;background:{{ o.del.bg }};color:{{ o.del.fg }};cursor:pointer;font-size:11px;font-weight:600;padding:2px 6px;border-radius:4px;white-space:nowrap">{{ o.del.label }}</button>
             </div>
           </div>
         </sc-for>
@@ -2472,12 +2472,9 @@ class Component extends DCLogic {
       if (e.key === 'Home')      return go(0);
       if (e.key === 'End')       return go(n - 1);
       if (meta && (e.key === 'd' || e.key === 'D')) { e.preventDefault(); return this.dupBlock(sel); }   /* stopper bokmerke-snarveien */
-      if (e.key === 'Delete' || e.key === 'Backspace') {
-        e.preventDefault();
-        const id = (p.blocks[sel] || {}).id, token = 'block:' + id;
-        if (S.armed === token) return this.delBlock(sel);       /* andre trykk: utfør */
-        return this.setState({ armed: token });                  /* første trykk: «Slett?» */
-      }
+      /* Ett trinn — angre dekker feilen nå. Backspace er med: refleksmessig Backspace
+         utenfor et felt er den mest sannsynlige utilsiktede slettingen. */
+      if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); return this.delBlock(sel); }
     };
     addEventListener('keydown', this._onKey);
     /* _selOnRoute lar en navigering bestemme hvilken slide man lander på — ellers
@@ -3706,7 +3703,10 @@ class Component extends DCLogic {
           onDup: e => { e.stopPropagation(); this.dupBlock(i); },
           /* to-trinns, som alle andre slett-knapper: første klikk «Slett?», andre utfører.
              Delete-tasten armerer samme token, så tast og mus deler tilstand. */
-          del: this.armDel('block:' + b.id, () => this.delBlock(i)),
+          /* Ett trinn nå som angre finnes. Samme feltnavn som armDel returnerer, så
+             markupen står urørt. armDel selv beholdes — seks andre slettinger bruker den. */
+          del: { label: 'Slett', bg: 'transparent', fg: '#9A96AC',
+                 on: e => { e.stopPropagation(); this.delBlock(i); } },
           onAddHere: e => { e.stopPropagation(); this.setState({ showLib: true, insertAt: i }); },
           onDragStart: e => { this._drag = i; e.dataTransfer.effectAllowed = 'move'; },
           onDragOver: e => { e.preventDefault(); if (this.state.dragOver !== i) this.setState({ dragOver: i }); },
