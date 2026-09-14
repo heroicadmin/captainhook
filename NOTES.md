@@ -241,3 +241,52 @@ Knapperegelen er scopet til `[data-ui="edit"]` og animerer **bare** `filter`,
 `transform` og `box-shadow`: `background`/`border-color` står inline på nesten alle
 knapper, og inline vinner over stilark.
 
+
+## Angre/gjenta: alt henger på at `save()` er det ene punktet
+
+Alle skrivekall — `updatePitch`, `withStore`, direkte `this.save(st)` — ender i `save()`.
+Historikken tas opp der og bare der. Legger du en ny skrivesti utenom, blir den usynlig
+for angre, uten en eneste feilmelding.
+
+`save(store, { replay: true })` er hvordan angre/gjenta skriver uten å legge seg selv på
+stabelen.
+
+**Øyeblikksbildet er `this.state.store`**, ikke `store`-argumentet. Flere kallsteder kloner
+en render-closure sin `store`, som kan være foreldet. `this.state.store` er alltid den
+faktiske gjeldende tilstanden.
+
+## Sammenslåing nøkles på FELTET, ikke på feltstien
+
+Første utkast brukte `editData`s sti. To feil, begge funnet i gjennomgang:
+
+1. Stien er relativ til blokken, så to slides av samme type deler sti.
+2. `editData` er ikke den eneste skrivestien per tastetrykk. Minst 15 felt kaller
+   `updatePitch`/`withStore` direkte — og i admin er `editData` utilgjengelig ved
+   konstruksjon, så *all* tekstredigering der ville mistet sammenslåing.
+
+Nøkkelen er derfor DOM-elementet, fanget av én `input`-lytter i capture-fasen. To vinduer:
+**50 ms** avgjør om skrivingen kom fra et felt i det hele tatt (knapper utløser ingen
+`input`), **800 ms siden forrige skriving** avgjør om den hører til forrige steg.
+
+Måler du 800 ms fra forrige *steg* i stedet for forrige *skriving*, deles en sammenhengende
+setning i nye angre-steg hvert 800. millisekund.
+
+## Stabelen
+
+Kapping dropper det **eldste** (`shift()`). `length = 40` ville kastet de nyeste.
+`resetHistory()` tømmer begge stablene *og* nullstiller sammenslåingen — kalles ved
+ruteskifte og ved de to innlastingene. Sammenslåing krever `_undo.length > 0`, ellers kan
+en skriving rett etter en tømming slås sammen mot ingenting og miste tilstanden før.
+
+## Tre verktøy, kjør alle tre før push
+
+    node tools/check.mjs       syntaks, renderVals per rute, markup-balanse
+    node tools/undo-test.mjs   angre-logikken, metodene hentet ordrett fra index.html
+    node tools/key-test.mjs    at Cmd+Z faktisk NÅR undo() — og at den ikke gjør det
+                               i et tekstfelt, med overlegg oppe, eller på feil rute
+
+`key-test.mjs` henter `_onKey` som en fabrikk, ikke som en metode: en pilfunksjon kan ikke
+`.call()`-bindes, så handleren må lages på nytt per test slik `componentDidMount` gjør.
+
+`tools/` ligger i kildemappen og kopieres **aldri** til captainhook (DEPLOY.md §1) — repoets
+rot serveres offentlig av nginx.
