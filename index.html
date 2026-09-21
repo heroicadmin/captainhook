@@ -64,10 +64,16 @@
     return R[p] || R['./' + p] || R[String(p).replace(/^\.\//, '')] || p;
   };
   /* JS-modulene lastes med sidens query-streng, så en cache-bust på siden (?v=…)
-     også henter modulene på nytt. Uten query lastes de rått (produksjon revaliderer via headere). */
+     også henter modulene på nytt. Uten query lastes de rått (produksjon revaliderer via headere).
+
+     BUMP b=N HVER GANG EN MODUL FÅR ET NYTT EKSPORT SOM index.html BRUKER.
+     index.html hentes uten nøkkel og oppdateres straks, mens modulene henger
+     igjen på den gamle nøkkelen. Ny index + gammel modul = «X is not a function»
+     i boot, og klientvisningen dør stille til en blank side (loadClientPitch
+     fanger feilen og setter bare gateErr). Oppdaget da slugToken ble lagt til. */
   window.__modURL = function (p) {
     var u = window.__resURL(p); if (!u) return u;
-    return u + (location.search || '?b=2');
+    return u + (location.search || '?b=3');
   };
   addEventListener('error', function (e) {
     var el = e.target;
@@ -1165,7 +1171,7 @@
             </div>
             <div>
               <label style="display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#55506B;margin-bottom:7px">Lenke</label>
-              <input type="text" value="{{ ed.slug }}" onInput="{{ ed.onSlug }}" style="width:100%;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:5px;color:#16131F;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;padding:9px 10px">
+              <input type="text" value="{{ ed.slug }}" onInput="{{ ed.onSlug }}" onBlur="{{ ed.onSlugDone }}" style="width:100%;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:5px;color:#16131F;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;padding:9px 10px">
             </div>
             <div>
               <label style="display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#55506B;margin-bottom:7px">Status</label>
@@ -2684,7 +2690,10 @@ class Component extends DCLogic {
       images: JSON.parse(JSON.stringify(D.IMAGES))
     };
   }
-  freshNew(D) { return { client: '', logo: null, accent: '#1434CB', template: 'master', swatches: [], sender: (D.SENDERS[0] || {}).id || 'skagerrak', profile: 'Generelt' }; }
+  /* slugToken lages her, ikke i renderVals — ellers ville forhåndsvisningen av
+     slugen fått et nytt tilfeldig ledd ved hvert tastetrykk, og den opprettede
+     pitchen endt med en annen slug enn den brukeren så. */
+  freshNew(D) { return { client: '', logo: null, accent: '#1434CB', template: 'master', swatches: [], sender: (D.SENDERS[0] || {}).id || 'skagerrak', profile: 'Generelt', slugToken: D.slugToken() }; }
 
   /* skriften lastes først når den faktisk brukes — én lenke per familiepar */
   ensureFont(f) {
@@ -3626,7 +3635,7 @@ class Component extends DCLogic {
         line: p.blocks.length + ' blokker · ' + (D.TEMPLATES.find(t => t.id === p.meta.template)?.name || '—') + ' · ' + p.meta.created,
         editHref: '#/edit/' + p.id, viewHref: '#/p/' + p.meta.slug,
         onDup: e => { e.stopPropagation(); const st = this.clone(store); const c = this.clone(p);
-          c.id = D.uid(); c.meta.client += ' (kopi)'; c.meta.slug = D.slugify(c.meta.client);
+          c.id = D.uid(); c.meta.client += ' (kopi)'; c.meta.slug = D.newSlug(c.meta.client);
           c.meta.created = new Date().toISOString().slice(0, 10); c.meta.status = 'kladd';
           st.pitches.unshift(c); this.save(st); },
         del: this.armDel('pitch:' + p.id, () => {
@@ -3647,7 +3656,7 @@ class Component extends DCLogic {
     /* ny pitch: fall tilbake til brukerens egen første avsender hvis standarden ikke eies */
     const nwSender = ownSenders.some(s => s.id === nwS.sender) ? nwS.sender : (ownSenders[0] || {}).id;
     const nw = {
-      client: nwS.client, accent: nwS.accent, slug: D.slugify(nwS.client || 'ny-kunde'),
+      client: nwS.client, accent: nwS.accent, slug: D.newSlug(nwS.client || 'ny-kunde', nwS.slugToken),
       logoLabel: nwS.logo ? 'Logo lastet opp — klikk for å bytte' : 'Klikk for å laste opp PNG eller SVG',
       ...contrastFor(nwS.accent),
       // funksjonell setState overalt: ellers overskriver ett felt et annet som ble satt etter siste render
@@ -3677,7 +3686,7 @@ class Component extends DCLogic {
         const st = this.clone(store);
         const tpl = store.templates.find(t => t.id === cur.template) || store.templates[0];
         const gallery = myImages.length ? myImages : (store.images || D.IMAGES);
-        const p = D.makePitchFromTemplate(tpl, { client: cur.client || 'Ny kunde', slug: D.slugify(cur.client), logo: cur.logo, accent: cur.accent, sender: nwSender, imageProfile: cur.profile }, gallery, st.library, st.cases, st.catsNoFill);
+        const p = D.makePitchFromTemplate(tpl, { client: cur.client || 'Ny kunde', slug: D.newSlug(cur.client, cur.slugToken), logo: cur.logo, accent: cur.accent, sender: nwSender, imageProfile: cur.profile }, gallery, st.library, st.cases, st.catsNoFill);
         D.applyImageProfile(p, gallery, cur.profile, false, st.library, st.catsNoFill);
         /* takk-sliden arver avsenderens bilde — den skal ikke fylles fra profilen */
         if ((senders.find(x => x.id === cur.sender) || {}).closingImg)
@@ -4387,7 +4396,13 @@ class Component extends DCLogic {
         tabContent: () => this.setState({ tab: 'content' }), tabPitch: () => this.setState({ tab: 'pitch' }),
         onClient: e => this.updatePitch(p => { p.meta.client = e.target.value; }),
         onSubtitle: e => this.updatePitch(p => { p.meta.subtitle = e.target.value; }),
-        onSlug: e => this.updatePitch(p => { p.meta.slug = D.slugify(e.target.value); }),
+        /* Mens det skrives beholdes en bindestrek i enden, ellers kan man aldri
+           skrive et mellomrom: «ikea » -> «ikea-» -> slugify stripper halen ->
+           «ikea», og tegnet forsvinner under fingrene. Samme felle som hex-feltet.
+           Full opprydding skjer på blur/Enter. */
+        onSlug: e => { const v = D.slugify(e.target.value + 'x').replace(/x$/, '');
+          this.updatePitch(p => { p.meta.slug = v; }); },
+        onSlugDone: e => this.updatePitch(p => { p.meta.slug = D.slugify(e.target.value); }),
         onAccent: e => this.updatePitch(p => { p.meta.accent = e.target.value; }),
         accentHex: this.hexField('ed.accent', pitch.meta.accent,
           hex => this.updatePitch(p => { p.meta.accent = hex; })),
