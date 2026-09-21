@@ -2392,6 +2392,17 @@ class Component extends DCLogic {
             if (by !== null) dy += by / u;
           }
         }
+        /* et element skal aldri kunne dras helt ut av sliden. Da er det klippet bort
+           av overflow:hidden, det finnes ikke lenger noe h\u00e5ndtak \u00e5 ta tak i, og eneste
+           vei tilbake er \u00e5 tilbakestille hele sliden. Vi holder alltid igjen en stripe
+           innenfor kanten \u2014 sm\u00e5 elementer holdes igjen med halve seg selv, s\u00e5 bevisst
+           bleed (polaroidene i montage) fortsatt g\u00e5r an. */
+        const keepX = Math.min(40, (unionRect.right - unionRect.left) / 2);
+        const keepY = Math.min(40, (unionRect.bottom - unionRect.top) / 2);
+        dx = Math.max((rootRect.left + keepX - unionRect.right) / u,
+                      Math.min((rootRect.right - keepX - unionRect.left) / u, dx));
+        dy = Math.max((rootRect.top + keepY - unionRect.bottom) / u,
+                      Math.min((rootRect.bottom - keepY - unionRect.top) / u, dy));
         liveMap = {};
         items.forEach(it => {
           it.cur.x = Math.round((it.x0 + dx) * 100) / 100; it.cur.y = Math.round((it.y0 + dy) * 100) / 100;

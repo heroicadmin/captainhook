@@ -198,7 +198,7 @@ end $$;
 -- slik at klientsiden kan rendre tall, logoer og priser uten innlogging.
 create or replace function pitch_public(p_slug text, p_password text default null)
 returns jsonb language plpgsql security definer set search_path = public as $$
-declare r record; shared jsonb;
+declare r record; shared jsonb; lib jsonb; doc text;
 begin
   select * into r from pitches where slug = p_slug;
   if not found then return jsonb_build_object('ok', false, 'error', 'not_found'); end if;
@@ -213,14 +213,31 @@ begin
 
   select coalesce(jsonb_object_agg(key, value), '{}'::jsonb) into shared
     from shared_data
-   where key in ('facts','pricing','brands','senders','library','templates','cases','imageCats','images');
+   where key in ('facts','pricing','brands','senders','cases');
+
+  /* Biblioteket: bare definisjonene for slidetypene denne pitchen bruker.
+     libAll() i system-data.js faller tilbake til seedLibrary() når lista er
+     tom, så et deck som bare bruker standardslides får dem derfra som før. */
+  select coalesce(jsonb_agg(e), '[]'::jsonb) into lib
+    from jsonb_array_elements(
+           coalesce((select value from shared_data where key = 'library'), '[]'::jsonb)) e
+   where e->>'type' in (
+           select distinct b->>'type'
+             from jsonb_array_elements(coalesce(r.data->'blocks', '[]'::jsonb)) b);
+
+  shared := shared || jsonb_build_object('library', lib);
+
+  /* assets: bare filene pitchen eller det delte innholdet nevner.
+     id-ene er korte og unike, så et treff i teksten er en ekte referanse. */
+  doc := coalesce(r.data::text, '') || coalesce(shared::text, '');
 
   return jsonb_build_object(
     'ok', true,
     'pitch', jsonb_build_object('id', r.id, 'slug', r.slug, 'client', r.client,
                                 'title', r.title, 'status', r.status) || r.data,
     'shared', shared,
-    'assets', (select coalesce(jsonb_object_agg(id, path), '{}'::jsonb) from assets));
+    'assets', (select coalesce(jsonb_object_agg(id, path), '{}'::jsonb)
+                 from assets where position(id in doc) > 0));
 end $$;
 
 -- ============================================================================

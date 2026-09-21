@@ -290,3 +290,33 @@ en skriving rett etter en tømming slås sammen mot ingenting og miste tilstande
 
 `tools/` ligger i kildemappen og kopieres **aldri** til captainhook (DEPLOY.md §1) — repoets
 rot serveres offentlig av nginx.
+
+## Klientlenker og hva de leverer ut (sikkerhetsfiks 2026-09-21)
+
+`pitch_public` er `SECURITY DEFINER` og omgår RLS **med vilje** — det er slik en
+uinnlogget klient får se pitchen sin. Derfor er det denne funksjonen, ikke
+radsikkerheten, som avgjør hva en fremmed kan få tak i.
+
+Fram til 2026-09-21 returnerte den *alle* rader i `shared_data` og *hele*
+`assets`-tabellen. Én klientlenke ga altså 119–128 kB med prisliste, hele
+slidebiblioteket, alle maler og en indeks over samtlige 99 filer — til hvem som
+helst som gjettet en slug.
+
+**Regelen nå: legger du en ny nøkkel til i `shared_data`, havner den ikke
+automatisk i klientlenken — og det skal den ikke. Utvid `key in (...)` bare hvis
+`PitchSlide` faktisk rendrer den.** I dag er lista `facts, pricing, brands,
+senders, cases`, pluss `library` filtrert til slidetypene pitchen bruker.
+
+To ting som lett gir falsk trygghet:
+
+- `libAll()` i `system-data.js` faller tilbake til `seedLibrary()` når lista er
+  tom. Et deck som bare bruker standardslides rendrer derfor helt likt selv om
+  `library` er tømt — det betyr *ikke* at filtreringen er unødvendig for deck
+  med egne slides.
+- Klienten fyller manglende nøkler fra `seed(D)` (`index.html` ~3159). En nøkkel
+  du fjerner fra nyttelasten blir altså stille erstattet av standardverdien i
+  stedet for å bli tom. Det skjuler feil hvis du ikke tester med et deck som
+  faktisk bruker db-dataene.
+
+Verifiser alltid mot alle levende deck før utrulling: antall assets, at ingen
+bildereferanse mangler, og at `blockBase()` gir samme svar før og etter.

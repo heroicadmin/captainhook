@@ -2480,6 +2480,13 @@ class Component extends DCLogic {
     /* _selOnRoute lar en navigering bestemme hvilken slide man lander på — ellers
        nullstiller hashchange valget rett etter at det er satt */
     this._onHash = () => {
+      /* Klientlenken har én rute. Navigering bort settes tilbake, slik at
+         adressefeltet ikke påstår noe annet enn det som faktisk vises.
+         Andre runde treffer want og går videre som normalt. */
+      if (this.state.clientMode) {
+        const want = '#/p/' + this.state.clientSlug;
+        if ((location.hash || '') !== want) { location.hash = want; return; }
+      }
       const s = this._selOnRoute != null ? this._selOnRoute : 0;
       this._selOnRoute = null;
       this.resetHistory();     /* angre betyr «det siste jeg gjorde HER» */
@@ -2747,6 +2754,13 @@ class Component extends DCLogic {
   clone(o) { return JSON.parse(JSON.stringify(o)); }
 
   currentPitch() {
+    /* Klientmodus har nøyaktig én pitch i lageret, og ruten kan ikke forlate den.
+       Uten dette ville en hash som ikke matcher #/p/ gi null, og rutevakten
+       under ville rendret en tom visning i stedet for pitchen. */
+    if (this.state.clientMode) {
+      const list = this.state.store && this.state.store.pitches;
+      return (list && list[0]) || null;
+    }
     const m = /^#\/(edit|p)\/(.+)$/.exec(this.state.hash || '');
     if (!m || !this.state.store) return null;
     const list = this.state.store.pitches;
@@ -3325,14 +3339,20 @@ class Component extends DCLogic {
         ed: { outline: [], fields: [], library: [], checks: [], overrides: [], senderOpts: [], profileOpts: [] }, nw: { swatches: [], templates: [], senderOpts: [], profileOpts: [] }, view: { slides: [], rail: [] } };
     }
     const nf = D.nf;
-    const isView = /^#\/p\//.test(hash);
-    const isEdit = /^#\/edit\//.test(hash);
-    const isNew = hash === '#/new';
-    const isAdmin = hash === '#/admin';
+    /* En anonym klientlenke gir tilgang til én ting: pitchen den peker på.
+       Ruten regnes derfor IKKE ut fra hash i klientmodus — ellers kan hvem som
+       helst som har fått en kundelenke skrive #/admin og få hele selger-UI-et
+       rendret i nettleseren sin. clientMode settes kun i loadClientPitch, så en
+       innlogget som forhåndsviser sin egen pitch påvirkes ikke. */
+    const isClient = !!S.clientMode;
+    const isView = isClient || /^#\/p\//.test(hash);
+    const isEdit = !isClient && /^#\/edit\//.test(hash);
+    const isNew = !isClient && hash === '#/new';
+    const isAdmin = !isClient && hash === '#/admin';
     /* Rota er en landingsside, ikke arkivet — da lander man ikke rett i dashbordet.
        Arkivet har egen rute, og alt ukjent faller tilbake til landingssiden. */
-    const isArchive = hash === '#/arkiv';
-    const isLanding = !isView && !isEdit && !isNew && !isAdmin && !isArchive;
+    const isArchive = !isClient && hash === '#/arkiv';
+    const isLanding = !isClient && !isView && !isEdit && !isNew && !isAdmin && !isArchive;
     const pitch = this.currentPitch();
     const meta = pitch ? pitch.meta : { accent: '#1434CB', logoPlate: 'light', lang: 'no' };
     const accent = (isNew && S.nw ? S.nw.accent : meta.accent) || '#1434CB';
