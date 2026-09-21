@@ -289,7 +289,13 @@
           <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;text-align:right">
             <a href="{{ view.mailto }}" style="font-size:13px;font-weight:700;color:var(--accent-ink);background:var(--accent);border-radius:6px;padding:11px 18px;transition:filter .14s" style-hover="filter:brightness(1.1)">Ta kontakt</a>
             <span style="font-size:11.5px;color:#4A4459;letter-spacing:.06em">{{ view.meta.client }} · {{ view.meta.created }}</span>
-            <a href="#/arkiv" style="font-size:11.5px;color:#6E6883">Åpne i Pitch Studio</a>
+            <sc-if value="{{ view.canEdit }}" hint-placeholder-val="{{ true }}">
+              <!-- Denne lenken er for oss, ikke for kunden. Den sto synlig i
+                   kundevisningen og var veien en gjest klikket seg inn i
+                   arkivet og videre til admin. Rutevakten stopper klikket nå,
+                   men lenken skal heller ikke vises. canEdit er !clientMode. -->
+              <a href="#/arkiv" style="font-size:11.5px;color:#6E6883">Åpne i Pitch Studio</a>
+            </sc-if>
           </div>
         </div>
       </footer>
