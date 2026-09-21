@@ -320,3 +320,27 @@ To ting som lett gir falsk trygghet:
 
 Verifiser alltid mot alle levende deck før utrulling: antall assets, at ingen
 bildereferanse mangler, og at `blockBase()` gir samme svar før og etter.
+
+## clientMode må stenge to ting, ikke én (hendelse 2026-09-21)
+
+En gjest som hadde fått lenken til én presentasjon kom seg inn i admin. Veien var
+ikke et hack: bunnteksten i kundevisningen hadde en synlig lenke «Åpne i Pitch
+Studio» → `#/arkiv`. Derfra lå menyen med Dashboard, Ny pitch og Admin rett foran
+dem. Ruten ble regnet ut utelukkende fra hash, uten å se på innlogging.
+
+**Regelen nå: `clientMode` må stenge to ting — ruten OG hver lenke inn i
+selger-UI-et.** Stenger du bare den ene, er hullet der fortsatt:
+
+- bare ruten → lenken står synlig og ser ødelagt ut for kunden
+- bare lenken → hvem som helst skriver `#/admin` selv
+
+Rutevakten ligger tre steder, og alle tre trengs: `currentPitch()` (finner pitchen
+uten å lese hash), `renderVals` (tvinger rutevalget) og `_onHash` (setter
+adressefeltet tilbake). `tools/check.mjs` har en fast test som kjører begge veier
+— gjest stenges ute, innlogget slipper inn. Legger du en ny lenke til en
+selger-rute, legg den bak `view.canEdit` (`!clientMode`), som Rediger-knappen.
+
+Og merk grensen: **dette skjuler UI-et, det er ikke en datagrense.** `facts`,
+`pricing`, `brands`, `senders` og `cases` ligger fortsatt i nettleserens minne og
+kan leses med utviklerverktøy av enhver med en gyldig kundelenke. Den ekte
+grensen er hva `pitch_public` sender ut.
