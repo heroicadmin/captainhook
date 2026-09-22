@@ -3929,6 +3929,20 @@ class Component extends DCLogic {
             onDel: () => set((val || []).filter((_, j) => j !== i))
           })),
           onAdd: () => set([...(val || []), { key: 'gamer', lead: 'Ledetekst', rest: 'resten av påstanden' }]) });
+        /* som 'umb', men med et tall per produkt. Egen art slik at «Paraplyen»
+           ikke får et felt den ikke rendrer. */
+        else if (kind === 'umbstat') F.push({ ...base, isRepeat: true,
+          items: (val || []).map((x, i) => ({
+            head: (BR[x.key] || {}).name || '—', tint: (BR[x.key] || {}).color || '#6E6883',
+            canAddSub: false, subs: [
+              { isPick: true, value: x.key, options: brandOpts, on: e => this.editData([key, i], { ...x, key: e.target.value }) },
+              { isText: true, flex: 1, ph: 'Ledetekst (fet)', value: x.lead, on: e => this.editData([key, i], { ...x, lead: e.target.value }) },
+              { isText: true, flex: 1, ph: 'Resten', value: x.rest, on: e => this.editData([key, i], { ...x, rest: e.target.value }) },
+              { isText: true, flex: 1, ph: 'Tall, f.eks. «250 000 lesere i måneden»', value: x.stat || '', on: e => this.editData([key, i], { ...x, stat: e.target.value }) }
+            ],
+            onDel: () => set((val || []).filter((_, j) => j !== i))
+          })),
+          onAdd: () => set([...(val || []), { key: 'gamer', lead: 'Ledetekst', rest: 'resten av påstanden', stat: '' }]) });
         else if (kind === 'opts') F.push({ ...base, isRepeat: true,
           items: (val || []).map((x, i) => ({
             head: x.head || 'Kort ' + (i + 1), tint: 'var(--accent)', canAddSub: false,

@@ -950,6 +950,92 @@
     </div>
   </sc-if>
 
+  <!-- ============ REACH — volum og målgruppe ============ -->
+  <sc-if value="{{ is.reach }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;padding:5.4cqw 5.5cqw;display:flex;flex-direction:column">
+      <div data-el="eyebrow" data-el-name="Stikktittel" data-in="1" style="font-size:.8cqw;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--accent,#1434CB)">{{ s.eyebrow }}</div>
+      <h1 data-el="title" data-el-name="Tittel" data-in="2" style="font-size:3.2cqw;font-weight:700;letter-spacing:-.02em;line-height:1.12;margin:.8cqw 0 0;max-width:30ch">{{ s.title }}</h1>
+
+      <div style="flex:1;display:grid;grid-template-columns:38fr 62fr;gap:3.2cqw;align-items:stretch;min-height:0;margin-top:2.2cqw">
+
+        <!-- venstre: tallet, så hvem de er -->
+        <div style="display:flex;flex-direction:column;gap:1.8cqw;min-height:0">
+          <div data-el="big" data-el-name="Stort tall" data-in="3" style="display:flex;flex-direction:column;gap:.5cqw;background:color-mix(in srgb, var(--accent,#1434CB) 16%, rgba(255,255,255,.03));border:1px solid color-mix(in srgb, var(--accent,#1434CB) 45%, transparent);border-radius:.5cqw;padding:1.6cqw 1.6cqw 1.4cqw">
+            <div data-countup="{{ s.big }}" style="font-size:4.4cqw;font-weight:700;letter-spacing:-.035em;line-height:1;font-variant-numeric:tabular-nums">{{ s.big }}</div>
+            <span style="font-size:.8cqw;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft,#C9C4D6);line-height:1.5">{{ s.bigLabel }}</span>
+          </div>
+
+          <div data-el="demo" data-el-name="Demografi" data-in="4" style="display:flex;flex-direction:column;gap:1.6cqw">
+            <!-- alder: bånd, ikke stolper — vi har intervall, ikke andel -->
+            <div style="display:flex;flex-direction:column;gap:.9cqw">
+              <div style="font-size:.7cqw;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-mute,#8E88A3);padding-bottom:.7cqw;border-bottom:1px solid var(--rule,#302B3F)">{{ s.ageLabel }}</div>
+              <div style="display:flex;gap:.8cqw">
+                <sc-for list="{{ reachAge }}" as="a" hint-placeholder-count="2">
+                  <div style="flex:1;display:flex;flex-direction:column;gap:.25cqw;background:color-mix(in srgb, var(--ink,#FFFFFF) 6%, transparent);border-radius:.4cqw;padding:.85cqw .9cqw">
+                    <span style="font-size:1.6cqw;font-weight:700;letter-spacing:-.02em;line-height:1;font-variant-numeric:tabular-nums">{{ a.value }}</span>
+                    <span style="font-size:.72cqw;color:var(--ink-soft,#C9C4D6);line-height:1.35">{{ a.label }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <!-- kjønn: delt stolpe, her finnes andelen -->
+            <div style="display:flex;flex-direction:column;gap:.9cqw">
+              <div style="font-size:.7cqw;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-mute,#8E88A3);padding-bottom:.7cqw;border-bottom:1px solid var(--rule,#302B3F)">{{ s.genderLabel }}</div>
+              <div style="display:flex;height:.5cqw;border-radius:.25cqw;overflow:hidden">
+                <sc-for list="{{ reachGender }}" as="g" hint-placeholder-count="2">
+                  <span style="width:{{ g.w }};background:{{ g.bg }}"></span>
+                </sc-for>
+              </div>
+              <div style="display:flex;gap:1.4cqw">
+                <sc-for list="{{ reachGender }}" as="g" hint-placeholder-count="2">
+                  <span style="display:flex;align-items:baseline;gap:.4cqw">
+                    <span style="font-size:1.05cqw;font-weight:700;font-variant-numeric:tabular-nums;color:{{ g.fg }}">{{ g.value }}</span>
+                    <span style="font-size:.72cqw;color:var(--ink-mute,#8E88A3)">{{ g.label }}</span>
+                  </span>
+                </sc-for>
+              </div>
+            </div>
+
+            <!-- kjøpekraft -->
+            <sc-if value="{{ reachHasIncome }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;flex-direction:column;gap:.35cqw">
+                <div style="font-size:.7cqw;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-mute,#8E88A3);padding-bottom:.7cqw;border-bottom:1px solid var(--rule,#302B3F)">{{ s.incomeLabel }}</div>
+                <span style="font-size:1.9cqw;font-weight:700;letter-spacing:-.025em;line-height:1.2;color:var(--accent,#1434CB);font-variant-numeric:tabular-nums">{{ s.income }}</span>
+                <span style="font-size:.76cqw;color:var(--ink-soft,#C9C4D6);line-height:1.45">{{ s.incomeNote }}</span>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+
+        <!-- høyre: produktene tallene kommer fra -->
+        <div data-el="products" data-el-name="Produkter" data-in="5" style="display:flex;flex-direction:column;justify-content:center;gap:.9cqw;min-height:0">
+          <sc-for list="{{ reachProducts }}" as="pr" hint-placeholder-count="4">
+            <div style="display:flex;align-items:center;gap:1.4cqw;background:color-mix(in srgb, var(--ink,#FFFFFF) 5%, transparent);border:1px solid var(--rule,#302B3F);border-radius:.5cqw;padding:1.15cqw 1.4cqw">
+              <div style="flex:none;width:9cqw;display:flex;align-items:center">
+                <sc-if value="{{ pr.hasLogo }}" hint-placeholder-val="{{ true }}">
+                  <img src="{{ pr.logo }}" alt="{{ pr.name }}" style="max-width:9cqw;max-height:2.1cqw;object-fit:contain;object-position:left;display:block">
+                </sc-if>
+                <sc-if value="{{ pr.noLogo }}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size:1.05cqw;font-weight:700;letter-spacing:-.01em">{{ pr.name }}</span>
+                </sc-if>
+              </div>
+              <div style="flex:1;min-width:0;font-size:.92cqw;line-height:1.45;color:var(--ink-soft,#C9C4D6)"><span style="font-weight:700;color:var(--ink,#FFFFFF)">{{ pr.lead }}</span> {{ pr.rest }}</div>
+              <sc-if value="{{ pr.hasStat }}" hint-placeholder-val="{{ true }}">
+                <span style="flex:none;font-size:.85cqw;font-weight:700;letter-spacing:.02em;color:var(--accent,#1434CB);font-variant-numeric:tabular-nums;text-align:right;max-width:13cqw;line-height:1.35">{{ pr.stat }}</span>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div data-el="source" data-el-name="Kildelinje" data-in="6" style="display:flex;flex-direction:column;gap:.35cqw;margin-top:1.6cqw">
+        <p style="font-size:.72cqw;line-height:1.5;color:var(--ink-soft,#C9C4D6);margin:0">{{ s.approx }}</p>
+        <p style="font-size:.72cqw;line-height:1.5;color:var(--ink-mute,#8E88A3);max-width:110ch;margin:0">{{ s.source }}</p>
+      </div>
+    </div>
+  </sc-if>
+
   <!-- ============ SPOTLIGHT ============ -->
   <sc-if value="{{ is.spotlight }}" hint-placeholder-val="{{ false }}">
     <div style="position:absolute;inset:0;padding:4.6cqw 5.5cqw;display:flex;flex-direction:column;align-items:center;text-align:center">
@@ -2496,7 +2582,7 @@ class Component extends DCLogic {
        En aksenttone her ble for sterk på lys flate — den ble rosa.) */
     const panelBg = 'var(--plate2, #23202F)';
 
-    const types = ['cover','umbrella','statement','brand','metrics','membership','table','matrix','showcase','tiers','configurator','timeline','logowall','next','closing','divider','fullbleed','adrates','placement','case','cases','benchmark','audience','spotlight','frames','proof','pillars','invest','options','homebase','briefing','activation','partnership','formation','loyaltyapp','productscene','montage','concept','grid9'];
+    const types = ['cover','umbrella','statement','brand','metrics','membership','table','matrix','showcase','tiers','configurator','timeline','logowall','next','closing','divider','fullbleed','adrates','placement','case','cases','benchmark','audience','spotlight','frames','proof','pillars','invest','options','homebase','briefing','activation','partnership','formation','loyaltyapp','productscene','montage','concept','grid9','reach'];
     const is = {};
     /* base er utformingen — egendefinerte slides i biblioteket peker på en av disse */
     const baseType = blk.base || blk.type;
@@ -3000,6 +3086,28 @@ class Component extends DCLogic {
         return {
           audLeft: [grp('genderLabel', 'gender'), grp('ageLabel', 'age')].filter(has),
           audRight: [grp('marketLabel', 'markets')].filter(has)
+        };
+      })(),
+      /* ---- volum og målgruppe ---- */
+      /* Aldersgruppene rendres som bånd, ikke stolper: vi har intervallene
+         (19–27, 28–36), men ingen andeler. En stolpe uten andel ville antydet
+         en måling som ikke finnes. Kjønn har andel, og får delt stolpe. */
+      ...(() => {
+        const num = v => parseFloat(String(v).replace(/[^\d.,-]/g, '').replace(',', '.')) || 0;
+        const g = (s.gender || []).map(x => ({ label: x.label || '', value: x.value || '' }));
+        const sum = g.reduce((a, x) => a + num(x.value), 0) || 1;
+        return {
+          reachAge: (s.age || []).map(x => ({ value: x.value || '', label: x.label || '' })),
+          reachGender: g.map((x, i) => ({ ...x, w: (num(x.value) / sum * 100).toFixed(1) + '%',
+            bg: i === 0 ? 'var(--accent,#1434CB)' : 'color-mix(in srgb, var(--ink,#fff) 16%, transparent)',
+            fg: i === 0 ? 'var(--ink,#FFFFFF)' : 'var(--ink-mute,#8E88A3)' })),
+          reachProducts: (s.brands || []).map(x => {
+            const bb = brands[x.key] || {};
+            return { name: bb.name || '', logo: bb.logo || '', hasLogo: !!bb.logo, noLogo: !bb.logo,
+              lead: x.lead || '', rest: x.rest || '',
+              stat: x.stat || '', hasStat: !!x.stat };
+          }),
+          reachHasIncome: !!(s.income || s.incomeNote)
         };
       })(),
       /* ---- caser ---- */

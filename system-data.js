@@ -420,6 +420,36 @@ export const LIBRARY = [
     defaults:{ eyebrow:'Rekkevidde', title:'Tallene, og hvem de måles mot',
       stats:[], barLabel:'Engasjementsrate', rows:[], img:'', imgHint:'Foto — publikum eller lag', source:'' } },
 
+  /* Slide 2 i ny form: volumet først, så hvem publikummet er, så hvilke produkter
+     tallene kommer fra. Slår sammen paraplyen og publikumssliden. «Paraplyen» står
+     urørt ved siden av — denne er en egen type, ikke en erstatning.
+     Volumtallene har kilde i faktabasen. Alder, kjønn og inntekt er ANSLAG og skal
+     ikke kildeføres; derfor står de i egne felter med en tydelig anslagslinje. */
+  { type:'reach', cat:'Økosystem', name:'Volum og målgruppe',
+    desc:'Store tall først, så demografien, så produktene tallene kommer fra. Alder, kjønn og inntekt er anslag.',
+    fields:[['eyebrow','Eyebrow','text'],['title','Tittel','text'],
+            ['big','Stort tall','text'],['bigLabel','Etikett stort tall','text'],
+            ['ageLabel','Overskrift alder','text'],['age','Aldersgrupper','stats'],
+            ['genderLabel','Overskrift kjønn','text'],['gender','Kjønnsfordeling','stats'],
+            ['incomeLabel','Overskrift kjøpekraft','text'],['income','Tall kjøpekraft','text'],
+            ['incomeNote','Linje kjøpekraft','text'],
+            ['brands','Produkter','umbstat'],
+            ['approx','Anslagslinje','text'],['source','Fotnote','area']],
+    defaults:{ eyebrow:'Rekkevidde', title:'Hvor mange vi når — og hvem de er',
+      big:'250 000', bigLabel:'lesere i måneden på Gamer.no',
+      ageLabel:'Kjernegrupper',
+      age:[ {label:'Yngre kjerne', value:'19–27'}, {label:'Etablert kjerne', value:'28–36'} ],
+      genderLabel:'Kjønnsfordeling',
+      gender:[ {label:'Menn', value:'80 %'}, {label:'Kvinner og andre', value:'20 %'} ],
+      incomeLabel:'Kjøpekraft', income:'1 MNOK+',
+      incomeNote:'Snitt blant deltakerne i Bedriftsligaen',
+      brands:[ {key:'gamer',   lead:'Norges ledende',  rest:'nettsted for spill, teknologi og spillkultur', stat:'250 000 lesere i måneden'},
+               {key:'komplett',lead:'Europas største', rest:'nasjonale liga i e-sport',                     stat:'10 000 utøvere i året'},
+               {key:'bl',      lead:'Nordens største', rest:'bedriftsliga innen gaming og sjakk',           stat:'350 bedrifter · 2 000 ansatte'},
+               {key:'arena',   lead:'Norges største',  rest:'plattform for kompetitiv gaming',              stat:''} ],
+      approx:'Alder, kjønnsfordeling og kjøpekraft er anslag, ikke målte tall.',
+      source:'Lesertall: Google Analytics, snitt H1 2026. Utøvere: plattformdata 2025. Bedrifter og ansatte: påmeldingsdata sesong 2025/26.' } },
+
   { type:'audience', cat:'Bevis', name:'Publikum', desc:'Demografi: kjønn, alder og markeder stilt opp rundt ett stort tall.',
     fields:[['eyebrow','Eyebrow','text'],['title','Tittel','text'],
             ['genderLabel','Overskrift kjønn','text'],['gender','Kjønn','stats'],
@@ -1775,7 +1805,7 @@ export function veilBg(veil, isHero, ambientOn, paper) {
 export const MOVABLE_BASES = ['cover', 'umbrella', 'statement', 'brand', 'metrics', 'membership', 'table', 'matrix',
   'showcase', 'case', 'cases', 'tiers', 'configurator', 'adrates', 'placement', 'timeline',
   'logowall', 'next', 'fullbleed', 'closing', 'divider', 'benchmark', 'audience', 'spotlight', 'frames', 'proof', 'pillars',
-  'briefing', 'activation', 'partnership', 'formation', 'productscene', 'montage', 'concept', 'grid9'];
+  'briefing', 'activation', 'partnership', 'formation', 'productscene', 'montage', 'concept', 'grid9', 'reach'];
 export function canMove(base) { return MOVABLE_BASES.includes(base); }
 
 /* en slide er tom for egne plasseringer når ingenting er flyttet, skalert eller skjult */
