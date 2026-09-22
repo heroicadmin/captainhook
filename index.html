@@ -3167,7 +3167,7 @@ class Component extends DCLogic {
       this.setState({ clientSlug: slug, clientName: g.client || '' });
       if (g.needs_password) return this.setState({ gate: 'password' });
       this.loadClientPitch(slug, null);
-    } catch (e) { this.setState({ gate: 'login', gateErr: e.message || String(e) }); }
+    } catch (e) { this.setState({ gate: 'feil', gateErr: e.message || String(e) }); }
   }
 
   async loadClientPitch(slug, pw) {
@@ -3175,10 +3175,17 @@ class Component extends DCLogic {
     try {
       const res = await A.pitchPublic(slug, pw);
       if (!res || !res.ok) {
-        const msg = res && res.error === 'bad_password' ? 'Feil passord.'
-                  : res && res.error === 'expired' ? 'Lenken har utløpt.'
+        const err = res && res.error;
+        const msg = err === 'bad_password' ? 'Feil passord.'
+                  : err === 'expired' ? 'Lenken har utløpt.'
                   : 'Lenken er ikke gyldig.';
-        return this.setState({ gateErr: msg });
+        /* Porten må settes eksplisitt, ikke bare meldingen: ved feil passord
+           står den alt på «password», men kommer vi hit uten passord er den
+           fortsatt «boot», som ikke vises i det hele tatt. */
+        const gate = err === 'bad_password' ? 'password'
+                   : err === 'expired' ? 'expired'
+                   : err === 'not_found' ? 'missing' : 'feil';
+        return this.setState({ gate, gateErr: msg });
       }
       const assets = {};
       Object.entries(res.assets || {}).forEach(([id, path]) => { assets[id] = A.publicURL(path); });
@@ -3192,7 +3199,7 @@ class Component extends DCLogic {
                       ready: true, hash: location.hash || '#/', nw: this.freshNew(D) });
       this._tracker = A.tracker(slug);
       this._tracker.start();
-    } catch (e) { this.setState({ gateErr: e.message || String(e) }); }
+    } catch (e) { this.setState({ gate: 'feil', gateErr: e.message || String(e) }); }
   }
 
   /* Deling og sporing for én pitch: passord, utløp, og hva klienten faktisk så på. */
@@ -3282,13 +3289,18 @@ class Component extends DCLogic {
     const show = !!g && g !== 'boot';
     const titles = { config: 'Ikke koblet til databasen', login: 'Logg inn',
                      password: S.clientName ? 'Pitch til ' + S.clientName : 'Passordbeskyttet',
-                     missing: 'Fant ikke pitchen', expired: 'Lenken har utløpt' };
+                     missing: 'Fant ikke pitchen', expired: 'Lenken har utløpt',
+                     feil: 'Kunne ikke åpne pitchen' };
     const texts = {
       config: 'Appen henter nå pitcher, tall og bilder fra Supabase. Åpne Sky-oppsett og lim inn prosjekt-URL og anon-nøkkel én gang.',
       login: 'Pitchene ligger i databasen. Logg inn med din egen konto for å se og redigere dem.',
       password: 'Skriv inn passordet du fikk sammen med lenken.',
       missing: 'Sjekk at lenken er riktig, eller be om en ny.',
-      expired: 'Ta kontakt med avsender for en oppdatert lenke.'
+      expired: 'Ta kontakt med avsender for en oppdatert lenke.',
+      /* Siste utvei. Uten denne ble gate stående på «boot» ved en uventet feil,
+         og siden «boot» ikke vises, satt kunden igjen med en blank skjerm uten
+         beskjed. Alt som kan feile under lasting skal ende her. */
+      feil: 'Prøv å laste siden på nytt. Hjelper det ikke, ta kontakt med avsender.'
     };
     return {
       show,
