@@ -16,6 +16,7 @@ push innholdet til `main`. Disse må med:
     supabase-config.js
     system-data.js  i18n.js  sheet-io.js
     ambient-field.js  bg-scenes.js  hex-ripple.js
+    vendor/three-0.160.0.module.js   (three.js ligger i repoet, ikke på CDN)
     facts.json
     logos/  images/  assets/
     supabase/schema.sql   (kun referanse, kjøres i Supabase)

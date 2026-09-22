@@ -3060,14 +3060,15 @@ class Component extends DCLogic {
       usedBgTags.forEach(t => { clone.querySelectorAll(t).forEach(el => { el.innerHTML = ''; }); });
       const bgFiles = [...new Set(usedBgTags.map(t => bgFileFor[t]))];
       const tagOpen = '<' + 'script>', tagClose = '<' + '/script>';
+      /* må være nøyaktig literalen i bakgrunnsfilene */
+      const VENDOR_THREE = '/vendor/three-0.160.0.module.js';
       let bgScripts = '';
-      /* de tre bakgrunnene henter three.js fra et CDN via dynamisk import — det krever nett,
-         stikk i strid med at denne filen skal virke helt frakoblet. Henter kildekoden nå,
-         mens vi uansett er tilkoblet, og bygger den om til en blob-URL i den ferdige filen,
-         slik at dynamisk import aldri går ut på nettet. */
+      /* de tre bakgrunnene laster three.js med dynamisk import — den ferdige filen skal
+         virke helt frakoblet, så kildekoden hentes nå og bygges om til en blob-URL.
+         Hentes fra vår egen vendor-mappe, ikke fra et CDN. */
       if (bgFiles.length) {
         try {
-          const threeSrc = await (await fetch('https://esm.sh/three@0.160.0/es2022/three.mjs')).text();
+          const threeSrc = await (await fetch(abs('vendor/three-0.160.0.module.js'))).text();
           bgScripts += tagOpen
             + 'window.__threeURL=URL.createObjectURL(new Blob([' + JSON.stringify(threeSrc) + '],{type:"text/javascript"}));'
             + tagClose;
@@ -3076,7 +3077,7 @@ class Component extends DCLogic {
       for (const f of bgFiles) {
         try {
           let src = await (await fetch(abs(f))).text();
-          src = src.split("'https://esm.sh/three@0.160.0'").join('window.__threeURL');
+          src = src.split("'" + VENDOR_THREE + "'").join('window.__threeURL');
           bgScripts += tagOpen + src + tagClose;
         } catch (e) {}
       }

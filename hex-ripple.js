@@ -18,20 +18,24 @@
       });
     }
 
-    /* three.js hentes fra CDN. Feiler den ÉN gang — et blaff, en treg linje, en
-       blokkering — ga den gamle koden opp for godt, og flaten ble stående med
-       stripemønsteret til noen endret et attributt. Det er sett i produksjon.
-       Nå prøves det tre ganger med økende pause.
-       MERK: url-strengen under skiftes ut ordrett av offline-eksporten i
-       index.html (~3079), som bytter CDN-adressen mot window.__threeURL.
-       Den må stå som én enkel literal, ellers virker ikke frakoblede filer. */
+    /* three.js ligger i repoet, ikke på et CDN. Før ble det hentet fra esm.sh ved
+       hver visning, for en ren dekorasjon — og feilet hentingen ÉN gang, ga koden
+       opp for godt og flaten ble stående med stripemønster til noen endret et
+       attributt. Det er sett i produksjon. Nå er three.js samme opprinnelse som
+       resten av appen, og lastingen feiler bare hvis appen selv gjør det.
+    
+       Absolutt sti: filene lastes av dc-runtime, så en relativ sti ville blitt
+       løst mot dokumentet og ikke mot denne filen.
+    
+       MERK: url-literalen skiftes ut ordrett av offline-eksporten i index.html,
+       som bytter den mot window.__threeURL. Den må stå som én enkel streng,
+       ellers virker ikke frakoblede filer. */
     loadThree(forsok) {
-      const url = 'https://esm.sh/three@0.160.0';
-      /* Fragmentet sendes ikke til serveren, men gir modulkartet en ny nøkkel.
-         Uten det returnerer nettleseren det samme avviste løftet uten å hente
-         på nytt — målt: samme url ga 1 forsøk og deretter 0. Da ville
-         gjentakelsen vært uvirksom, som er nettopp det den skal hindre.
-         Fragment framfor query fordi CDN-et da ser en uendret forespørsel. */
+      const url = '/vendor/three-0.160.0.module.js';
+      /* Gjentakelsene legger på et fragment. Det sendes ikke til serveren, men gir
+         modulkartet en ny nøkkel — uten det returnerer nettleseren det samme
+         avviste løftet uten å hente på nytt, og gjentakelsen blir uvirksom.
+         Målt: samme url ga 1 forsøk og deretter 0, ulikt fragment ga 1 og 1. */
       return import(forsok === 3 ? url : url + '#r' + forsok).catch(e => {
         if (forsok <= 1) throw e;
         return new Promise(r => setTimeout(r, 900 * (4 - forsok)))
