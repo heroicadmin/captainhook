@@ -18,18 +18,42 @@
       });
     }
 
+    /* three.js hentes fra CDN. Feiler den ÉN gang — et blaff, en treg linje, en
+       blokkering — ga den gamle koden opp for godt, og flaten ble stående med
+       stripemønsteret til noen endret et attributt. Det er sett i produksjon.
+       Nå prøves det tre ganger med økende pause.
+       MERK: url-strengen under skiftes ut ordrett av offline-eksporten i
+       index.html (~3079), som bytter CDN-adressen mot window.__threeURL.
+       Den må stå som én enkel literal, ellers virker ikke frakoblede filer. */
+    loadThree(forsok) {
+      const url = 'https://esm.sh/three@0.160.0';
+      /* Fragmentet sendes ikke til serveren, men gir modulkartet en ny nøkkel.
+         Uten det returnerer nettleseren det samme avviste løftet uten å hente
+         på nytt — målt: samme url ga 1 forsøk og deretter 0. Da ville
+         gjentakelsen vært uvirksom, som er nettopp det den skal hindre.
+         Fragment framfor query fordi CDN-et da ser en uendret forespørsel. */
+      return import(forsok === 3 ? url : url + '#r' + forsok).catch(e => {
+        if (forsok <= 1) throw e;
+        return new Promise(r => setTimeout(r, 900 * (4 - forsok)))
+          .then(() => this.loadThree(forsok - 1));
+      });
+    }
+
     connectedCallback() {
       if (this._booted) return;
       this._booted = true;
       const gen = this._gen = (this._gen || 0) + 1;
       this.style.cssText = 'position:absolute;inset:0;display:block;overflow:hidden;background:#12101A';
-      import('https://esm.sh/three@0.160.0')
+      this.loadThree(3)
         .then(T => { if (this._booted && gen === this._gen) this.boot(T); })
         .catch(e => { console.warn('[hex-ripple] three.js kunne ikke lastes', e); this.fallback(); });
     }
 
     fallback() {
-      this.style.background = 'repeating-linear-gradient(135deg,#1A1724 0 14px,#201C2C 14px 28px)';
+      /* En dekorativ bakgrunn som ikke kan tegnes skal forsvinne, ikke se ødelagt ut.
+         Stripene er appens «mangler innhold»-mønster og leses som en feil når de
+         dekker hele flaten. Flat tone er samme farge som elementet ellers. */
+      this.style.background = '#12101A';
     }
 
     boot(THREE) {
@@ -47,54 +71,66 @@
 
       const scene = new THREE.Scene();
       const VIEW = 46 / Math.max(0.6, density);          // høyde i verdensenheter
-      const aspect = w / h;
-      const camera = new THREE.OrthographicCamera(-VIEW * aspect / 2, VIEW * aspect / 2, VIEW / 2, -VIEW / 2, -10, 10);
+      let curAspect = w / h;
+      const camera = new THREE.OrthographicCamera(-VIEW * curAspect / 2, VIEW * curAspect / 2, VIEW / 2, -VIEW / 2, -10, 10);
 
       /* aksialt heksagongitter, flat topp */
       const S = 1;                                        // cellestørrelse
       const stepX = S * 1.5, stepY = S * Math.SQRT2 * 1.2247;   // ≈ sqrt(3)
-      const cols = Math.ceil((VIEW * aspect) / stepX) + 4;
-      const rows = Math.ceil(VIEW / stepY) + 4;
-      const cells = [];
-      let maxD = 1;
-      for (let q = -cols; q <= cols; q++) {
-        for (let r = -rows; r <= rows; r++) {
-          const x = stepX * q;
-          const y = stepY * (r + q / 2);
-          if (Math.abs(x) > VIEW * aspect / 2 + S || Math.abs(y) > VIEW / 2 + S) continue;
-          const d = Math.hypot(x, y);
-          cells.push(x, y, d);
-          if (d > maxD) maxD = d;
-        }
-      }
-      const N = cells.length / 3;
-
-      const hex = new THREE.CircleGeometry(S * 0.99, 6);
-      const mat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.9, depthWrite: false, blending: THREE.AdditiveBlending, vertexColors: false });
-      const mesh = new THREE.InstancedMesh(hex, mat, N);
-      mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-      mesh.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(N * 3), 3);
-      scene.add(mesh);
-
       const m4 = new THREE.Matrix4();
       const col = new THREE.Color();
       const white = new THREE.Color(0xffffff);
+
+      const hex = new THREE.CircleGeometry(S * 0.99, 6);
+      const mat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.9, depthWrite: false, blending: THREE.AdditiveBlending, vertexColors: false });
+
+      /* Gitteret dekker bare så langt ut som bredde/høyde-forholdet det ble bygget
+         for. Flaten kan bli bredere etterpå — vinduet endres, eller den måles før
+         oppsettet har satt seg — og da utvider kameraet seg til et område der det
+         ikke finnes celler. Resultatet er tomme felt langs venstre og høyre kant.
+         Målt på en vanlig bredskjerm sto 7 av 20 kolonner helt tomme.
+         Derfor bygges gitteret på nytt når forholdet vokser. Det krymper aldri
+         tilbake: ombygging begge veier ville gitt stadige ombygginger av småting. */
+      let cells = [], N = 0, mesh = null, builtAspect = 0;
+      const buildGrid = ar => {
+        builtAspect = ar;
+        cells = [];
+        const cols = Math.ceil((VIEW * ar) / stepX) + 4;
+        const rows = Math.ceil(VIEW / stepY) + 4;
+        for (let q = -cols; q <= cols; q++) {
+          for (let r = -rows; r <= rows; r++) {
+            const x = stepX * q;
+            const y = stepY * (r + q / 2);
+            if (Math.abs(x) > VIEW * ar / 2 + S || Math.abs(y) > VIEW / 2 + S) continue;
+            cells.push(x, y, Math.hypot(x, y));
+          }
+        }
+        N = cells.length / 3;
+        if (mesh) { scene.remove(mesh); mesh.dispose(); }
+        mesh = new THREE.InstancedMesh(hex, mat, N);
+        mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+        mesh.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(N * 3), 3);
+        scene.add(mesh);
+        for (let i = 0; i < N; i++) {
+          m4.makeScale(0.93, 0.93, 1);
+          m4.setPosition(cells[i * 3], cells[i * 3 + 1], 0);
+          mesh.setMatrixAt(i, m4);
+        }
+        mesh.instanceMatrix.needsUpdate = true;
+      };
 
       /* dråpene faller étt sted om gangen, spredt utover flaten, og overlapper så vidt
          hverandre — bakgrunnen står aldri stille, men bærer aldri mer enn en svak ring. */
       const PERIOD = 2.1, RSPEED = VIEW * 0.15, WIDTH = VIEW * 0.055, LIFE = VIEW * 0.42;
       const dark = new THREE.Color(0x12101a);
-      const halfW = VIEW * aspect / 2, halfH = VIEW / 2;
+      const halfH = VIEW / 2;
       const rnd = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
-      const originX = k => (rnd(k * 2 + 1) - 0.5) * halfW * 1.7;
+      /* origo følger gjeldende bredde. Ellers ville dråpene fortsatt falle innenfor
+         den opprinnelige, smalere flaten etter at den er blitt bredere. */
+      const originX = k => (rnd(k * 2 + 1) - 0.5) * (VIEW * curAspect / 2) * 1.7;
       const originY = k => (rnd(k * 2 + 2) - 0.5) * halfH * 1.7;
 
-      for (let i = 0; i < N; i++) {
-        m4.makeScale(0.93, 0.93, 1);
-        m4.setPosition(cells[i * 3], cells[i * 3 + 1], 0);
-        mesh.setMatrixAt(i, m4);
-      }
-      mesh.instanceMatrix.needsUpdate = true;
+      buildGrid(curAspect);
 
       const draw = t => {
         const newest = Math.floor(t / PERIOD);
@@ -139,13 +175,15 @@
         const nw = this.clientWidth, nh = this.clientHeight;
         if (!nw || !nh) return;
         renderer.setSize(nw, nh, false);
-        const ar = nw / nh;
-        camera.left = -VIEW * ar / 2; camera.right = VIEW * ar / 2;
+        curAspect = nw / nh;
+        camera.left = -VIEW * curAspect / 2; camera.right = VIEW * curAspect / 2;
         camera.updateProjectionMatrix();
+        /* 2 % slark, ellers bygges gitteret om av ren avrundingsstøy */
+        if (curAspect > builtAspect * 1.02) buildGrid(curAspect);
       });
       this._ro.observe(this);
 
-      this._cleanup = () => { hex.dispose(); mat.dispose(); renderer.dispose(); };
+      this._cleanup = () => { if (mesh) mesh.dispose(); hex.dispose(); mat.dispose(); renderer.dispose(); };
       this._dbg = { renderer, scene, camera, mesh, THREE };
     }
 

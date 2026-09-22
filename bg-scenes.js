@@ -19,14 +19,36 @@
         });
       }
   
+      /* three.js hentes fra CDN. Feiler den ÉN gang — et blaff, en treg linje, en
+         blokkering — ga den gamle koden opp for godt, og flaten ble stående med
+         stripemønsteret til noen endret et attributt. Det er sett i produksjon.
+         Nå prøves det tre ganger med økende pause.
+         MERK: url-strengen under skiftes ut ordrett av offline-eksporten i
+         index.html (~3079), som bytter CDN-adressen mot window.__threeURL.
+         Den må stå som én enkel literal, ellers virker ikke frakoblede filer. */
+      loadThree(forsok) {
+        const url = 'https://esm.sh/three@0.160.0';
+        /* Fragmentet sendes ikke til serveren, men gir modulkartet en ny nøkkel.
+           Uten det returnerer nettleseren det samme avviste løftet uten å hente
+           på nytt — målt: samme url ga 1 forsøk og deretter 0. Da ville
+           gjentakelsen vært uvirksom, som er nettopp det den skal hindre.
+           Fragment framfor query fordi CDN-et da ser en uendret forespørsel. */
+        return import(forsok === 3 ? url : url + '#r' + forsok).catch(e => {
+            if (forsok <= 1) throw e;
+            return new Promise(r => setTimeout(r, 900 * (4 - forsok)))
+              .then(() => this.loadThree(forsok - 1));
+        });
+      }
+
       connectedCallback() {
         if (this._booted) return;
         this._booted = true;
         const gen = this._gen = (this._gen || 0) + 1;
         this.style.cssText = 'position:absolute;inset:0;display:block;overflow:hidden;background:#12101A';
-        import('https://esm.sh/three@0.160.0').then(T => { if (this._booted && gen === this._gen) this.boot(T); }).catch(e => {
+        this.loadThree(3).then(T => { if (this._booted && gen === this._gen) this.boot(T); }).catch(e => {
           console.warn('[' + tag + '] three.js kunne ikke lastes', e);
-          this.style.background = 'repeating-linear-gradient(135deg,#1A1724 0 14px,#201C2C 14px 28px)';
+          /* flat tone, ikke striper — se hex-ripple.js */
+          this.style.background = '#12101A';
         });
       }
       boot(THREE) {
