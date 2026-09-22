@@ -46,7 +46,7 @@
       <div style="position:absolute;inset:0;background:radial-gradient(52% 62% at 50% 44%,rgba(18,16,26,.74),rgba(18,16,26,.16) 72%,transparent)"></div>
     </sc-if>
     <sc-if value="{{ hasImg }}" hint-placeholder-val="{{ false }}">
-      <img data-el="img" data-el-name="Bakgrunnsbilde" src="{{ imgSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
+      <img loading="{{ imgLoad }}" decoding="async" data-el="img" data-el-name="Bakgrunnsbilde" src="{{ imgSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
       <div style="position:absolute;inset:0;background:radial-gradient(64% 74% at 50% 46%,rgba(18,16,26,.86),rgba(18,16,26,.62) 68%,rgba(18,16,26,.74))"></div>
       <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(18,16,26,.92) 6%,rgba(18,16,26,.5) 26%,transparent 48%)"></div>
       <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(18,16,26,.8) 4%,transparent 30%)"></div>
@@ -63,7 +63,7 @@
     <div style="{{ heroInk }}position:absolute;inset:0;padding:7cqw 6cqw;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;z-index:3">
       <sc-if value="{{ hasLogo }}" hint-placeholder-val="{{ false }}">
         <div data-el="logo" data-el-name="Kundelogo" style="border-radius:.5cqw;display:grid;place-items:center;padding:2cqw 2.6cqw;min-width:24cqw;min-height:9.5cqw;margin-bottom:3cqw;background:var(--plate,#fff)">
-          <img src="{{ m.logo }}" alt="{{ m.client }}" style="max-width:19cqw;max-height:6cqw;display:block">
+          <img loading="{{ imgLoad }}" decoding="async" src="{{ m.logo }}" alt="{{ m.client }}" style="max-width:19cqw;max-height:6cqw;display:block">
         </div>
       </sc-if>
       <sc-if value="{{ noLogo }}" hint-placeholder-val="{{ true }}">
@@ -81,7 +81,7 @@
       </sc-if>
       <div data-el="footer" data-el-name="Undertittel og avsender" data-in="3" style="position:absolute;bottom:4.6cqw;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:2.4cqw">
         <div style="font-size:.8cqw;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--accent,#1434CB)">{{ m.subtitle }}</div>
-        <img src="{{ senderLogo }}" alt="{{ senderName }}" style="height:2.2cqw;opacity:.9">
+        <img loading="{{ imgLoad }}" decoding="async" src="{{ senderLogo }}" alt="{{ senderName }}" style="height:2.2cqw;opacity:.9">
       </div>
     </div>
   </sc-if>
@@ -98,7 +98,7 @@
           <div style="background:var(--plate2,#23202F);border:1px solid var(--rule,#302B3F);border-left:.3cqw solid var(--accent,#1434CB);border-radius:.5cqw;padding:1.5cqw 1.4cqw;display:flex;flex-direction:column;gap:.7cqw">
             <span style="font-size:.62cqw;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-mute,#8E88A3)">Selskapet</span>
             <sc-if value="{{ hasSkagerrakLogo }}" hint-placeholder-val="{{ true }}">
-              <img src="{{ skagerrakLogo }}" alt="{{ umbParent }}" style="height:3.15cqw;width:auto;max-width:100%;object-fit:contain;object-position:left;display:block">
+              <img loading="{{ imgLoad }}" decoding="async" src="{{ skagerrakLogo }}" alt="{{ umbParent }}" style="height:3.15cqw;width:auto;max-width:100%;object-fit:contain;object-position:left;display:block">
             </sc-if>
             <sc-if value="{{ noSkagerrakLogo }}" hint-placeholder-val="{{ false }}">
               <span style="font-size:1.5cqw;font-weight:700;letter-spacing:-.01em;line-height:1.2;color:var(--ink,#FFFFFF)">{{ umbParent }}</span>
@@ -117,7 +117,7 @@
                 <div onClick="{{ r.on }}" style="cursor:pointer;height:100%;display:grid;grid-template-columns:13cqw 1fr auto;align-items:center;gap:2cqw;background:var(--plate2,#23202F);border:1px solid var(--rule,#302B3F);border-left-width:.3cqw;border-left-style:solid;border-radius:.5cqw;padding:.9cqw 1.4cqw .9cqw 1.6cqw;border-left-color:{{ r.color }};transition:background .18s,border-left-width .18s,transform .18s" style-hover="background:color-mix(in srgb, var(--mix,#FFFFFF) 8%, var(--plate2,#23202F));border-left-width:.55cqw;transform:translateX(.25cqw)">
                   <div style="display:flex;align-items:center">
                     <sc-if value="{{ r.hasLogo }}" hint-placeholder-val="{{ true }}">
-                      <img src="{{ r.logo }}" alt="{{ r.name }}" style="height:{{ r.h }};width:auto;max-width:100%;object-fit:contain;display:block">
+                      <img loading="{{ imgLoad }}" decoding="async" src="{{ r.logo }}" alt="{{ r.name }}" style="height:{{ r.h }};width:auto;max-width:100%;object-fit:contain;display:block">
                     </sc-if>
                     <sc-if value="{{ r.noLogo }}" hint-placeholder-val="{{ false }}">
                       <span style="font-size:1.2cqw;font-weight:700;letter-spacing:-.01em;color:var(--ink,#FFFFFF)">{{ r.name }}</span>
@@ -152,7 +152,7 @@
             <div style="display:flex;flex-direction:column;gap:.7cqw">
               <span data-in="1" style="font-size:.66cqw;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--accent,#1434CB)">{{ umbDetail.eyebrow }}</span>
               <sc-if value="{{ umbDetail.hasLogo }}" hint-placeholder-val="{{ false }}">
-                <img src="{{ umbDetail.logo }}" alt="{{ umbDetail.name }}" style="height:2.6cqw;width:auto;object-fit:contain;object-position:left;display:block">
+                <img loading="{{ imgLoad }}" decoding="async" src="{{ umbDetail.logo }}" alt="{{ umbDetail.name }}" style="height:2.6cqw;width:auto;object-fit:contain;object-position:left;display:block">
               </sc-if>
               <sc-if value="{{ umbDetail.noLogo }}" hint-placeholder-val="{{ true }}">
                 <span style="font-size:2.4cqw;font-weight:700;letter-spacing:-.02em;line-height:1.1;color:var(--ink,#FFFFFF)">{{ umbDetail.name }}</span>
@@ -197,7 +197,7 @@
       <div style="display:grid;grid-template-columns:{{ brandGridCols }};gap:3.4cqw;flex:1;min-height:0;align-items:start;margin-top:1.2cqw">
         <div data-el="text" data-el-name="Tekstboks" style="width:{{ brandTextW }};min-width:0">
           <div data-el="logo" data-el-name="Logo" style="display:flex;flex-direction:column">
-            <div style="display:flex;align-items:center;margin-bottom:1.1cqw"><img src="{{ b.logo }}" alt="{{ b.name }}" style="height:{{ b.hLg }};width:auto;max-width:100%;object-fit:contain;display:block;filter:{{ b.logoFilter }}"></div>
+            <div style="display:flex;align-items:center;margin-bottom:1.1cqw"><img loading="{{ imgLoad }}" decoding="async" src="{{ b.logo }}" alt="{{ b.name }}" style="height:{{ b.hLg }};width:auto;max-width:100%;object-fit:contain;display:block;filter:{{ b.logoFilter }}"></div>
             <div style="width:100%;height:.22cqw;margin-bottom:1.8cqw;background:{{ b.color }}"></div>
           </div>
           <ul data-el="bullets" data-el-name="Punkter" style="list-style:none;display:flex;flex-direction:column;gap:.95cqw;margin:0;padding:0">
@@ -254,7 +254,7 @@
           </div>
           <div style="flex:1;min-height:0;background:repeating-linear-gradient(135deg,var(--plate2,#1A1724) 0 12px,var(--rule,#201C2C) 12px 24px);display:grid;place-items:center;padding:2cqw;text-align:center;position:relative">
             <sc-if value="{{ hasImg }}" hint-placeholder-val="{{ false }}">
-              <img src="{{ imgSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"><span data-photoveil="1" style="position:absolute;inset:0;pointer-events:none;background:{{ photoVeil }}"></span>
+              <img loading="{{ imgLoad }}" decoding="async" src="{{ imgSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"><span data-photoveil="1" style="position:absolute;inset:0;pointer-events:none;background:{{ photoVeil }}"></span>
             </sc-if>
             <sc-if value="{{ noImg }}" hint-placeholder-val="{{ true }}">
               <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.8cqw;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-mute,#8E88A3);max-width:24ch;line-height:1.7">{{ s.imgHint }}</span>
@@ -265,7 +265,7 @@
         <sc-if value="{{ frameIsBox }}" hint-placeholder-val="{{ false }}">
         <div data-el="img" data-el-name="Bilde" style="aspect-ratio:16/9;background:repeating-linear-gradient(135deg,var(--plate2,#1A1724) 0 12px,var(--rule,#201C2C) 12px 24px);border:1px solid var(--rule,#302B3F);border-radius:.5cqw;overflow:hidden;display:grid;place-items:center;padding:2cqw;text-align:center;position:relative">
           <sc-if value="{{ hasImg }}" hint-placeholder-val="{{ false }}">
-            <img src="{{ imgSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"><span data-photoveil="1" style="position:absolute;inset:0;pointer-events:none;background:{{ photoVeil }}"></span>
+            <img loading="{{ imgLoad }}" decoding="async" src="{{ imgSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"><span data-photoveil="1" style="position:absolute;inset:0;pointer-events:none;background:{{ photoVeil }}"></span>
           </sc-if>
           <sc-if value="{{ noImg }}" hint-placeholder-val="{{ true }}">
             <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.8cqw;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-mute,#8E88A3);max-width:24ch;line-height:1.7">{{ s.imgHint }}</span>
@@ -275,7 +275,7 @@
         <sc-if value="{{ frameIsSquare }}" hint-placeholder-val="{{ false }}">
         <div data-el="img" data-el-name="Bilde" style="aspect-ratio:1/1;background:repeating-linear-gradient(135deg,var(--plate2,#1A1724) 0 12px,var(--rule,#201C2C) 12px 24px);border:1px solid var(--rule,#302B3F);border-radius:.5cqw;overflow:hidden;display:grid;place-items:center;padding:2cqw;text-align:center;position:relative">
           <sc-if value="{{ hasImg }}" hint-placeholder-val="{{ false }}">
-            <img src="{{ imgSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"><span data-photoveil="1" style="position:absolute;inset:0;pointer-events:none;background:{{ photoVeil }}"></span>
+            <img loading="{{ imgLoad }}" decoding="async" src="{{ imgSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"><span data-photoveil="1" style="position:absolute;inset:0;pointer-events:none;background:{{ photoVeil }}"></span>
           </sc-if>
           <sc-if value="{{ noImg }}" hint-placeholder-val="{{ true }}">
             <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.8cqw;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-mute,#8E88A3);max-width:24ch;line-height:1.7">{{ s.imgHint }}</span>
@@ -288,7 +288,7 @@
             <span style="position:absolute;top:-.9cqw;left:50%;translate:-50% 0;rotate:-4deg;width:5cqw;height:1.7cqw;background:rgba(255,255,255,.55);box-shadow:0 .2cqw .6cqw -.25cqw rgba(0,0,0,.45)"></span>
             <span style="display:block;position:relative;width:100%;aspect-ratio:1/1;overflow:hidden;background:#DEDAD2">
               <sc-if value="{{ hasImg }}" hint-placeholder-val="{{ false }}">
-                <img src="{{ imgSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block"><span data-photoveil="1" style="position:absolute;inset:0;pointer-events:none;background:{{ photoVeil }}"></span>
+                <img loading="{{ imgLoad }}" decoding="async" src="{{ imgSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block"><span data-photoveil="1" style="position:absolute;inset:0;pointer-events:none;background:{{ photoVeil }}"></span>
               </sc-if>
               <sc-if value="{{ noImg }}" hint-placeholder-val="{{ true }}">
                 <span style="position:absolute;inset:0;display:grid;place-items:center;padding:1cqw;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.58cqw;letter-spacing:.1em;text-transform:uppercase;color:#8A8578;line-height:1.5;text-align:center">{{ s.imgHint }}</span>
@@ -300,7 +300,7 @@
         <sc-if value="{{ hasImg2Slot }}" hint-placeholder-val="{{ false }}">
           <div data-el="img2" data-el-name="Bilde 2" style="position:absolute;left:-8%;bottom:-6%;width:34%;aspect-ratio:9/18.5;rotate:-3deg;overflow:hidden;border-radius:1cqw;background:var(--plate2,#23202F);border:1px solid var(--rule,#302B3F);box-shadow:0 1cqw 2.4cqw -1cqw rgba(0,0,0,.55);z-index:2">
             <sc-if value="{{ hasImg2 }}" hint-placeholder-val="{{ false }}">
-              <img src="{{ img2Src }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
+              <img loading="{{ imgLoad }}" decoding="async" src="{{ img2Src }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
             </sc-if>
             <sc-if value="{{ noImg2 }}" hint-placeholder-val="{{ true }}">
               <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:.8cqw;text-align:center;font-size:.5cqw;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-mute,#8E88A3);line-height:1.5">{{ s.imgHint2 }}</span>
@@ -326,7 +326,7 @@
             <div data-el="stats" data-el-name="Nøkkeltall" data-in="3" style="display:flex;align-items:center;gap:1.5cqw;margin-top:1.8cqw">
               <div style="width:2.6cqw;height:2.6cqw;border-radius:50%;background:{{ b.color }};display:flex;align-items:center;justify-content:center;flex:none;overflow:hidden">
                 <sc-if value="{{ b.logo }}" hint-placeholder-val="{{ false }}">
-                  <img src="{{ b.logo }}" alt="{{ b.name }}" style="width:70%;height:70%;object-fit:contain;display:block;filter:{{ b.logoFilter }}">
+                  <img loading="{{ imgLoad }}" decoding="async" src="{{ b.logo }}" alt="{{ b.name }}" style="width:70%;height:70%;object-fit:contain;display:block;filter:{{ b.logoFilter }}">
                 </sc-if>
               </div>
               <sc-for list="{{ stats }}" as="st" hint-placeholder-count="4">
@@ -374,7 +374,7 @@
               </div>
               <div style="flex:1;min-height:0;background:repeating-linear-gradient(135deg,var(--plate2,#1A1724) 0 12px,var(--rule,#201C2C) 12px 24px);display:grid;place-items:center;padding:1.4cqw;text-align:center;position:relative">
                 <sc-if value="{{ hasImg }}" hint-placeholder-val="{{ false }}">
-                  <img src="{{ imgSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
+                  <img loading="{{ imgLoad }}" decoding="async" src="{{ imgSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
                 </sc-if>
                 <sc-if value="{{ noImg }}" hint-placeholder-val="{{ true }}">
                   <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.62cqw;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-mute,#8E88A3);max-width:22ch;line-height:1.6">{{ s.imgHint }}</span>
@@ -383,7 +383,7 @@
             </div>
             <div data-el="img2" data-el-name="Bilde 2" style="position:absolute;left:2%;bottom:0;width:26%;aspect-ratio:9/18.5;rotate:-3deg;overflow:hidden;border-radius:1cqw;background:var(--plate2,#23202F);border:1px solid var(--rule,#302B3F);box-shadow:0 1cqw 2.4cqw -1cqw rgba(0,0,0,.55);z-index:2">
               <sc-if value="{{ hasImg2 }}" hint-placeholder-val="{{ false }}">
-                <img src="{{ img2Src }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
+                <img loading="{{ imgLoad }}" decoding="async" src="{{ img2Src }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
               </sc-if>
               <sc-if value="{{ noImg2 }}" hint-placeholder-val="{{ true }}">
                 <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:.8cqw;text-align:center;font-size:.5cqw;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-mute,#8E88A3);line-height:1.5">{{ s.imgHint2 }}</span>
@@ -437,7 +437,7 @@
               <li data-in="4" style="display:flex;align-items:flex-start;gap:.6cqw">
                 <span style="flex:none;width:1.8cqw;height:1.8cqw;border-radius:50%;overflow:hidden;background:var(--plate2,#23202F);border:1px solid var(--rule,#302B3F);display:flex;align-items:center;justify-content:center">
                   <sc-if value="{{ ib.hasImg }}" hint-placeholder-val="{{ false }}">
-                    <img src="{{ ib.img }}" alt="" style="width:100%;height:100%;object-fit:cover;display:block">
+                    <img loading="{{ imgLoad }}" decoding="async" src="{{ ib.img }}" alt="" style="width:100%;height:100%;object-fit:cover;display:block">
                   </sc-if>
                   <sc-if value="{{ ib.noImg }}" hint-placeholder-val="{{ true }}">
                     <span style="font-size:.36cqw;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute,#8E88A3)">Bilde</span>
@@ -452,7 +452,7 @@
         <div style="display:flex;justify-content:flex-end;align-items:flex-start;gap:1.2cqw;height:100%">
           <div data-el="img" data-el-name="Bilde 1" style="width:11cqw;aspect-ratio:9/18.5;position:relative;overflow:hidden;border-radius:1.1cqw;background:var(--plate2,#23202F);border:1px solid var(--rule,#302B3F);box-shadow:0 1cqw 2.4cqw -1cqw rgba(0,0,0,.5)">
             <sc-if value="{{ hasImg }}" hint-placeholder-val="{{ false }}">
-              <img src="{{ imgSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
+              <img loading="{{ imgLoad }}" decoding="async" src="{{ imgSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
               <span data-photoveil="1" style="position:absolute;inset:0;pointer-events:none;background:{{ photoVeil }}"></span>
             </sc-if>
             <sc-if value="{{ noImg }}" hint-placeholder-val="{{ true }}">
@@ -483,7 +483,7 @@
             </sc-if>
             <sc-if value="{{ img2IsPhoto }}" hint-placeholder-val="{{ false }}">
               <sc-if value="{{ hasImg2 }}" hint-placeholder-val="{{ false }}">
-                <img src="{{ img2Src }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
+                <img loading="{{ imgLoad }}" decoding="async" src="{{ img2Src }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
               </sc-if>
               <sc-if value="{{ noImg2 }}" hint-placeholder-val="{{ true }}">
                 <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:1cqw;text-align:center;font-size:.62cqw;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-mute,#8E88A3);line-height:1.6">{{ s.imgHint2 }}</span>
@@ -511,7 +511,7 @@
                 <div data-el="{{ rc.key }}" data-el-name="{{ rc.name }}" style="flex:none;background:#EFEDF3;border-radius:.5cqw;padding:.5cqw;display:flex;gap:.45cqw;align-items:flex-start">
                   <span style="flex:none;width:2.2cqw;height:2.2cqw;border-radius:50%;overflow:hidden;background:#16131F;display:flex;align-items:center;justify-content:center">
                     <sc-if value="{{ rc.hasImg }}" hint-placeholder-val="{{ false }}">
-                      <img src="{{ rc.img }}" alt="{{ rc.head }}" style="width:100%;height:100%;object-fit:cover;display:block">
+                      <img loading="{{ imgLoad }}" decoding="async" src="{{ rc.img }}" alt="{{ rc.head }}" style="width:100%;height:100%;object-fit:cover;display:block">
                     </sc-if>
                     <sc-if value="{{ rc.noImg }}" hint-placeholder-val="{{ true }}">
                       <span style="font-size:.36cqw;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#8E88A3;text-align:center;line-height:1.3">Logo</span>
@@ -531,7 +531,7 @@
         <!-- Skjerm B: eget bakgrunnsbilde, logo og ikonpunkter -->
         <div data-el="loyaltyScreen" data-el-name="Medlemsskjerm" data-in="4" style="flex:none;width:16.6cqw;aspect-ratio:9/18.3;border-radius:1.4cqw;overflow:hidden;position:relative;background:#1B1305;border:.14cqw solid #1B1826;box-shadow:0 1.6cqw 3.4cqw -1.4cqw rgba(0,0,0,.55)">
           <sc-if value="{{ hasLoyBg }}" hint-placeholder-val="{{ false }}">
-            <img data-el="loyaltyBg" data-el-name="Bakgrunnsbilde" src="{{ loyaltyBgSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
+            <img loading="{{ imgLoad }}" decoding="async" data-el="loyaltyBg" data-el-name="Bakgrunnsbilde" src="{{ loyaltyBgSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
           </sc-if>
           <sc-if value="{{ noLoyBg }}" hint-placeholder-val="{{ true }}">
             <div data-el="loyaltyBg" data-el-name="Bakgrunnsbilde" style="position:absolute;inset:0;background:repeating-linear-gradient(135deg,#2A1E08 0 10px,#1B1305 10px 20px);display:flex;align-items:center;justify-content:center;padding:1cqw;text-align:center">
@@ -543,7 +543,7 @@
             <div style="display:flex;align-items:center;gap:.42cqw">
               <span style="flex:none;width:2.5cqw;height:2.5cqw;border-radius:50%;overflow:hidden;background:#2A1D06;display:flex;align-items:center;justify-content:center">
                 <sc-if value="{{ hasLoyLogo }}" hint-placeholder-val="{{ false }}">
-                  <img data-el="loyaltyLogo" data-el-name="Logo" src="{{ loyaltyLogoSrc }}" alt="" style="width:100%;height:100%;object-fit:cover;display:block">
+                  <img loading="{{ imgLoad }}" decoding="async" data-el="loyaltyLogo" data-el-name="Logo" src="{{ loyaltyLogoSrc }}" alt="" style="width:100%;height:100%;object-fit:cover;display:block">
                 </sc-if>
                 <sc-if value="{{ noLoyLogo }}" hint-placeholder-val="{{ true }}">
                   <span data-el="loyaltyLogo" data-el-name="Logo" style="font-size:.36cqw;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#B99551;text-align:center">Logo</span>
@@ -559,7 +559,7 @@
                 <div data-el="{{ f.key }}" data-el-name="{{ f.name }}" style="flex:none;display:flex;gap:.4cqw;align-items:flex-start">
                   <span style="flex:none;width:1.85cqw;height:1.85cqw;border-radius:50%;overflow:hidden;background:#E8A93A;display:flex;align-items:center;justify-content:center">
                     <sc-if value="{{ f.hasImg }}" hint-placeholder-val="{{ false }}">
-                      <img src="{{ f.img }}" alt="{{ f.head }}" style="width:100%;height:100%;object-fit:cover;display:block">
+                      <img loading="{{ imgLoad }}" decoding="async" src="{{ f.img }}" alt="{{ f.head }}" style="width:100%;height:100%;object-fit:cover;display:block">
                     </sc-if>
                     <sc-if value="{{ f.noImg }}" hint-placeholder-val="{{ true }}">
                       <span style="font-size:.32cqw;font-weight:700;color:#7A4E06;text-align:center">Ikon</span>
@@ -593,7 +593,7 @@
       <div style="position:absolute;width:2.4cqw;height:2.4cqw;bottom:2.4cqw;right:2.4cqw;border:.32cqw solid var(--accent,#1434CB);border-left:0;border-top:0;z-index:5"></div>
       <div style="flex:0 0 58%;position:relative;overflow:hidden;background:var(--plate2,#1B1826)">
         <sc-if value="{{ hasImg }}" hint-placeholder-val="{{ false }}">
-          <img data-el="img" data-el-name="Bakgrunnsbilde" src="{{ imgSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
+          <img loading="{{ imgLoad }}" decoding="async" data-el="img" data-el-name="Bakgrunnsbilde" src="{{ imgSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
           <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(10,9,15,.9) 12%,rgba(10,9,15,.42) 46%,rgba(10,9,15,.18) 68%,rgba(10,9,15,.5) 100%)"></div>
           <span data-photoveil="1" style="position:absolute;inset:0;pointer-events:none;background:{{ photoVeil }}"></span>
         </sc-if>
@@ -604,7 +604,7 @@
           <div data-el="logos" data-el-name="Logoer" style="display:flex;align-items:center;gap:1.6cqw;margin-bottom:1.8cqw">
             <sc-for list="{{ formLogos }}" as="lg" hint-placeholder-count="3">
               <sc-if value="{{ lg.hasImg }}" hint-placeholder-val="{{ false }}">
-                <img src="{{ lg.src }}" alt="{{ lg.name }}" style="height:2cqw;max-width:9cqw;object-fit:contain">
+                <img loading="{{ imgLoad }}" decoding="async" src="{{ lg.src }}" alt="{{ lg.name }}" style="height:2cqw;max-width:9cqw;object-fit:contain">
               </sc-if>
               <sc-if value="{{ lg.noImg }}" hint-placeholder-val="{{ true }}">
                 <span style="font-size:.9cqw;font-weight:700;color:#fff">{{ lg.name }}</span>
@@ -616,7 +616,7 @@
       </div>
       <div style="flex:1;background:{{ panelBg }};display:flex;align-items:center;justify-content:center;padding:4cqw">
         <sc-if value="{{ hasLogo }}" hint-placeholder-val="{{ false }}">
-          <img data-el="logo" data-el-name="Kundelogo" src="{{ m.logo }}" alt="{{ m.client }}" style="max-width:65%;max-height:38%;object-fit:contain;display:block">
+          <img loading="{{ imgLoad }}" decoding="async" data-el="logo" data-el-name="Kundelogo" src="{{ m.logo }}" alt="{{ m.client }}" style="max-width:65%;max-height:38%;object-fit:contain;display:block">
         </sc-if>
         <sc-if value="{{ noLogo }}" hint-placeholder-val="{{ true }}">
           <span data-el="logo" data-el-name="Kundelogo" style="font-size:3.4cqw;font-weight:700;letter-spacing:-.01em">{{ m.client }}</span>
@@ -643,7 +643,7 @@
           <sc-for list="{{ briefPhotos }}" as="p" hint-placeholder-count="4">
             <div data-el="{{ p.key }}" data-el-name="{{ p.name }}" style="position:relative;overflow:hidden;border-radius:.35cqw;background:var(--plate2,#23202F);border:1px solid var(--rule,#302B3F)">
               <sc-if value="{{ p.hasImg }}" hint-placeholder-val="{{ false }}">
-                <img src="{{ p.img }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block"><span data-photoveil="1" style="position:absolute;inset:0;pointer-events:none;background:{{ photoVeil }}"></span>
+                <img loading="{{ imgLoad }}" decoding="async" src="{{ p.img }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block"><span data-photoveil="1" style="position:absolute;inset:0;pointer-events:none;background:{{ photoVeil }}"></span>
               </sc-if>
               <sc-if value="{{ p.noImg }}" hint-placeholder-val="{{ true }}">
                 <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:.8cqw;text-align:center;font-size:.56cqw;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-mute,#8E88A3);line-height:1.6">{{ p.hint }}</span>
@@ -677,7 +677,7 @@
         <div data-el="shots" data-el-name="Skjermbilder" style="position:relative;height:100%;min-height:0">
           <div data-el="img" data-el-name="Bilde bak" style="position:absolute;top:6%;right:2%;width:78%;aspect-ratio:16/10;rotate:3deg;background:var(--plate2,#23202F);border:1px solid var(--rule,#302B3F);border-radius:.4cqw;overflow:hidden;box-shadow:0 1.4cqw 3cqw -1.2cqw rgba(0,0,0,.6)">
             <sc-if value="{{ hasImg }}" hint-placeholder-val="{{ false }}">
-              <img src="{{ imgSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
+              <img loading="{{ imgLoad }}" decoding="async" src="{{ imgSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
             </sc-if>
             <sc-if value="{{ noImg }}" hint-placeholder-val="{{ true }}">
               <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:1.2cqw;text-align:center;font-size:.6cqw;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-mute,#8E88A3);line-height:1.6">{{ s.imgHint }}</span>
@@ -685,7 +685,7 @@
           </div>
           <div data-el="img2" data-el-name="Bilde foran" style="position:absolute;bottom:4%;left:0;width:60%;aspect-ratio:16/9;rotate:-4deg;background:var(--plate2,#1B1826);border:1px solid var(--rule,#302B3F);border-radius:.4cqw;overflow:hidden;box-shadow:0 1.8cqw 3.6cqw -1.2cqw rgba(0,0,0,.75)">
             <sc-if value="{{ hasImg2 }}" hint-placeholder-val="{{ false }}">
-              <img src="{{ img2Src }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
+              <img loading="{{ imgLoad }}" decoding="async" src="{{ img2Src }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
             </sc-if>
             <sc-if value="{{ noImg2 }}" hint-placeholder-val="{{ true }}">
               <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:1.2cqw;text-align:center;font-size:.6cqw;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-mute,#8E88A3);line-height:1.6">{{ s.imgHint2 }}</span>
@@ -700,7 +700,7 @@
   <sc-if value="{{ is.partnership }}" hint-placeholder-val="{{ false }}">
     <div style="position:absolute;inset:0;overflow:hidden">
       <sc-if value="{{ hasImg }}" hint-placeholder-val="{{ false }}">
-        <img data-el="img" data-el-name="Bakgrunnsbilde" src="{{ imgSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block"><span data-photoveil="1" style="position:absolute;inset:0;pointer-events:none;background:{{ photoVeil }}"></span>
+        <img loading="{{ imgLoad }}" decoding="async" data-el="img" data-el-name="Bakgrunnsbilde" src="{{ imgSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block"><span data-photoveil="1" style="position:absolute;inset:0;pointer-events:none;background:{{ photoVeil }}"></span>
       </sc-if>
       <sc-if value="{{ noImg }}" hint-placeholder-val="{{ true }}">
         <div data-el="img" data-el-name="Bakgrunnsbilde" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:var(--plate2,#1B1826)">
@@ -713,7 +713,7 @@
         <span style="position:absolute;bottom:-.14cqw;right:-.14cqw;width:1.3cqw;height:1.3cqw;border-bottom:.16cqw solid var(--accent,#1434CB);border-right:.16cqw solid var(--accent,#1434CB)"></span>
         <div data-el="logos" data-el-name="Logoer" style="display:flex;align-items:center;gap:{{ logoGap }};margin-bottom:1.8cqw;flex-wrap:nowrap;overflow:hidden">
           <sc-if value="{{ hasLogo1 }}" hint-placeholder-val="{{ false }}">
-            <img src="{{ logo1Src }}" alt="{{ s.logo1Name }}" style="height:{{ logo1H }};max-width:{{ logo1MaxW }};object-fit:contain;flex:none">
+            <img loading="{{ imgLoad }}" decoding="async" src="{{ logo1Src }}" alt="{{ s.logo1Name }}" style="height:{{ logo1H }};max-width:{{ logo1MaxW }};object-fit:contain;flex:none">
           </sc-if>
           <sc-if value="{{ noLogo1 }}" hint-placeholder-val="{{ true }}">
             <span style="font-size:{{ logo1FS }};font-weight:800;letter-spacing:-.01em;color:#fff;flex:none">{{ s.logo1Name }}</span>
@@ -721,7 +721,7 @@
           <span style="width:1px;height:1.6cqw;background:rgba(255,255,255,.25);flex:none"></span>
           <sc-for list="{{ logos2 }}" as="lg2" hint-placeholder-count="1">
             <sc-if value="{{ lg2.hasImg }}" hint-placeholder-val="{{ false }}">
-              <img src="{{ lg2.src }}" alt="{{ lg2.name }}" style="height:{{ logo2H }};max-width:{{ logo2MaxW }};object-fit:contain;flex:none">
+              <img loading="{{ imgLoad }}" decoding="async" src="{{ lg2.src }}" alt="{{ lg2.name }}" style="height:{{ logo2H }};max-width:{{ logo2MaxW }};object-fit:contain;flex:none">
             </sc-if>
             <sc-if value="{{ lg2.noImg }}" hint-placeholder-val="{{ true }}">
               <span style="font-size:{{ logo2FS }};font-weight:600;color:#fff;flex:none;white-space:nowrap">{{ lg2.name }}</span>
@@ -805,7 +805,7 @@
           <div data-in="4" style="display:flex;align-items:center;gap:1.1cqw;padding:.62cqw .4cqw;border-top:1px solid var(--rule,#302B3F);transition:opacity .55s cubic-bezier(.22,.61,.36,1),transform .3s cubic-bezier(.22,.61,.36,1),background .16s;background:{{ r.rowBg }}" style-hover="background:color-mix(in srgb, var(--mix,#FFFFFF) 5%, transparent)">
             <span style="width:3.2cqw;flex:none;display:flex;align-items:center;justify-content:center">
               <sc-if value="{{ r.hasLogo }}" hint-placeholder-val="{{ true }}">
-                <img src="{{ r.logo }}" alt="{{ r.name }}" style="max-height:2.1cqw;max-width:3.2cqw;object-fit:contain;display:block"></sc-if>
+                <img loading="{{ imgLoad }}" decoding="async" src="{{ r.logo }}" alt="{{ r.name }}" style="max-height:2.1cqw;max-width:3.2cqw;object-fit:contain;display:block"></sc-if>
             </span>
             <span style="width:11.4cqw;flex:none;font-size:1.02cqw;font-weight:{{ r.weight }};color:{{ r.fg }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span>
             <span style="flex:1;height:.85cqw;background:rgba(255,255,255,.06);position:relative;overflow:hidden;border-radius:.1cqw">
@@ -819,7 +819,7 @@
           <sc-if value="{{ frameIsBox }}" hint-placeholder-val="{{ true }}">
           <div style="aspect-ratio:16/9;position:relative;overflow:hidden;border-radius:.35cqw;background:var(--plate2,#23202F);border:1px solid var(--rule,#302B3F)">
             <sc-if value="{{ hasImg }}" hint-placeholder-val="{{ false }}">
-              <img src="{{ imgSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
+              <img loading="{{ imgLoad }}" decoding="async" src="{{ imgSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
               <span data-photoveil="1" style="position:absolute;inset:0;pointer-events:none;background:{{ photoVeil }}"></span>
             </sc-if>
             <sc-if value="{{ noImg }}" hint-placeholder-val="{{ true }}">
@@ -837,7 +837,7 @@
             </div>
             <div style="flex:1;min-height:0;position:relative;overflow:hidden">
               <sc-if value="{{ hasImg }}" hint-placeholder-val="{{ false }}">
-                <img src="{{ imgSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
+                <img loading="{{ imgLoad }}" decoding="async" src="{{ imgSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
                 <span data-photoveil="1" style="position:absolute;inset:0;pointer-events:none;background:{{ photoVeil }}"></span>
               </sc-if>
               <sc-if value="{{ noImg }}" hint-placeholder-val="{{ true }}">
@@ -849,7 +849,7 @@
           <sc-if value="{{ frameIsSquare }}" hint-placeholder-val="{{ false }}">
           <div style="aspect-ratio:1/1;position:relative;overflow:hidden;border-radius:.35cqw;background:var(--plate2,#23202F);border:1px solid var(--rule,#302B3F)">
             <sc-if value="{{ hasImg }}" hint-placeholder-val="{{ false }}">
-              <img src="{{ imgSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
+              <img loading="{{ imgLoad }}" decoding="async" src="{{ imgSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
               <span data-photoveil="1" style="position:absolute;inset:0;pointer-events:none;background:{{ photoVeil }}"></span>
             </sc-if>
             <sc-if value="{{ noImg }}" hint-placeholder-val="{{ true }}">
@@ -863,7 +863,7 @@
               <span style="position:absolute;top:-.8cqw;left:50%;translate:-50% 0;rotate:-4deg;width:4.2cqw;height:1.5cqw;background:rgba(255,255,255,.55);box-shadow:0 .2cqw .6cqw -.25cqw rgba(0,0,0,.45)"></span>
               <span style="display:block;position:relative;width:100%;aspect-ratio:1/1;overflow:hidden;background:#DEDAD2">
                 <sc-if value="{{ hasImg }}" hint-placeholder-val="{{ false }}">
-                  <img src="{{ imgSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
+                  <img loading="{{ imgLoad }}" decoding="async" src="{{ imgSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
                   <span data-photoveil="1" style="position:absolute;inset:0;pointer-events:none;background:{{ photoVeil }}"></span>
                 </sc-if>
                 <sc-if value="{{ noImg }}" hint-placeholder-val="{{ true }}">
@@ -1014,7 +1014,7 @@
             <div style="display:flex;align-items:center;gap:1.4cqw;background:color-mix(in srgb, var(--ink,#FFFFFF) 5%, transparent);border:1px solid var(--rule,#302B3F);border-radius:.5cqw;padding:1.15cqw 1.4cqw">
               <div style="flex:none;width:9cqw;display:flex;align-items:center">
                 <sc-if value="{{ pr.hasLogo }}" hint-placeholder-val="{{ true }}">
-                  <img src="{{ pr.logo }}" alt="{{ pr.name }}" style="max-width:9cqw;max-height:2.1cqw;object-fit:contain;object-position:left;display:block">
+                  <img loading="{{ imgLoad }}" decoding="async" src="{{ pr.logo }}" alt="{{ pr.name }}" style="max-width:9cqw;max-height:2.1cqw;object-fit:contain;object-position:left;display:block">
                 </sc-if>
                 <sc-if value="{{ pr.noLogo }}" hint-placeholder-val="{{ false }}">
                   <span style="font-size:1.05cqw;font-weight:700;letter-spacing:-.01em">{{ pr.name }}</span>
@@ -1042,7 +1042,7 @@
       <div data-el="eyebrow" data-el-name="Stikktittel" data-in="1" style="font-size:.8cqw;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--accent,#1434CB)">{{ s.eyebrow }}</div>
       <div data-el="img" data-el-name="Bilde" data-in="2" style="flex:1;min-height:0;width:100%;position:relative;display:grid;place-items:center;margin:1.6cqw 0">
         <sc-if value="{{ hasImg }}" hint-placeholder-val="{{ false }}">
-          <img src="{{ imgSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block"><span data-photoveil="1" style="position:absolute;inset:0;pointer-events:none;background:{{ photoVeil }}"></span>
+          <img loading="{{ imgLoad }}" decoding="async" src="{{ imgSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block"><span data-photoveil="1" style="position:absolute;inset:0;pointer-events:none;background:{{ photoVeil }}"></span>
         </sc-if>
         <sc-if value="{{ noImg }}" hint-placeholder-val="{{ true }}">
           <span style="border:.16cqw dashed var(--rule,#4A4459);border-radius:.5cqw;padding:3cqw 4cqw;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.82cqw;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-mute,#8E88A3);max-width:32ch;line-height:1.7">{{ s.imgHint }}</span>
@@ -1067,7 +1067,7 @@
         <sc-for list="{{ pillars }}" as="p" hint-placeholder-count="4">
           <div data-el="{{ p.key }}" data-el-name="{{ p.name }}" data-in="4" style="--ink:#FFFFFF;--ink-soft:#C9C4D6;--ink-body:#E4E1EC;--ink-mute:#8E88A3;--plate2:#23202F;--rule:#302B3F;--mix:#FFFFFF;color:#FFFFFF;position:relative;overflow:hidden;border-radius:.9cqw;background:{{ p.cardBg }};box-shadow:0 1.4cqw 3cqw -1.2cqw rgba(0,0,0,.6);display:flex;flex-direction:column;justify-content:{{ p.justify }};padding:1.6cqw 1.5cqw;transition:opacity .55s cubic-bezier(.22,.61,.36,1),transform .3s cubic-bezier(.22,.61,.36,1)" style-hover="transform:translateY(-.4cqw)">
             <sc-if value="{{ p.hasImg }}" hint-placeholder-val="{{ false }}">
-              <img src="{{ p.img }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
+              <img loading="{{ imgLoad }}" decoding="async" src="{{ p.img }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
             </sc-if>
             <sc-if value="{{ p.noImg }}" hint-placeholder-val="{{ true }}">
               <span style="position:absolute;inset:0;display:grid;place-items:center;padding:1.4cqw;background:{{ p.stripeBg }};font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.6cqw;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-mute,#8E88A3);text-align:center;line-height:1.7">{{ p.imgHint }}</span>
@@ -1104,7 +1104,7 @@
               <span style="position:absolute;top:-1cqw;left:50%;translate:-50% 0;rotate:-4deg;width:6cqw;height:2cqw;background:rgba(255,255,255,.5);box-shadow:0 .2cqw .6cqw -.25cqw rgba(0,0,0,.45)"></span>
               <span style="display:block;position:relative;width:100%;aspect-ratio:1 / 1;overflow:hidden;background:#DEDAD2">
                 <sc-if value="{{ c.hasImg }}" hint-placeholder-val="{{ false }}">
-                  <img src="{{ c.img }}" alt="{{ c.tag }}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block"><span data-photoveil="1" style="position:absolute;inset:0;pointer-events:none;background:{{ photoVeil }}"></span>
+                  <img loading="{{ imgLoad }}" decoding="async" src="{{ c.img }}" alt="{{ c.tag }}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block"><span data-photoveil="1" style="position:absolute;inset:0;pointer-events:none;background:{{ photoVeil }}"></span>
                 </sc-if>
                 <sc-if value="{{ c.noImg }}" hint-placeholder-val="{{ true }}">
                   <span style="position:absolute;inset:0;display:grid;place-items:center;padding:1.2cqw;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.58cqw;letter-spacing:.12em;text-transform:uppercase;color:#8A8375;line-height:1.7">{{ c.imgHint }}</span>
@@ -1140,7 +1140,7 @@
             <span style="position:absolute;top:-1cqw;left:50%;translate:-50% 0;rotate:-4deg;width:5.6cqw;height:2cqw;background:rgba(255,255,255,.5);box-shadow:0 .2cqw .6cqw -.25cqw rgba(0,0,0,.45)"></span>
             <span style="display:block;position:relative;width:100%;aspect-ratio:3 / 4;overflow:hidden;background:#DEDAD2">
               <sc-if value="{{ f.hasImg }}" hint-placeholder-val="{{ false }}">
-                <img src="{{ f.img }}" alt="{{ f.tag }}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block"><span data-photoveil="1" style="position:absolute;inset:0;pointer-events:none;background:{{ photoVeil }}"></span>
+                <img loading="{{ imgLoad }}" decoding="async" src="{{ f.img }}" alt="{{ f.tag }}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block"><span data-photoveil="1" style="position:absolute;inset:0;pointer-events:none;background:{{ photoVeil }}"></span>
               </sc-if>
               <sc-if value="{{ f.noImg }}" hint-placeholder-val="{{ true }}">
                 <span style="position:absolute;inset:0;display:grid;place-items:center;padding:1.4cqw;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.6cqw;letter-spacing:.12em;text-transform:uppercase;color:#8A8375;line-height:1.7">{{ f.hint }}</span>
@@ -1169,7 +1169,7 @@
       </div>
       <sc-for list="{{ rows }}" as="r" hint-placeholder-count="0">
         <div data-in="4" style="display:flex;align-items:center;gap:1.2cqw;padding:1.15cqw 1.2cqw;border-top:1px solid var(--rule,#302B3F);transition:opacity .55s cubic-bezier(.22,.61,.36,1),transform .3s cubic-bezier(.22,.61,.36,1),background .16s" style-hover="background:color-mix(in srgb, var(--mix,#FFFFFF) 4.5%, transparent)">
-          <div style="flex:1.5;display:flex;align-items:center"><img src="{{ r.logo }}" alt="{{ r.name }}" style="height:{{ r.h }};width:auto;object-fit:contain;display:block"></div>
+          <div style="flex:1.5;display:flex;align-items:center"><img loading="{{ imgLoad }}" decoding="async" src="{{ r.logo }}" alt="{{ r.name }}" style="height:{{ r.h }};width:auto;object-fit:contain;display:block"></div>
           <sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="4">
             <div data-in="4" style="flex:1;text-align:right;font-size:1.15cqw;font-variant-numeric:tabular-nums">{{ c.text }}</div>
           </sc-for>
@@ -1199,7 +1199,7 @@
       </div>
       <sc-for list="{{ mrows }}" as="r" hint-placeholder-count="0">
         <div data-in="4" style="display:flex;align-items:center;gap:.6cqw;padding:1cqw .5cqw;border-top:1px solid var(--rule,#302B3F);transition:opacity .55s cubic-bezier(.22,.61,.36,1),transform .3s cubic-bezier(.22,.61,.36,1),background .16s" style-hover="background:color-mix(in srgb, var(--mix,#FFFFFF) 4.5%, transparent)">
-          <div style="flex:2;display:flex;align-items:center"><img src="{{ r.logo }}" alt="{{ r.name }}" style="height:{{ r.h }};width:auto;object-fit:contain;display:block"></div>
+          <div style="flex:2;display:flex;align-items:center"><img loading="{{ imgLoad }}" decoding="async" src="{{ r.logo }}" alt="{{ r.name }}" style="height:{{ r.h }};width:auto;object-fit:contain;display:block"></div>
           <sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="6">
             <div data-in="4" style="flex:1;display:grid;place-items:center">
               <span style="display:grid;place-items:center;width:1.5cqw;height:1.5cqw;border-radius:50%;font-size:.85cqw;font-weight:700;background:{{ c.bg }};color:{{ c.fg }}">{{ c.mark }}</span>
@@ -1216,7 +1216,7 @@
     <div style="position:absolute;inset:0;display:flex">
       <div style="flex:1.2;background:repeating-linear-gradient(135deg,var(--plate2,#1A1724) 0 14px,var(--rule,#201C2C) 14px 28px);display:grid;place-items:center;padding:4cqw;text-align:center;position:relative;overflow:hidden">
         <sc-if value="{{ hasImg }}" hint-placeholder-val="{{ false }}">
-          <img src="{{ imgSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"><span data-photoveil="1" style="position:absolute;inset:0;pointer-events:none;background:{{ photoVeil }}"></span>
+          <img loading="{{ imgLoad }}" decoding="async" src="{{ imgSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"><span data-photoveil="1" style="position:absolute;inset:0;pointer-events:none;background:{{ photoVeil }}"></span>
         </sc-if>
         <sc-if value="{{ noImg }}" hint-placeholder-val="{{ true }}">
           <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85cqw;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-mute,#8E88A3);max-width:26ch;line-height:1.7">{{ s.imgHint }}</span>
@@ -1244,7 +1244,7 @@
         <sc-for list="{{ grid9 }}" as="gi" hint-placeholder-count="9">
           <div data-el="{{ gi.key }}" data-el-name="{{ gi.name }}" style="position:relative;overflow:hidden;border-radius:.3cqw;background:var(--plate2,#23202F)">
             <sc-if value="{{ gi.has }}" hint-placeholder-val="{{ true }}">
-              <img src="{{ gi.src }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
+              <img loading="{{ imgLoad }}" decoding="async" src="{{ gi.src }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
             </sc-if>
             <sc-if value="{{ gi.tom }}" hint-placeholder-val="{{ false }}">
               <span style="position:absolute;inset:0;display:grid;place-items:center;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.6cqw;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-mute,#8E88A3);text-align:center;padding:1cqw">{{ gi.name }}</span>
@@ -1265,7 +1265,7 @@
     <div style="position:absolute;inset:0;overflow:hidden">
       <div data-el="img" data-el-name="Mockup til høyre" style="position:absolute;left:60.5%;width:41.6%;top:-.6%;bottom:-.6%;overflow:hidden">
         <sc-if value="{{ hasImg }}" hint-placeholder-val="{{ true }}">
-          <img src="{{ imgSrc }}" alt="" style="width:100%;height:100%;object-fit:cover;object-position:top center;display:block">
+          <img loading="{{ imgLoad }}" decoding="async" src="{{ imgSrc }}" alt="" style="width:100%;height:100%;object-fit:cover;object-position:top center;display:block">
         </sc-if>
         <sc-if value="{{ noImg }}" hint-placeholder-val="{{ false }}">
           <span style="position:absolute;inset:0;display:grid;place-items:center;background:var(--plate2,#23202F);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.72cqw;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-mute,#8E88A3);text-align:center;padding:4cqw">{{ s.imgHint }}</span>
@@ -1273,7 +1273,7 @@
       </div>
       <div style="position:absolute;left:5.8%;top:0;bottom:0;width:48%;display:flex;flex-direction:column;justify-content:flex-start;padding-top:6.62cqw">
         <sc-if value="{{ b.logo }}" hint-placeholder-val="{{ true }}">
-          <img data-el="brandLogo" data-el-name="Merkevarelogo" src="{{ b.logo }}" alt="{{ b.name }}" data-in="1" style="align-self:flex-start;height:2.42cqw;width:auto;max-width:22cqw;object-fit:contain;display:block;margin-bottom:2.65cqw;filter:{{ b.logoFilter }}">
+          <img loading="{{ imgLoad }}" decoding="async" data-el="brandLogo" data-el-name="Merkevarelogo" src="{{ b.logo }}" alt="{{ b.name }}" data-in="1" style="align-self:flex-start;height:2.42cqw;width:auto;max-width:22cqw;object-fit:contain;display:block;margin-bottom:2.65cqw;filter:{{ b.logoFilter }}">
         </sc-if>
         <h1 data-el="title" data-el-name="Tittel" data-in="2" style="font-size:3.05cqw;font-weight:700;letter-spacing:-.01em;line-height:1.06;text-transform:uppercase;margin:0 0 4.5cqw;white-space:pre-line">{{ s.title }}</h1>
         <ul data-el="body" data-el-name="Punkter" style="list-style:none;display:flex;flex-direction:column;gap:1.05cqw;margin:0 0 0 1.9cqw;padding:0;max-width:39cqw">
@@ -1295,14 +1295,14 @@
         <sc-for list="{{ mont }}" as="mi" hint-placeholder-count="5">
           <div data-el="{{ mi.key }}" data-el-name="{{ mi.name }}" style="position:absolute;left:{{ mi.l }};top:{{ mi.t }};width:{{ mi.w }};height:{{ mi.h }};z-index:{{ mi.z }};transform:rotate({{ mi.rot }})">
             <div style="position:absolute;inset:0;box-sizing:border-box;background:#FDFCF8;padding:.55cqw .55cqw 1.7cqw;box-shadow:0 .7cqw 1.9cqw rgba(0,0,0,.30)">
-              <img src="{{ mi.src }}" alt="" style="width:100%;height:100%;object-fit:cover;display:block">
+              <img loading="{{ imgLoad }}" decoding="async" src="{{ mi.src }}" alt="" style="width:100%;height:100%;object-fit:cover;display:block">
             </div>
             <span style="position:absolute;top:-.7cqw;left:{{ mi.tl }};width:{{ mi.tw }};height:1.9cqw;transform:rotate({{ mi.trot }});background:linear-gradient(180deg,rgba(255,255,255,.80),rgba(230,227,219,.66));box-shadow:0 .12cqw .35cqw rgba(0,0,0,.14);clip-path:polygon(3% 0,100% 7%,97% 100%,0 91%)"></span>
           </div>
         </sc-for>
         <sc-for list="{{ montStickers }}" as="st" hint-placeholder-count="3">
           <div data-el="{{ st.key }}" data-el-name="{{ st.name }}" style="position:absolute;left:{{ st.l }};top:{{ st.t }};width:{{ st.w }};z-index:{{ st.z }};transform:rotate({{ st.rot }})">
-            <img src="{{ st.src }}" alt="" style="width:100%;height:auto;display:block;filter:drop-shadow(0 .5cqw 1.1cqw rgba(0,0,0,.38))">
+            <img loading="{{ imgLoad }}" decoding="async" src="{{ st.src }}" alt="" style="width:100%;height:auto;display:block;filter:drop-shadow(0 .5cqw 1.1cqw rgba(0,0,0,.38))">
           </div>
         </sc-for>
       </div>
@@ -1331,7 +1331,7 @@
     <div style="--ink:#FFFFFF;--ink-soft:#C9C4D6;--ink-body:#E4E1EC;--ink-mute:#8E88A3;--plate2:#23202F;--rule:#302B3F;--mix:#FFFFFF;color:#FFFFFF;position:absolute;inset:0;display:flex">
       <div style="flex:1.15;background:repeating-linear-gradient(135deg,var(--plate2,#1A1724) 0 14px,var(--rule,#201C2C) 14px 28px);display:grid;place-items:center;padding:4cqw;text-align:center;position:relative;overflow:hidden">
         <sc-if value="{{ hasImg }}" hint-placeholder-val="{{ false }}">
-          <img src="{{ imgSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"><span data-photoveil="1" style="position:absolute;inset:0;pointer-events:none;background:{{ photoVeil }}"></span>
+          <img loading="{{ imgLoad }}" decoding="async" src="{{ imgSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"><span data-photoveil="1" style="position:absolute;inset:0;pointer-events:none;background:{{ photoVeil }}"></span>
         </sc-if>
         <sc-if value="{{ noImg }}" hint-placeholder-val="{{ true }}">
           <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85cqw;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-mute,#8E88A3);max-width:26ch;line-height:1.7">{{ caseImgHint }}</span>
@@ -1365,7 +1365,7 @@
           <div data-in="4" style="display:flex;flex-direction:column;background:var(--plate2,#23202F);border:1px solid var(--rule,#302B3F);border-radius:.5cqw;overflow:hidden">
             <div style="flex:0 0 42%;position:relative;background:repeating-linear-gradient(135deg,var(--plate2,#1A1724) 0 12px,var(--rule,#201C2C) 12px 24px);display:grid;place-items:center;padding:1.2cqw;text-align:center">
               <sc-if value="{{ c.hasImg }}" hint-placeholder-val="{{ false }}">
-                <img src="{{ c.img }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"><span data-photoveil="1" style="position:absolute;inset:0;pointer-events:none;background:{{ photoVeil }}"></span>
+                <img loading="{{ imgLoad }}" decoding="async" src="{{ c.img }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"><span data-photoveil="1" style="position:absolute;inset:0;pointer-events:none;background:{{ photoVeil }}"></span>
               </sc-if>
               <sc-if value="{{ c.noImg }}" hint-placeholder-val="{{ true }}">
                 <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.66cqw;letter-spacing:.14em;text-transform:uppercase;color:#5C566E;line-height:1.6">{{ c.imgHint }}</span>
@@ -1436,7 +1436,7 @@
               <div style="flex:1;min-height:0;display:flex;gap:1.2cqw;background:var(--plate2,#1B1826);border:1px solid var(--rule,#302B3F);border-radius:.5cqw;overflow:hidden;opacity:0;animation:tier-case-in .58s cubic-bezier(.16,1,.3,1) forwards;animation-delay:{{ c.delay }}">
                 <div style="flex:0 0 32%;position:relative;background:repeating-linear-gradient(135deg,var(--plate2,#1A1724) 0 12px,var(--rule,#201C2C) 12px 24px);display:grid;place-items:center;padding:1cqw;text-align:center;overflow:hidden">
                   <sc-if value="{{ c.hasImg }}" hint-placeholder-val="{{ false }}">
-                    <img src="{{ c.img }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"><span data-photoveil="1" style="position:absolute;inset:0;pointer-events:none;background:{{ photoVeil }}"></span>
+                    <img loading="{{ imgLoad }}" decoding="async" src="{{ c.img }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"><span data-photoveil="1" style="position:absolute;inset:0;pointer-events:none;background:{{ photoVeil }}"></span>
                   </sc-if>
                   <sc-if value="{{ c.noImg }}" hint-placeholder-val="{{ true }}">
                     <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.62cqw;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-mute,#8E88A3);line-height:1.6;max-width:22ch">{{ c.imgHint }}</span>
@@ -1585,7 +1585,7 @@
               </div>
               <div style="position:relative;aspect-ratio:{{ sp.ratio }};background:repeating-linear-gradient(135deg,var(--plate2,#1A1724) 0 12px,var(--rule,#201C2C) 12px 24px);display:grid;place-items:center;padding:1cqw;text-align:center;overflow:hidden">
                 <sc-if value="{{ sp.hasImg }}" hint-placeholder-val="{{ false }}">
-                  <img src="{{ sp.img }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"><span data-photoveil="1" style="position:absolute;inset:0;pointer-events:none;background:{{ photoVeil }}"></span>
+                  <img loading="{{ imgLoad }}" decoding="async" src="{{ sp.img }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"><span data-photoveil="1" style="position:absolute;inset:0;pointer-events:none;background:{{ photoVeil }}"></span>
                 </sc-if>
                 <sc-if value="{{ sp.noImg }}" hint-placeholder-val="{{ true }}">
                   <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.62cqw;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-mute,#8E88A3);line-height:1.6;max-width:20ch">{{ sp.imgHint }}</span>
@@ -1614,7 +1614,7 @@
                 </div>
                 <div style="position:relative;background:repeating-linear-gradient(135deg,var(--plate2,#1A1724) 0 12px,var(--rule,#201C2C) 12px 24px);display:grid;place-items:center;padding:1.4cqw;text-align:center;overflow:hidden;aspect-ratio:{{ spotDetail.ratio }};height:{{ spotDetail.bigH }}">
                   <sc-if value="{{ spotDetail.hasImg }}" hint-placeholder-val="{{ false }}">
-                    <img src="{{ spotDetail.img }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"><span data-photoveil="1" style="position:absolute;inset:0;pointer-events:none;background:{{ photoVeil }}"></span>
+                    <img loading="{{ imgLoad }}" decoding="async" src="{{ spotDetail.img }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"><span data-photoveil="1" style="position:absolute;inset:0;pointer-events:none;background:{{ photoVeil }}"></span>
                   </sc-if>
                   <sc-if value="{{ spotDetail.noImg }}" hint-placeholder-val="{{ true }}">
                     <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.78cqw;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-mute,#8E88A3);line-height:1.6;max-width:24ch">{{ spotDetail.imgHint }}</span>
@@ -1683,7 +1683,7 @@
           <div onClick="{{ tr.on }}" data-in="4" ref="{{ tr.ref }}" style="position:relative;display:grid;grid-template-columns:11cqw 1fr;align-items:center;margin-bottom:1cqw;transition:background .25s,box-shadow .25s,opacity .3s cubic-bezier(.22,.61,.36,1),transform .38s cubic-bezier(.22,.61,.36,1);cursor:{{ tr.cursor }};opacity:{{ tr.rowOp }};transform:translate3d(0,{{ tr.rowY }},0);transition-delay:{{ tr.rowDelay }};box-shadow:{{ tr.rowRing }};background:{{ tr.rowBg }};border-left:{{ tr.railW }} solid {{ tr.rowRail }};border-radius:.3cqw;padding:{{ tr.rowPad }}">
             <div style="display:flex;align-items:center;padding-right:1cqw">
               <sc-if value="{{ tr.hasLogo }}" hint-placeholder-val="{{ true }}">
-                <img src="{{ tr.logo }}" alt="{{ tr.name }}" style="height:{{ tr.h }};width:auto;object-fit:contain;display:block">
+                <img loading="{{ imgLoad }}" decoding="async" src="{{ tr.logo }}" alt="{{ tr.name }}" style="height:{{ tr.h }};width:auto;object-fit:contain;display:block">
               </sc-if>
               <sc-if value="{{ tr.noLogo }}" hint-placeholder-val="{{ false }}">
                 <span style="font-weight:700;letter-spacing:-.01em;color:var(--ink,#FFFFFF);line-height:1.2;font-size:{{ tr.nameSize }}">{{ tr.name }}</span>
@@ -1713,7 +1713,7 @@
           <div style="display:flex;align-items:center;justify-content:space-between;gap:1cqw;border-left:.4cqw solid {{ tlDetail.color }};border-radius:.3cqw;padding:.75cqw .7cqw .75cqw .6cqw;background:{{ tlDetail.headBg }};box-shadow:{{ tlDetail.headRing }}">
             <div style="display:flex;align-items:center;gap:.9cqw;min-width:0">
               <sc-if value="{{ tlDetail.hasLogo }}" hint-placeholder-val="{{ false }}">
-                <img src="{{ tlDetail.logo }}" alt="{{ tlDetail.label }}" style="height:{{ tlDetail.logoH }};width:auto;object-fit:contain;display:block;flex:none">
+                <img loading="{{ imgLoad }}" decoding="async" src="{{ tlDetail.logo }}" alt="{{ tlDetail.label }}" style="height:{{ tlDetail.logoH }};width:auto;object-fit:contain;display:block;flex:none">
               </sc-if>
               <sc-if value="{{ tlDetail.noLogo }}" hint-placeholder-val="{{ true }}">
                 <span style="font-weight:700;letter-spacing:-.01em;color:var(--ink,#FFFFFF);line-height:1.2;font-size:1.15cqw">{{ tlDetail.label }}</span>
@@ -1790,7 +1790,7 @@
     <div style="position:absolute;inset:0;display:flex;flex-direction:column">
       <div data-el="img" data-el-name="Bilde" style="--ink:#FFFFFF;--ink-soft:#C9C4D6;--ink-body:#E4E1EC;--ink-mute:#8E88A3;--plate2:#23202F;--rule:#302B3F;--mix:#FFFFFF;color:#FFFFFF;flex:1.12;min-height:0;position:relative;overflow:hidden;background:#16131F">
         <sc-if value="{{ hasImg }}" hint-placeholder-val="{{ false }}">
-          <img src="{{ imgSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
+          <img loading="{{ imgLoad }}" decoding="async" src="{{ imgSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
           <span data-photoveil="1" style="position:absolute;inset:0;pointer-events:none;background:{{ photoVeil }}"></span>
         </sc-if>
         <span style="position:absolute;inset:0;background:linear-gradient(100deg,rgba(18,16,26,.94) 22%,rgba(18,16,26,.6) 58%,rgba(18,16,26,.35))"></span>
@@ -1892,7 +1892,7 @@
     <div style="position:absolute;inset:0;display:flex">
       <div style="flex:1;background:repeating-linear-gradient(135deg,var(--plate2,#1A1724) 0 14px,var(--rule,#201C2C) 14px 28px);display:grid;place-items:center;padding:4cqw;text-align:center;position:relative;overflow:hidden">
         <sc-if value="{{ hasImg }}" hint-placeholder-val="{{ false }}">
-          <img data-el="img" data-el-name="Bilde" src="{{ imgSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"><span data-photoveil="1" style="position:absolute;inset:0;pointer-events:none;background:{{ photoVeil }}"></span>
+          <img loading="{{ imgLoad }}" decoding="async" data-el="img" data-el-name="Bilde" src="{{ imgSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"><span data-photoveil="1" style="position:absolute;inset:0;pointer-events:none;background:{{ photoVeil }}"></span>
         </sc-if>
         <sc-if value="{{ noImg }}" hint-placeholder-val="{{ true }}">
           <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.8cqw;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-mute,#8E88A3);max-width:24ch;line-height:1.7">{{ s.imgHint }}</span>
@@ -1903,13 +1903,13 @@
         <div style="position:absolute;width:3.4cqw;height:3.4cqw;bottom:2.6cqw;right:2.6cqw;border:.55cqw solid var(--accent,#1434CB);border-left:0;border-top:0"></div>
         <sc-if value="{{ hasLogo }}" hint-placeholder-val="{{ false }}">
           <div data-el="logo" data-el-name="Kundelogo" data-in="1" style="border-radius:.5cqw;display:grid;place-items:center;padding:1.2cqw 1.6cqw;min-width:14cqw;min-height:5.5cqw;align-self:flex-start;margin-bottom:2.5cqw;background:var(--plate,#fff)">
-            <img src="{{ m.logo }}" alt="{{ m.client }}" style="max-width:11cqw;max-height:3.4cqw;display:block">
+            <img loading="{{ imgLoad }}" decoding="async" src="{{ m.logo }}" alt="{{ m.client }}" style="max-width:11cqw;max-height:3.4cqw;display:block">
           </div>
         </sc-if>
         <div data-el="text" data-el-name="Avslutningstekst" data-display="1" data-in="2" style="font-size:5.4cqw;font-weight:800;letter-spacing:-.035em;line-height:1.02">{{ s.text }}</div>
         <div data-el="rule" data-el-name="Strek" data-in="3" style="width:5cqw;height:.28cqw;background:var(--accent,#1434CB);margin:1.6cqw 0"></div>
         <div data-el="contact" data-el-name="Kontaktlinje" data-in="3" style="font-size:.8cqw;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-mute,#8E88A3)">{{ contactLine }}</div>
-        <div data-el="senderLogo" data-el-name="Avsenderlogo" data-in="4" style="margin-top:2.6cqw;align-self:flex-start"><img src="{{ senderLogo }}" alt="{{ senderName }}" style="height:2.4cqw;display:block;opacity:.9"></div>
+        <div data-el="senderLogo" data-el-name="Avsenderlogo" data-in="4" style="margin-top:2.6cqw;align-self:flex-start"><img loading="{{ imgLoad }}" decoding="async" src="{{ senderLogo }}" alt="{{ senderName }}" style="height:2.4cqw;display:block;opacity:.9"></div>
       </div>
     </div>
   </sc-if>
@@ -1920,7 +1920,7 @@
       <div style="position:absolute;inset:0;background:repeating-linear-gradient(135deg,#141220 0 14px,#191627 14px 28px)"></div>
     </sc-if>
     <sc-if value="{{ hasImg }}" hint-placeholder-val="{{ false }}">
-      <img src="{{ imgSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
+      <img loading="{{ imgLoad }}" decoding="async" src="{{ imgSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
       <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(18,16,26,.96) 34%,rgba(18,16,26,.72) 68%,rgba(18,16,26,.5))"></div>
       <span data-photoveil="1" style="position:absolute;inset:0;pointer-events:none;background:{{ photoVeil }}"></span>
     </sc-if>
@@ -1942,7 +1942,7 @@
   <sc-if value="{{ is.fullbleed }}" hint-placeholder-val="{{ false }}">
     <div style="position:absolute;inset:0;background:repeating-linear-gradient(135deg,var(--plate2,#1A1724) 0 14px,var(--rule,#201C2C) 14px 28px);display:grid;place-items:center">
       <sc-if value="{{ hasImg }}" hint-placeholder-val="{{ false }}">
-        <img data-el="img" data-el-name="Bilde" src="{{ imgSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"><span data-photoveil="1" style="position:absolute;inset:0;pointer-events:none;background:{{ photoVeil }}"></span>
+        <img loading="{{ imgLoad }}" decoding="async" data-el="img" data-el-name="Bilde" src="{{ imgSrc }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"><span data-photoveil="1" style="position:absolute;inset:0;pointer-events:none;background:{{ photoVeil }}"></span>
       </sc-if>
       <sc-if value="{{ noImg }}" hint-placeholder-val="{{ true }}">
         <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85cqw;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-mute,#8E88A3);max-width:30ch;text-align:center;line-height:1.7">{{ s.imgHint }}</span>
@@ -2005,7 +2005,7 @@
             </div>
             <div style="flex:1;min-height:0;position:relative;overflow:hidden">
               <sc-if value="{{ im.hasImg }}" hint-placeholder-val="{{ false }}">
-                <img src="{{ im.img }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
+                <img loading="{{ imgLoad }}" decoding="async" src="{{ im.img }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
               </sc-if>
               <sc-if value="{{ im.noImg }}" hint-placeholder-val="{{ true }}">
                 <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:.7cqw;text-align:center;font-size:.5cqw;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#5C5670;line-height:1.5">{{ im.hint }}</span>
@@ -2016,7 +2016,7 @@
         <sc-if value="{{ im.isBox }}" hint-placeholder-val="{{ false }}">
           <div style="aspect-ratio:16/9;position:relative;overflow:hidden;border-radius:.35cqw;background:var(--plate2,#23202F);border:1px solid var(--rule,#302B3F);box-shadow:0 .6cqw 1.6cqw -.6cqw rgba(0,0,0,.55)">
             <sc-if value="{{ im.hasImg }}" hint-placeholder-val="{{ false }}">
-              <img src="{{ im.img }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
+              <img loading="{{ imgLoad }}" decoding="async" src="{{ im.img }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
             </sc-if>
             <sc-if value="{{ im.noImg }}" hint-placeholder-val="{{ true }}">
               <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:.7cqw;text-align:center;font-size:.5cqw;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#5C5670;line-height:1.5">{{ im.hint }}</span>
@@ -2026,7 +2026,7 @@
         <sc-if value="{{ im.isSquare }}" hint-placeholder-val="{{ false }}">
           <div style="aspect-ratio:1/1;position:relative;overflow:hidden;border-radius:.35cqw;background:var(--plate2,#23202F);border:1px solid var(--rule,#302B3F);box-shadow:0 .6cqw 1.6cqw -.6cqw rgba(0,0,0,.55)">
             <sc-if value="{{ im.hasImg }}" hint-placeholder-val="{{ false }}">
-              <img src="{{ im.img }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
+              <img loading="{{ imgLoad }}" decoding="async" src="{{ im.img }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
             </sc-if>
             <sc-if value="{{ im.noImg }}" hint-placeholder-val="{{ true }}">
               <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:.7cqw;text-align:center;font-size:.5cqw;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#5C5670;line-height:1.5">{{ im.hint }}</span>
@@ -2037,7 +2037,7 @@
           <div style="background:#EFEDE7;padding:.5cqw .5cqw 1.2cqw;border-radius:.15cqw;box-shadow:0 .6cqw 1.6cqw -.6cqw rgba(0,0,0,.55);rotate:-2deg">
             <span style="display:block;position:relative;width:100%;aspect-ratio:1/1;overflow:hidden;background:#DEDAD2">
               <sc-if value="{{ im.hasImg }}" hint-placeholder-val="{{ false }}">
-                <img src="{{ im.img }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
+                <img loading="{{ imgLoad }}" decoding="async" src="{{ im.img }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
               </sc-if>
               <sc-if value="{{ im.noImg }}" hint-placeholder-val="{{ true }}">
                 <span style="position:absolute;inset:0;display:grid;place-items:center;padding:.6cqw;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.48cqw;letter-spacing:.1em;text-transform:uppercase;color:#8A8578;line-height:1.4;text-align:center">{{ im.hint }}</span>
@@ -2047,7 +2047,7 @@
         </sc-if>
         <sc-if value="{{ im.isRaw }}" hint-placeholder-val="{{ false }}">
           <sc-if value="{{ im.hasImg }}" hint-placeholder-val="{{ false }}">
-            <img src="{{ im.img }}" alt="" style="display:block;width:100%;height:auto">
+            <img loading="{{ imgLoad }}" decoding="async" src="{{ im.img }}" alt="" style="display:block;width:100%;height:auto">
           </sc-if>
           <sc-if value="{{ im.noImg }}" hint-placeholder-val="{{ true }}">
             <div style="aspect-ratio:9/18.5;border-radius:.35cqw;background:var(--plate2,#23202F);border:1px solid var(--rule,#302B3F);display:flex;align-items:center;justify-content:center;padding:.7cqw;text-align:center;font-size:.5cqw;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#5C5670;line-height:1.5">{{ im.hint }}</div>
@@ -2069,7 +2069,7 @@
   </div>
 
   <!-- avsender-vannmerke: samme plassering på alle slidetyper, kan skjules/flyttes per slide -->
-  <img data-el="watermark" data-el-name="Avsendervannmerke" src="{{ senderLogo }}" alt="{{ senderName }}" style="position:absolute;top:4.2cqw;right:5.5cqw;height:1.8cqw;opacity:.9;z-index:6;filter:{{ senderLogoFilter }}">
+  <img loading="{{ imgLoad }}" decoding="async" data-el="watermark" data-el-name="Avsendervannmerke" src="{{ senderLogo }}" alt="{{ senderName }}" style="position:absolute;top:4.2cqw;right:5.5cqw;height:1.8cqw;opacity:.9;z-index:6;filter:{{ senderLogoFilter }}">
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:720},&quot;slide&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;{type:string,data:object}&quot;},&quot;meta&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;object&quot;},&quot;system&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;object&quot;},&quot;index&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:0,&quot;tsType&quot;:&quot;number&quot;},&quot;total&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:1,&quot;tsType&quot;:&quot;number&quot;},&quot;showNum&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;},&quot;onConfig&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;(s:object)=&gt;void&quot;},&quot;layout&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;Record&lt;string,{x?:number,y?:number,s?:number,hidden?:boolean}&gt;&quot;},&quot;onLayout&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;(key:string,v:object|null)=&gt;void&quot;}}">
@@ -3317,6 +3317,12 @@ class Component extends DCLogic {
           crown: !!w.crown, note: w.note || '' };
       }),
       steps: s.steps || [],
+      /* Klientvisningen rendrer ALLE slides i én rullebeholder, så alt utenom
+         den første ligger utenfor skjermen allerede når nettleseren parser.
+         Da gjør loading=lazy den jobben den er laget for. Slide 1 må være
+         eager: den er det største bildet over folden, og lazy der ville
+         utsatt nettopp det kunden ser først. */
+      imgLoad: idx === 0 ? 'eager' : 'lazy',
       showNum, num: String(P.index + 1).padStart(2, '0'), totalNum: String(P.total || 1).padStart(2, '0'),
       numRight: bracketed ? '7.8cqw' : '5.5cqw',
 
