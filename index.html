@@ -162,14 +162,31 @@
   [data-reveal][data-elreveal] [data-band].is-in [data-in="4"]:nth-child(n+7){transition-delay:.62s}
   @media (max-width:760px){[data-hide-sm]{display:none!important}}
   @media (max-width:520px){[data-hide-xs]{display:none!important}}
+  /* 338 x 190 mm er 16:9 i liggende format. Én slide per side. */
   @page{size:338mm 190mm;margin:0}
   @media print{
+    /* [data-slidewrap] sto her før og finnes ikke i markupen — målt til 0 elementer,
+       mens det er 12 [data-band]. Derfor hadde hverken sideskift eller sidestørrelse
+       noen virkning, og hele decket kom ut som én sammenhengende flyt.
+       Endrer du disse navnene i markupen, må de endres her også. */
     [data-chrome]{display:none!important}
+    [data-amb]{display:none!important}
     [data-scroll]{overflow:visible!important;height:auto!important;scroll-snap-type:none!important}
-    [data-slidewrap]{break-after:page;page-break-after:always;min-height:0!important;padding:0!important;display:block!important;width:338mm!important;height:190mm!important}
-    [data-slidewrap]:last-child{break-after:auto;page-break-after:auto}
-    [data-slidewrap]>div{width:100%!important;height:100%!important;border-radius:0!important;box-shadow:none!important}
+    [data-band]{break-after:page;page-break-after:always;break-inside:avoid;page-break-inside:avoid;
+                width:338mm!important;height:190mm!important;min-height:0!important;max-height:190mm!important;
+                padding:0!important;margin:0!important;display:block!important;overflow:hidden!important}
+    [data-band]:last-child{break-after:auto;page-break-after:auto}
+    [data-band]>[data-page]{width:100%!important;height:100%!important;max-width:none!important;
+                            border-radius:0!important;box-shadow:none!important;border:0!important;overflow:hidden!important}
+    /* høyden må være definert hele veien ned, ellers løses height:100% mot en
+       auto-høy forelder og sliden blir 0 px. Kjeden er
+       [data-band] > [data-page] > [data-fade] > wrapper > [data-slide]. */
+    [data-band] [data-fade],
+    [data-band] [data-fade]>*{height:100%!important}
     [data-slide]{width:100%!important;height:100%!important;aspect-ratio:auto!important}
+    /* innholdet tones inn ved rulling; ved utskrift rulles det aldri, så uten dette
+       ville slidene blitt skrevet ut usynlige */
+    [data-fade],[data-in]{opacity:1!important;transform:none!important;transition:none!important}
     *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
   }
 </style>
@@ -229,7 +246,7 @@
     <!-- ett animasjonslag bak hele presentasjonen — det står stille i forhold til rullingen,
          så bevegelsen er sammenhengende fra forside til avslutning -->
     <sc-if value="{{ view.amb.on }}" hint-placeholder-val="{{ false }}">
-      <div style="position:fixed;inset:0;z-index:0;pointer-events:none;opacity:{{ view.amb.opacity }}">
+      <div data-amb="1" style="position:fixed;inset:0;z-index:0;pointer-events:none;opacity:{{ view.amb.opacity }}">
           <sc-if value="{{ view.amb.field }}" hint-placeholder-val="{{ false }}">
             <x-import component-from-global-scope="ambient-field" from="./ambient-field.js" color="{{ accent }}" density="{{ view.amb.density }}" speed="{{ view.amb.speed }}" style="position:absolute;inset:0" hint-size="100%,100%"></x-import>
           </sc-if>
@@ -1194,7 +1211,7 @@
                 </div>
               </sc-for>
             </div>
-            <button type="button" onClick="{{ ed.onPrint }}" style="font-size:12.5px;font-weight:600;color:#322D45;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:6px;padding:10px;cursor:pointer">⎙ Eksporter PDF</button>
+            <button type="button" onClick="{{ ed.onPrint }}" disabled="{{ ed.printing }}" style="font-size:12.5px;font-weight:600;color:#322D45;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:6px;padding:10px;cursor:pointer">{{ ed.printLabel }}</button>
           </div>
         </sc-if>
       </aside>
@@ -2973,6 +2990,51 @@ class Component extends DCLogic {
      helt uten internett. Bakgrunnsanimasjonene (hex-ripple, ambient-field, bg-scenes) er egne
      custom elements uten React-avhengighet, så kildefilene deres sendes med og three.js bakes
      inn som en blob-URL — de booter seg selv og animerer i den ferdige filen også. */
+  /* PDF-eksport er nettleserens egen «skriv ut til PDF». To ting må stemme:
+     print-CSS-en må treffe elementene som finnes, og flaten må være ferdig
+     før dialogen åpnes. Begge var feil. Den gamle koden byttet rute og kalte
+     print() etter 400 ms — en gjetning som ikke rakk hverken datahenting,
+     rendring eller bilder. */
+  async printPitch(pitch) {
+    const antall = ((pitch || {}).blocks || []).length;
+    const fra = location.hash;
+    const til = '#/p/' + pitch.meta.slug;
+    const vent = ms => new Promise(r => setTimeout(r, ms));
+    /* venter på en tilstand, ikke på en fast tid */
+    const til_at = async (test, frist) => {
+      const slutt = performance.now() + frist;
+      while (performance.now() < slutt) { if (test()) return true; await vent(80); }
+      return false;
+    };
+    this.setState({ printing: true });
+    try {
+      if (location.hash !== til) location.hash = til;
+      const klar = await til_at(() => document.querySelectorAll('[data-band]').length >= antall && antall > 0, 10000);
+      if (!klar) throw new Error('Sidene rakk ikke å bli ferdige.');
+
+      /* Bildene under folden er lazy-lastet og dermed ikke hentet. Chrome henter
+         dem selv før utskrift, men det er ikke garantert i andre nettlesere, og
+         resultatet ville vært sider uten bilder. Vi tvinger dem og venter. */
+      const bilder = [...document.images];
+      bilder.forEach(i => { if (i.loading === 'lazy') i.loading = 'eager'; });
+      await Promise.all(bilder.map(i => (i.complete && i.naturalWidth > 0) ? null : new Promise(r => {
+        const ferdig = () => r();
+        i.addEventListener('load', ferdig, { once: true });
+        i.addEventListener('error', ferdig, { once: true });
+        setTimeout(ferdig, 6000);              /* ett tregt bilde skal ikke sperre hele eksporten */
+      })));
+
+      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+      print();
+    } catch (e) {
+      alert('Kunne ikke lage PDF: ' + (e.message || e));
+    } finally {
+      this.setState({ printing: false });
+      /* tilbake til der man var — ellers blir man stående i kundevisningen */
+      if (fra && location.hash !== fra) location.hash = fra;
+    }
+  }
+
   async exportHtmlSnapshot(pitch) {
     if (this.state.exportingHtml) return;
     this.setState({ exportingHtml: true });
@@ -4512,7 +4574,11 @@ class Component extends DCLogic {
         onExport: () => this.download('pitch-' + pitch.meta.slug + '-' + pitch.meta.created + '.json', JSON.stringify(pitch, null, 2)),
         onExportHtml: () => this.exportHtmlSnapshot(pitch),
         exportHtmlLabel: S.exportingHtml ? 'Bygger …' : '↓ HTML',
-        onPrint: () => { location.hash = '#/p/' + pitch.meta.slug; setTimeout(() => print(), 400); },
+        onPrint: () => this.printPitch(pitch),
+        /* forberedelsen tar et par sekunder — bildene må hentes først, ellers
+           blir sidene stående uten dem. Uten tilbakemelding ser knappen død ut. */
+        printing: !!S.printing,
+        printLabel: S.printing ? 'Forbereder …' : '⎙ Eksporter PDF',
         onConfig: cfg => this.updatePitch(p => Object.assign(p.blocks[sel].data, cfg))
       };
     }
