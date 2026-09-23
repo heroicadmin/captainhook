@@ -739,7 +739,7 @@
           <span style="font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:4px 8px;border-radius:4px;background:{{ ed.statusBg }};color:{{ ed.statusFg }}">{{ ed.status }}</span>
           <span style="flex:1"></span>
           <button type="button" onClick="{{ ed.onView }}" title="Åpner kundesiden på samme slide" style="font-size:12px;font-weight:600;color:#322D45;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:6px;padding:8px 12px;cursor:pointer">Kundeside</button>
-          <button type="button" onClick="{{ ed.onExport }}" style="font-size:12px;font-weight:600;color:#322D45;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:6px;padding:8px 12px;cursor:pointer">↓ pitch.json</button>
+          <button type="button" onClick="{{ ed.onPrint }}" disabled="{{ ed.printing }}" title="Åpner utskriftsdialogen — velg «Lagre som PDF». Én slide per side." style="font-size:12px;font-weight:600;color:#322D45;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:6px;padding:8px 12px;cursor:pointer">{{ ed.printLabel }}</button>
           <button type="button" onClick="{{ ed.onExportHtml }}" title="Selvstendig HTML-fil \u2014 \u00e5pnes offline, uten internett" style="font-size:12px;font-weight:600;color:#322D45;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:6px;padding:8px 12px;cursor:pointer">{{ ed.exportHtmlLabel }}</button>
           <button type="button" onClick="{{ ed.onCheck }}" style="font-size:12px;font-weight:700;color:var(--accent-ink);background:var(--accent);border:0;border-radius:6px;transition:filter .14s,box-shadow .14s;padding:9px 14px;cursor:pointer" style-hover="filter:brightness(1.08);box-shadow:0 10px 22px -12px var(--accent)">Leveringssjekk</button>
         </div>
@@ -1211,7 +1211,6 @@
                 </div>
               </sc-for>
             </div>
-            <button type="button" onClick="{{ ed.onPrint }}" disabled="{{ ed.printing }}" style="font-size:12.5px;font-weight:600;color:#322D45;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:6px;padding:10px;cursor:pointer">{{ ed.printLabel }}</button>
           </div>
         </sc-if>
       </aside>
@@ -4585,14 +4584,13 @@ class Component extends DCLogic {
         onAddEnd: () => this.setState({ showLib: true, insertAt: pitch.blocks.length }),
         onCloseLib: () => this.setState({ showLib: false }),
         onCheck: () => this.setState({ showCheck: !S.showCheck }),
-        onExport: () => this.download('pitch-' + pitch.meta.slug + '-' + pitch.meta.created + '.json', JSON.stringify(pitch, null, 2)),
         onExportHtml: () => this.exportHtmlSnapshot(pitch),
         exportHtmlLabel: S.exportingHtml ? 'Bygger …' : '↓ HTML',
         onPrint: () => this.printPitch(pitch),
         /* forberedelsen tar et par sekunder — bildene må hentes først, ellers
            blir sidene stående uten dem. Uten tilbakemelding ser knappen død ut. */
         printing: !!S.printing,
-        printLabel: S.printing ? 'Forbereder …' : '⎙ Eksporter PDF',
+        printLabel: S.printing ? 'Forbereder …' : '↓ PDF',
         onConfig: cfg => this.updatePitch(p => Object.assign(p.blocks[sel].data, cfg))
       };
     }
