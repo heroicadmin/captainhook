@@ -2616,6 +2616,18 @@ class Component extends DCLogic {
     const line = sc.clientHeight * 0.4;
     let i = 0;
     bands.forEach((b, j) => { if (b.getBoundingClientRect().top - top <= line) i = j; });
+    /* Innfadingen styres av en IntersectionObserver, og uten .is-in står innholdet på
+       opacity 0. Uteble den, ble sliden stående tom — en kunde så telleren si 05 / 11
+       over en blank flate. Sikkerhetsnettet i observeBands slår bare inn etter en
+       React-oppdatering, ikke ved rulling. Denne funksjonen kjører på hver rulling og
+       regner ut telleren av samme posisjon, så alt den kan se skal også vises.
+       Observeren gir fortsatt den fine timingen; dette er garantien. */
+    const vis = sc.getBoundingClientRect();
+    bands.forEach(b => {
+      if (b.classList.contains('is-in')) return;
+      const r = b.getBoundingClientRect();
+      if (r.top < vis.bottom && r.bottom > vis.top) b.classList.add('is-in');
+    });
     const bar = sc.querySelector('[data-progress]');
     const pos = sc.querySelector('[data-pos]');
     if (bar) bar.style.width = (((i + 1) / bands.length) * 100).toFixed(1) + '%';
