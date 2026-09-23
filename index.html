@@ -2999,6 +2999,18 @@ class Component extends DCLogic {
     const antall = ((pitch || {}).blocks || []).length;
     const fra = location.hash;
     const til = '#/p/' + pitch.meta.slug;
+    /* Nettleseren foreslår filnavn ut fra <title>. Det er eneste håndtak en
+       nettside har på navnet i «Lagre som PDF», så vi setter tittelen rundt
+       kallet og setter den tilbake etterpå.
+       Året tas fra undertittelen («Partnerskapsforslag 2026»), altså året
+       decket handler om — ikke datoen det ble laget. De spriker for et deck
+       laget sent på året for året etter. created er reserve. */
+    const aar = (String(pitch.meta.subtitle || '').match(/\b(20\d{2})\b/) || [])[1]
+             || String(pitch.meta.created || '').slice(0, 4)
+             || String(new Date().getFullYear());
+    const rent = t => String(t || '').replace(/[\\/:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim();
+    const filnavn = ((rent(pitch.meta.client) || 'Pitch') + ' ' + aar).trim();
+    const gammelTittel = document.title;
     const vent = ms => new Promise(r => setTimeout(r, ms));
     /* venter på en tilstand, ikke på en fast tid */
     const til_at = async (test, frist) => {
@@ -3025,10 +3037,12 @@ class Component extends DCLogic {
       })));
 
       await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+      document.title = filnavn;
       print();
     } catch (e) {
       alert('Kunne ikke lage PDF: ' + (e.message || e));
     } finally {
+      document.title = gammelTittel;
       this.setState({ printing: false });
       /* tilbake til der man var — ellers blir man stående i kundevisningen */
       if (fra && location.hash !== fra) location.hash = fra;
