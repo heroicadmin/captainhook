@@ -9,7 +9,6 @@
      putAsset()   ->  laster opp til Storage, returnerer «asset:<id>»-referanse
 */
 
-const CONFIG_KEY = 'skgr.supabase.config';   // kun tilkobling, ingen pitchdata
 /* ⚠️  SHARED_KEYS er lagringsfilteret for alt delt innhold.
    En nøkkel som IKKE står her blir aldri skrevet til databasen — helt stille, uten feilmelding.
    Legger du til en ny nøkkel på toppnivå i store-objektet, MÅ den føres opp her, ellers
@@ -41,24 +40,14 @@ let _pending = null, _saving = false, _listeners = new Set();
 
 /* ------------------------------------------------------------------ oppsett */
 
+/* Tilkoblingen står i supabase-config.js (bare den publiserbare nøkkelen).
+   Den gamle oppsettssiden som lagret en tilkobling i nettleseren er fjernet. */
 export function readConfig() {
   if (_cfg) return _cfg;
   if (typeof window !== 'undefined' && window.SUPABASE_CONFIG &&
       window.SUPABASE_CONFIG.url && window.SUPABASE_CONFIG.anonKey) {
     _cfg = { ...window.SUPABASE_CONFIG };
-    return _cfg;
   }
-  try {
-    const raw = localStorage.getItem(CONFIG_KEY);
-    if (raw) { const c = JSON.parse(raw); if (c && c.url && c.anonKey) _cfg = c; }
-  } catch (e) {}
-  return _cfg;
-}
-
-export function saveConfig(url, anonKey) {
-  _cfg = { url: String(url || '').replace(/\/+$/, ''), anonKey: String(anonKey || '').trim() };
-  try { localStorage.setItem(CONFIG_KEY, JSON.stringify(_cfg)); } catch (e) {}
-  _sb = null;
   return _cfg;
 }
 
@@ -504,109 +493,4 @@ export async function recentActivity(limit = 40) {
     .order('opened_at', { ascending: false }).limit(limit);
   if (error) throw error;
   return data || [];
-}
-
-/* ------------------------------------------------------------- flytt data inn */
-
-/* Engangsjobb: tar alt som ligger i denne nettleseren (pitcher i localStorage,
-   bilder i IndexedDB) og legger det i databasen. Bildene lastes opp direkte
-   fra nettleseren, så ingenting må gjennom en mellomserver. */
-export async function migrateFromBrowser(onProgress = () => {}) {
-  const sb = await client();
-  const s = await session();
-  if (!s) throw new Error('Logg inn først.');
-
-  let local = null;
-  try { local = JSON.parse(localStorage.getItem('skgr.pitchstudio.v1') || 'null'); } catch (e) {}
-  if (!local) throw new Error('Fant ingen lokal butikk å flytte.');
-
-  const assets = await readIndexedDBAssets();
-  const total = assets.length + (local.pitches || []).length + SHARED_KEYS.length;
-  let done = 0;
-  const step = label => { done++; onProgress({ done, total, label }); };
-
-  // 1) bilder
-  for (const rec of assets) {
-    try {
-      const blob = dataURLtoBlob(rec.src);
-      const ext = /image\/png/.test(blob.type) ? 'png' : (/svg/.test(blob.type) ? 'svg' : 'jpg');
-      const path = `${rec.id}.${ext}`;
-      const up = await sb.storage.from('pitch-assets')
-        .upload(path, blob, { contentType: blob.type, upsert: true });
-      if (up.error && !/exists/i.test(up.error.message || '')) throw up.error;
-      await sb.from('assets').upsert({
-        id: rec.id, path, name: rec.name || rec.id, mime: blob.type,
-        width: rec.w || null, height: rec.h || null, bytes: blob.size,
-        created_by: s.user.id }, { onConflict: 'id' });
-    } catch (e) { onProgress({ done, total, label: 'Hoppet over ' + (rec.name || rec.id), warn: true }); }
-    step('Bilde ' + (rec.name || rec.id));
-  }
-
-  // 2) delt data
-  for (const k of SHARED_KEYS) {
-    if (local[k] === undefined) { step(k); continue; }
-    await sb.from('shared_data').upsert(
-      { ...(_perCompany ? { company: _company } : {}),
-        key: k, value: local[k], updated_by: s.user.id, updated_at: new Date().toISOString() },
-      { onConflict: _perCompany ? 'company,key' : 'key' });
-    step(k);
-  }
-
-  // 3) pitcher
-  for (const p of (local.pitches || [])) {
-    const meta = p.meta || {};
-    await sb.from('pitches').upsert({
-      id: p.id,
-      slug: meta.slug || p.id,
-      client: meta.client || '',
-      title: (p.blocks || []).find(b => b.type === 'cover')?.data?.title || meta.client || '',
-      status: meta.status || 'kladd',
-      data: p,
-      owner_id: s.user.id,
-      updated_at: new Date().toISOString()
-    }, { onConflict: 'id' });
-    step('Pitch ' + (meta.client || p.id));
-  }
-
-  _snapshot = { pitches: {}, shared: {} };
-  return { assets: assets.length, pitches: (local.pitches || []).length, shared: SHARED_KEYS.length };
-}
-
-export function readIndexedDBAssets() {
-  return new Promise(res => {
-    let out = [];
-    const req = indexedDB.open('skgr.assets', 1);
-    req.onerror = () => res([]);
-    req.onsuccess = () => {
-      const db = req.result;
-      if (!db.objectStoreNames.contains('assets')) return res([]);
-      const tx = db.transaction('assets', 'readonly');
-      const all = tx.objectStore('assets').getAll();
-      all.onsuccess = () => res(all.result || []);
-      all.onerror = () => res([]);
-    };
-  });
-}
-
-function dataURLtoBlob(src) {
-  const [head, b64] = String(src).split(',');
-  const type = (/data:([^;]+)/.exec(head) || [])[1] || 'image/png';
-  if (!/;base64/.test(head)) return new Blob([decodeURIComponent(b64)], { type });
-  const bin = atob(b64), buf = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
-  return new Blob([buf], { type });
-}
-
-/* Hvor mye ligger lokalt? Brukes av oppsettssiden før flyttingen. */
-export async function localFootprint() {
-  let local = null;
-  try { local = JSON.parse(localStorage.getItem('skgr.pitchstudio.v1') || 'null'); } catch (e) {}
-  const assets = await readIndexedDBAssets();
-  const bytes = assets.reduce((n, a) => n + (a.src ? a.src.length : 0), 0);
-  return {
-    pitches: local && local.pitches ? local.pitches.length : 0,
-    assets: assets.length,
-    mb: +(bytes / 1024 / 1024).toFixed(1),
-    names: assets.slice(0, 60).map(a => a.name || a.id)
-  };
 }

@@ -9,7 +9,6 @@ Repoet `heroicadmin/captainhook` er tomt i dag. Last ned prosjektet herfra og
 push innholdet til `main`. Disse må med:
 
     index.html                (selve appen — ligger på rota)
-    Sky-oppsett.dc.html
     PitchSlide.dc.html
     support.js
     cloud-store.js
@@ -54,7 +53,6 @@ Uten dette virker ikke passordtilbakestilling og e-postlenker fra det nye domene
 - Selgerne: `https://pitch.limitbreak.no/` → landingssiden (logg inn med egen konto).
   Arkivet/dashbordet ligger på `https://pitch.limitbreak.no/#/arkiv`.
 - Klienten: `https://pitch.limitbreak.no/#/p/<slug>` → passordporten, deretter pitchen.
-- Oppsett og flytting: `https://pitch.limitbreak.no/Sky-oppsett.dc.html`
 
 Appen ligger på rota, så klientlenkene er rene: `https://pitch.limitbreak.no/#/p/<slug>`.
 
@@ -70,5 +68,3 @@ Appen ligger på rota, så klientlenkene er rene: `https://pitch.limitbreak.no/#
   alle pitcher.
 - Varsel når en klient åpner: legg Slack-webhooken i tabellen `app_settings`,
   rad `open_webhook_url`.
-- Migreringen i Sky-oppsett kjøres bare fra maskinen der de gamle pitchene ligger
-  lokalt. Etter at tallene stemmer i skyen kan nettleserlagringen tømmes.

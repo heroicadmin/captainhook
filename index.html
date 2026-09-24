@@ -212,10 +212,6 @@
         </div>
       </sc-if>
 
-      <sc-if value="{{ gate.isConfig }}" hint-placeholder-val="{{ false }}">
-        <a href="Sky-oppsett.dc.html" style="display:block;text-align:center;background:#0E9E8F;color:#fff;border-radius:8px;font-size:14px;font-weight:700;padding:12px 18px;text-decoration:none">Åpne Sky-oppsett</a>
-      </sc-if>
-
       <sc-if value="{{ gate.isPassword }}" hint-placeholder-val="{{ false }}">
         <div style="display:flex;flex-direction:column;gap:9px">
           <input type="password" value="{{ gate.pw }}" onInput="{{ gate.onPw }}" onKeyDown="{{ gate.onKeyDown }}" placeholder="passord" style="background:#F7F6FA;border:1px solid #D5D2E0;border-radius:8px;color:#322D45;font-size:14px;padding:12px 14px" />
@@ -516,10 +512,6 @@
           <a href="#/admin" style="background:#FFFFFF;border:1px solid #E6E4EE;border-radius:10px;padding:17px 18px;display:block;transition:border-color .16s,transform .16s ease" style-hover="border-color:var(--accent);transform:translateY(-2px)">
             <div style="font-size:13.5px;font-weight:700;color:#16131F">Admin</div>
             <div style="font-size:12px;line-height:1.55;color:#6E6883;margin-top:4px">Tall og kilder, slides, bilder, merkevarer, priser — og deling.</div>
-          </a>
-          <a href="Sky-oppsett.dc.html" style="background:#FFFFFF;border:1px solid #E6E4EE;border-radius:10px;padding:17px 18px;display:block;transition:border-color .16s,transform .16s ease" style-hover="border-color:var(--accent);transform:translateY(-2px)">
-            <div style="font-size:13.5px;font-weight:700;color:#16131F">Sky-oppsett</div>
-            <div style="font-size:12px;line-height:1.55;color:#6E6883;margin-top:4px">Tilkobling, innlogging og flytting av data.</div>
           </a>
           <div style="background:#FFFFFF;border:1px solid #E6E4EE;border-radius:10px;padding:17px 18px">
             <div style="font-size:13.5px;font-weight:700;color:#16131F">Slik deler du</div>
@@ -3433,7 +3425,7 @@ class Component extends DCLogic {
                      missing: 'Fant ikke pitchen', expired: 'Lenken har utløpt',
                      feil: 'Kunne ikke åpne pitchen', ingen: 'Ingen tilgang' };
     const texts = {
-      config: 'Appen henter nå pitcher, tall og bilder fra Supabase. Åpne Sky-oppsett og lim inn prosjekt-URL og anon-nøkkel én gang.',
+      config: 'Appen får ikke kontakt med databasen. Prøv å laste siden på nytt.',
       login: 'Pitchene ligger i databasen. Logg inn med din egen konto for å se og redigere dem.',
       password: 'Skriv inn passordet du fikk sammen med lenken.',
       missing: 'Sjekk at lenken er riktig, eller be om en ny.',
@@ -3446,7 +3438,6 @@ class Component extends DCLogic {
     };
     return {
       show,
-      isConfig: g === 'config',
       isLogin: g === 'login',
       isPassword: g === 'password',
       isIngen: g === 'ingen',
