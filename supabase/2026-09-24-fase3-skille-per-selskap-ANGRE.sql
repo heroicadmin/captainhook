@@ -4,7 +4,8 @@
 -- Endringer gjort i delt data ETTER fase 3 går tapt.
 -- Testet: fase 3 + denne fila på en kopi av databasen gir byte-identisk delt data.
 
-begin;
+-- Alt står i én do-blokk (én setning), så det er atomisk også i SQL Editor.
+do $angrefase3$ begin
 
 drop policy if exists "company shared" on shared_data;
 alter table shared_data drop constraint shared_data_pkey;
@@ -115,4 +116,4 @@ end $$;
 
 grant execute on function pitch_public(text, text) to anon, authenticated;
 
-commit;
+end $angrefase3$;

@@ -24,20 +24,22 @@
 -- testet ved å kjøre appens egen oppstartsfletting på resultatet for begge
 -- selskaper: byte-identisk, også alle pitcher.
 --
--- Hele fila er én transaksjon: feiler noe, skjer ingenting.
+-- Hele endringen er én setning: feiler noe, skjer ingenting.
 -- Kjøres ETTER at den nye klienten er ute (den tåler begge skjemaene).
 -- Lukk editorfaner før du kjører, last dem på nytt etterpå.
 -- Angre: 2026-09-24-fase3-skille-per-selskap-ANGRE.sql
 -- ============================================================================
 
-begin;
+/* Alt står i ÉN do-blokk, altså én setning. SQL Editor kjører ikke nødvendigvis
+   setningene i samme økt; første utgave (begin/commit rundt løse setninger)
+   stoppet derfor på den midlertidige tabellen. Én setning er atomisk uansett:
+   feiler noe, rulles alt tilbake. */
+do $fase3$ begin
 
-do $$ begin
-  if exists (select 1 from information_schema.columns
-             where table_schema = 'public' and table_name = 'shared_data' and column_name = 'company') then
-    raise exception 'Fase 3 er allerede kjørt — shared_data har company-kolonnen.';
-  end if;
-end $$;
+if exists (select 1 from information_schema.columns
+           where table_schema = 'public' and table_name = 'shared_data' and column_name = 'company') then
+  raise exception 'Fase 3 er allerede kjørt — shared_data har company-kolonnen.';
+end if;
 
 -- ── 1. fordel delt data per selskap (regnes ut FØR noe endres) ──────────────
 create temp table fase3_del on commit drop as
@@ -265,7 +267,9 @@ end $$;
 
 grant execute on function pitch_public(text, text) to anon, authenticated;
 
-commit;
+drop table fase3_del;
+
+end $fase3$;
 
 -- ── kontroll ─────────────────────────────────────────────────────────────────
 select company, count(*) as nokler,
