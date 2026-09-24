@@ -351,7 +351,12 @@
       <span style="display:flex;align-items:center;gap:7px;background:#FFF7E6;border:1px solid #F0D9A8;border-radius:6px;padding:4px 8px;font-size:11.5px;color:#8A6D2F">
         <span style="font-weight:700">Ser som</span>
         <span style="font-family:ui-monospace,Menlo,monospace">{{ viewAs.label }}</span>
-        <button type="button" onClick="{{ viewAs.onReset }}" title="Tilbake til superadmin-visning" style="border:1px solid #E4CE9B;background:#FFFFFF;color:#8A6D2F;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;cursor:pointer">Avslutt</button>
+        <button type="button" onClick="{{ viewAs.onReset }}" title="Tilbake til alle selskaper" style="border:1px solid #E4CE9B;background:#FFFFFF;color:#8A6D2F;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700;cursor:pointer">Alle selskaper</button>
+      </span>
+    </sc-if>
+    <sc-if value="{{ viewAs.alle }}" hint-placeholder-val="{{ false }}">
+      <span title="Du ser pitcher, merkevarer og bilder fra alle selskaper. Åpner du en pitch, byttes det til selskapet dens. Delt innhold i Admin endres ved å velge et selskap under «Se som»." style="display:flex;align-items:center;gap:7px;background:#EEF3FF;border:1px solid #C9D6F5;border-radius:6px;padding:4px 8px;font-size:11.5px;color:#34508F">
+        <span style="font-weight:700">Alle selskaper</span>
       </span>
     </sc-if>
     <sc-if value="{{ cloud.hasErr }}" hint-placeholder-val="{{ false }}">
@@ -2166,13 +2171,16 @@ class Component extends DCLogic {
         if (wait > 0) this._saveTimer = setTimeout(apply, wait); else apply();
       });
       /* Delt data lastes per selskap. En vanlig bruker står alltid i sitt eget —
-         radsikkerheten gir ingenting annet. En superadmin står i det selskapet han
-         valgte sist med «Se som» (huskes i nettleseren), ellers sitt eget. */
+         radsikkerheten gir ingenting annet. En superadmin starter alltid i «Alle
+         selskaper»; et valgt selskap huskes bare i denne fanen (sessionStorage),
+         så en ny fane eller innlogging begynner i «Alle» igjen. */
       {
         const epost = String(sess.user.email || '').toLowerCase();
         let valgt = '';
-        if (this.erSuperadmin(epost)) { try { valgt = localStorage.getItem('ps.viewAs') || ''; } catch (e) {} }
-        A.setCompany(valgt || epost.split('@')[1] || '');
+        if (this.erSuperadmin(epost)) {
+          try { localStorage.removeItem('ps.viewAs'); valgt = sessionStorage.getItem('ps.viewAs') || ''; } catch (e) {}
+          A.setCompany(valgt || A.ALLE);
+        } else A.setCompany(epost.split('@')[1] || '');
         if (valgt) this.setState({ viewAs: valgt });
       }
       this.loadAssetMap();
@@ -2180,7 +2188,14 @@ class Component extends DCLogic {
       try { store = await A.loadStore(); } catch (e) { return this.setState({ gate: 'login', gateErr: e.message || String(e) }); }
       const seeded = this.seed(D);
       if (!store || !store.pitches || !store.pitches.length) store = seeded;
-      else {
+      else if (A.allCompanies()) {
+        /* «Alle selskaper» er en lesevisning av delt data: flettingen under skal
+           ikke kjøre. Den ville endret pitcher ut fra et sammenslått lager (f.eks.
+           tømt bilderammer etter et annet selskaps avslåtte mapper) og lagret det.
+           Hvert selskaps lager er allerede flettet da det sist ble lastet alene. */
+        Object.keys(seeded).forEach(k => { if (store[k] === undefined) store[k] = seeded[k]; });
+        A.markSharedClean(store);
+      } else {
         /* et tomt prosjekt har pitcher men ingen delte sett ennå — fyll hullene
            fra fasit før migreringene under, som regner med at de finnes */
         Object.keys(seeded).forEach(k => { if (store[k] === undefined) store[k] = seeded[k]; });
@@ -2462,7 +2477,7 @@ class Component extends DCLogic {
       // migreringen må skrives tilbake, ellers kjører den på nytt og overkjører admin-endringer hver last
       A.saveStore(store, { immediate: true }).catch(e => console.warn('lagring', e));
       this.resetHistory();
-      this.setState({ store, ready: true, hash: location.hash || '#/', nw: this.freshNew(D) });
+      this.setState({ store, ready: true, hash: location.hash || '#/', nw: this.freshNew(D) }, () => this.tilPitchensSelskap());
     }).catch(e => console.error('system-data', e));
     /* Escape lukker det øverste åpne laget. Rekkefølgen er den samme som z-indeksen. */
     this._onKey = e => {
@@ -2513,6 +2528,7 @@ class Component extends DCLogic {
         const want = '#/p/' + this.state.clientSlug;
         if ((location.hash || '') !== want) { location.hash = want; return; }
       }
+      if (this.tilPitchensSelskap()) return;
       const s = this._selOnRoute != null ? this._selOnRoute : 0;
       this._selOnRoute = null;
       this.resetHistory();     /* angre betyr «det siste jeg gjorde HER» */
@@ -3009,14 +3025,37 @@ class Component extends DCLogic {
      nytt med det valgte selskapets lager, gjennom nøyaktig samme oppstart. Ventende
      endringer lagres først. Før migrasjonen (gammelt skjema) filtreres som før. */
   async byttSelskap(v) {
-    const eget = String(this.state.who || '').toLowerCase().split('@')[1] || '';
-    const d = String(v || '').toLowerCase() === eget ? '' : String(v || '').toLowerCase();
+    /* '' = «Alle selskaper», ellers et selskapsdomene — også ditt eget */
+    const d = String(v || '').toLowerCase();
     if (!(this.A && this.A.perCompany())) {
       return this.setState({ viewAs: d, adminShareId: null, caseSel: null, libSel: null, imgPage: 0 });
     }
     try { if (this.state.store) await this.A.saveStore(this.state.store, { immediate: true }); } catch (e) {}
-    try { if (d) localStorage.setItem('ps.viewAs', d); else localStorage.removeItem('ps.viewAs'); } catch (e) {}
+    try { if (d) sessionStorage.setItem('ps.viewAs', d); else sessionStorage.removeItem('ps.viewAs'); } catch (e) {}
     location.reload();
+  }
+
+  /* Åpner superadmin en pitch fra «Alle selskaper», byttes det til pitchens eget
+     selskap først. Redigering trenger selskapets merkevarer, bilder og maler — og
+     opplastede bilder må havne i selskapets galleri, ellers rydder neste
+     innlasting dem bort. Adressen beholdes, så pitchen åpnes etter byttet. */
+  tilPitchensSelskap() {
+    const A = this.A;
+    if (!(A && A.allCompanies && A.allCompanies() && A.perCompany())) return false;
+    const m = /^#\/edit\/([^/?]+)/.exec(location.hash || '');
+    if (!m) return false;
+    const id = decodeURIComponent(m[1]);
+    const p = ((this.state.store || {}).pitches || []).find(x => x.id === id || (x.meta && x.meta.slug) === id);
+    if (!p) return false;
+    /* en ny pitch har ikke fått selskap ennå: den tilhører avsenderens selskap,
+       og lagres med det før byttet (byttSelskap lagrer først) */
+    if (!p.company) {
+      const sd = ((this.state.store || {}).senders || []).find(x => x && x.id === (p.meta || {}).sender);
+      p.company = String((sd && sd.domain) || String(this.state.who || '').split('@')[1] || '').toLowerCase();
+    }
+    if (!p.company) return false;
+    this.byttSelskap(p.company);
+    return true;
   }
 
   /* PDF-eksport er nettleserens egen «skriv ut til PDF». To ting må stemme:
@@ -3477,7 +3516,7 @@ class Component extends DCLogic {
       return { gate: this.gateVals(), share: this.shareVals(null),
         superadmin: false,
         msRef: () => {},
-        viewAs: { active: false, current: '', label: '—', options: [], onPick: () => {}, onReset: () => {} },
+        viewAs: { active: false, alle: false, current: '', label: '—', options: [], onPick: () => {}, onReset: () => {} },
         domainOptions: [],
         /* skjelettet før innlasting/innlogging viser landingssiden, ikke arkivet */
         route: { isApp: true, isArchive: false, isNew: false, isEdit: false, isAdmin: false, isView: false, isLanding: true },
@@ -5627,8 +5666,10 @@ class Component extends DCLogic {
       /* «Se som»-bytte. Verdien '' betyr «meg selv / alle», ellers et selskapsdomene. */
       viewAs: {
         active: !!viewAs,
-        current: viewAs || realDomain,
-        label: viewAs || realDomain || '—',
+        /* superadmin uten valgt selskap står i «Alle selskaper» */
+        alle: isSuperadmin && !viewAs,
+        current: viewAs,
+        label: viewAs || '—',
         options: (() => {
           const d = new Set();
           (senders || []).forEach(x => { if (x && x.domain) d.add(String(x.domain).toLowerCase()); });
@@ -5637,7 +5678,7 @@ class Component extends DCLogic {
           Object.keys(store.pricingByDomain || {}).forEach(k => d.add(String(k).toLowerCase()));
           (store.pitches || []).forEach(pp => { if (pp && pp.company) d.add(String(pp.company).toLowerCase()); });
           if (realDomain) d.add(realDomain);
-          return [{ v: '', label: 'Alt (superadmin)' },
+          return [{ v: '', label: 'Alle selskaper' },
             ...[...d].filter(Boolean).sort().map(v => ({ v, label: v }))];
         })(),
         onPick: e => this.byttSelskap(e.target.value),

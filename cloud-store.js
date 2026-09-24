@@ -36,6 +36,33 @@ let _company = '', _perCompany = null;
 export function setCompany(c) { _company = String(c || '').toLowerCase(); }
 export function activeCompany() { return _company; }
 export function perCompany() { return _perCompany === true; }
+/* '*' = alle selskaper, bare for superadmin: pitcher fra alle, og delt data slått
+   sammen til en LESEVISNING. Delt data skrives aldri herfra — et sammenslått
+   lager har ingen riktig eier å skrive tilbake til. Pitcher lagres som vanlig,
+   hver med sitt eget selskap. */
+export const ALLE = '*';
+export function allCompanies() { return _company === ALLE; }
+/* Etter oppstarten i «Alle»: det som står i lageret nå regnes som lagret, så bare
+   endringer brukeren gjør etterpå stoppes. Hullene appen fyller fra koden er ikke
+   brukerendringer. */
+export function markSharedClean(store) {
+  if (_company !== ALLE) return;
+  SHARED_KEYS.forEach(k => { if (store[k] !== undefined) _snapshot.shared[k] = JSON.stringify(store[k]); });
+}
+
+/* Slår sammen samme nøkkel fra flere selskaper. Første forekomst vinner, så
+   ingenting overskrives; lister samles uten duplikater (på id, type eller verdi). */
+export function mergeShared(a, b) {
+  if (a === undefined) return b;
+  if (b === undefined) return a;
+  if (Array.isArray(a) && Array.isArray(b)) {
+    const id = x => (x && typeof x === 'object') ? String(x.id ?? x.type ?? JSON.stringify(x)) : JSON.stringify(x);
+    const seen = new Set(a.map(id));
+    return [...a, ...b.filter(x => !seen.has(id(x)) && seen.add(id(x)))];
+  }
+  if (a && b && typeof a === 'object' && typeof b === 'object') return { ...b, ...a };
+  return a;
+}
 let _pending = null, _saving = false, _listeners = new Set();
 
 /* ------------------------------------------------------------------ oppsett */
@@ -134,7 +161,10 @@ export async function loadStore() {
   let pq = sb.from('pitches').select('id, slug, client, title, status, data, owner_id, expires_at, view_password, company, updated_at')
     .order('updated_at', { ascending: false });
   let sq = sb.from('shared_data').select('key, value');
-  if (_perCompany) {
+  if (_perCompany && _company === ALLE) {
+    /* superadmin i «Alle»: radsikkerheten gir alt, og ingenting filtreres */
+    sq = sb.from('shared_data').select('company, key, value').order('company');
+  } else if (_perCompany) {
     if (!_company) throw new Error('Mangler selskap å laste — logg inn på nytt.');
     /* Radsikkerheten gir en vanlig bruker bare eget selskap uansett. En superadmin
        ser begge, og må derfor filtrere: pitcher rendret med et annet selskaps
@@ -163,8 +193,8 @@ export async function loadStore() {
   });
 
   (sharedRes.data || []).forEach(row => {
-    store[row.key] = row.value;
-    _snapshot.shared[row.key] = JSON.stringify(row.value);
+    store[row.key] = _company === ALLE ? mergeShared(store[row.key], row.value) : row.value;
+    _snapshot.shared[row.key] = JSON.stringify(store[row.key]);
   });
 
   return store;
@@ -216,11 +246,14 @@ export async function flush() {
       _snapshot.pitches[p.id] = json;
     });
 
-    const sharedRows = [];
+    const sharedRows = [], blokkert = [];
     SHARED_KEYS.forEach(k => {
       if (store[k] === undefined) return;
       const json = JSON.stringify(store[k]);
       if (_snapshot.shared[k] === json) return;
+      /* i «Alle» lagres delt data aldri — se ALLE over. Øyeblikksbildet røres ikke,
+         så beskjeden står til endringen er angret eller siden lastes på nytt. */
+      if (_perCompany && _company === ALLE) { blokkert.push(k); return; }
       sharedRows.push({ ...(_perCompany ? { company: _company } : {}),
         key: k, value: store[k], updated_at: new Date().toISOString(), updated_by: uid });
       _snapshot.shared[k] = json;
@@ -240,6 +273,7 @@ export async function flush() {
       await sb.from('pitches').delete().in('id', removed);
       removed.forEach(id => delete _snapshot.pitches[id]);
     }
+    if (blokkert.length) throw new Error('Delt innhold kan ikke endres i «Alle selskaper». Velg et selskap under «Se som» for å redigere det.');
     emit({ saving: false, savedAt: Date.now(),
            wrote: pitchRows.length + sharedRows.length + removed.length });
     return { pitches: pitchRows.length, shared: sharedRows.length, removed: removed.length };
@@ -329,7 +363,8 @@ export async function putAsset(file, meta = {}) {
     bytes: blob.size, created_by: s ? s.user.id : null,
     /* filen tilhører selskapet den lastes opp i — også når en superadmin står i
        «Se som». Uten dette ville den havnet hos superadminens eget selskap. */
-    ...(_perCompany && _company ? { companies: [_company] } : {})
+    ...(_perCompany && _company && _company !== ALLE ? { companies: [meta.company || _company] }
+        : _perCompany && meta.company ? { companies: [meta.company] } : {})
   };
   const { error } = await sb.from('assets').upsert(rec, { onConflict: 'id' });
   if (error) throw error;
