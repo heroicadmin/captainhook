@@ -134,27 +134,27 @@ alter table pitch_slide_time enable row level security;
 alter table app_settings     enable row level security;
 
 -- Innlogget team: full tilgang til pitcher, delt data og bilder.
+/* FEILER LUKKET. Her sto det tidligere åpne policyer (using (true)) som ble
+   strammet inn først nederst i fila. Stoppet fila et sted imellom, sto alt åpent
+   — målt på en kopi av databasen: en vanlig Skagerrak-bruker så begge
+   prislistene, Slack-webhooken og alle pitcher. Nå droppes de bare her. Uten
+   policy nekter radsikkerheten alt, så en kjøring som stopper halvveis låser i
+   stedet for å åpne. De riktige policyene settes sist i fila, når funksjonene de
+   bruker (is_superadmin, my_domain) finnes. */
 drop policy if exists "team read profiles" on profiles;
-create policy "team read profiles" on profiles for select to authenticated using (true);
 drop policy if exists "own profile update" on profiles;
 create policy "own profile update" on profiles for update to authenticated using (id = auth.uid());
 
 drop policy if exists "team all pitches" on pitches;
-create policy "team all pitches" on pitches for all to authenticated using (true) with check (true);
 
 drop policy if exists "team all shared" on shared_data;
-create policy "team all shared" on shared_data for all to authenticated using (true) with check (true);
 
 drop policy if exists "team all assets" on assets;
-create policy "team all assets" on assets for all to authenticated using (true) with check (true);
 
 drop policy if exists "team read views" on pitch_views;
-create policy "team read views" on pitch_views for select to authenticated using (true);
 drop policy if exists "team read slide time" on pitch_slide_time;
-create policy "team read slide time" on pitch_slide_time for select to authenticated using (true);
 
 drop policy if exists "team settings" on app_settings;
-create policy "team settings" on app_settings for all to authenticated using (true) with check (true);
 
 -- Anonyme klienter får INGEN direkte tabelltilgang. All visning og sporing
 -- går gjennom funksjonene under, som sjekker passordet server-side.
@@ -370,12 +370,10 @@ create policy "team write assets" on storage.objects
   for insert to authenticated with check (bucket_id = 'pitch-assets');
 
 drop policy if exists "team update assets" on storage.objects;
-create policy "team update assets" on storage.objects
-  for update to authenticated using (bucket_id = 'pitch-assets');
+
 
 drop policy if exists "team delete assets" on storage.objects;
-create policy "team delete assets" on storage.objects
-  for delete to authenticated using (bucket_id = 'pitch-assets');
+
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Selskaps-isolasjon av pitcher (lagt til 2026-08-22)
@@ -478,3 +476,164 @@ end $$;
 drop trigger if exists pitch_slug_key on pitches;
 create trigger pitch_slug_key before insert or update of slug on pitches
   for each row execute function ensure_slug_key();
+
+-- ============================================================================
+-- Skille per selskap (2026-09-24, sikkerhetsgjennomgang fase 3).
+-- Se supabase/2026-09-24-fase3-skille-per-selskap.sql for datafordelingen.
+--
+-- MÅ stå sist i fila: policyene bruker is_superadmin() og my_domain(), som lages
+-- over. Øverst i fila droppes de gamle åpne policyene uten at noe settes i
+-- stedet, så fram til hit nekter radsikkerheten alt (feiler lukket). Postgres
+-- slår sammen policyer med OR — én åpen policy igjen ville åpnet alt uten
+-- feilmelding. Idempotent: trygg å kjøre flere ganger.
+-- ============================================================================
+alter table shared_data add column if not exists company text;
+do $$ begin
+  if exists (select 1 from pg_constraint where conname = 'shared_data_pkey'
+             and pg_get_constraintdef(oid) = 'PRIMARY KEY (key)') then
+    alter table shared_data drop constraint shared_data_pkey;
+    alter table shared_data alter column company set not null;
+    alter table shared_data add primary key (company, key);
+  end if;
+end $$;
+alter table assets add column if not exists companies text[] not null default '{}';
+-- ── radsikkerhet: hvert selskap ser og skriver bare sitt eget ──────────────
+drop policy if exists "team all shared" on shared_data;
+drop policy if exists "company shared" on shared_data;
+create policy "company shared" on shared_data for all to authenticated
+  using (public.is_superadmin() or company = public.my_domain())
+  with check (public.is_superadmin() or company = public.my_domain());
+
+drop policy if exists "team all assets" on assets;
+drop policy if exists "company assets" on assets;
+create policy "company assets" on assets for all to authenticated
+  using (public.is_superadmin() or public.my_domain() = any(companies))
+  with check (public.is_superadmin() or public.my_domain() = any(companies));
+
+/* nye filer tilhører selskapet til den som laster opp, med mindre klienten sier
+   noe annet (en superadmin i «Se som» sender det valgte selskapet) */
+create or replace function public.asset_default_company() returns trigger
+language plpgsql set search_path = public as $$
+begin
+  if new.companies is null or new.companies = '{}' then new.companies := array[public.my_domain()]; end if;
+  return new;
+end $$;
+drop trigger if exists asset_company on assets;
+create trigger asset_company before insert on assets for each row execute function public.asset_default_company();
+
+/* lesing av filer må være offentlig — kundelenkene viser dem uten innlogging.
+   Endring og sletting kun for filer selskapet eier. Underspørringen mot assets går
+   gjennom radsikkerheten over, så den finner bare egne filer. */
+drop policy if exists "team update assets" on storage.objects;
+drop policy if exists "company update assets" on storage.objects;
+create policy "company update assets" on storage.objects for update to authenticated
+  using (bucket_id = 'pitch-assets' and (public.is_superadmin()
+         or exists (select 1 from public.assets a where a.path = storage.objects.name)));
+drop policy if exists "team delete assets" on storage.objects;
+drop policy if exists "company delete assets" on storage.objects;
+create policy "company delete assets" on storage.objects for delete to authenticated
+  using (bucket_id = 'pitch-assets' and (public.is_superadmin()
+         or exists (select 1 from public.assets a where a.path = storage.objects.name)));
+
+/* Slack-webhooken: bare superadmin. Varslingen leser den via en security
+   definer-trigger og påvirkes ikke. */
+drop policy if exists "team settings" on app_settings;
+drop policy if exists "superadmin settings" on app_settings;
+create policy "superadmin settings" on app_settings for all to authenticated
+  using (public.is_superadmin()) with check (public.is_superadmin());
+
+drop policy if exists "team read profiles" on profiles;
+drop policy if exists "company read profiles" on profiles;
+create policy "company read profiles" on profiles for select to authenticated
+  using (public.is_superadmin() or id = auth.uid() or lower(split_part(email, '@', 2)) = public.my_domain());
+
+/* sporing: bare for pitcher du selv kan se — pitches-radsikkerheten gjør resten */
+drop policy if exists "team read views" on pitch_views;
+drop policy if exists "company read views" on pitch_views;
+create policy "company read views" on pitch_views for select to authenticated
+  using (exists (select 1 from public.pitches p where p.id = pitch_views.pitch_id));
+drop policy if exists "team read slide time" on pitch_slide_time;
+drop policy if exists "company read slide time" on pitch_slide_time;
+create policy "company read slide time" on pitch_slide_time for select to authenticated
+  using (exists (select 1 from public.pitch_views v where v.id = pitch_slide_time.view_id));
+
+create or replace function pitch_public(p_slug text, p_password text default null)
+returns jsonb language plpgsql security definer set search_path = public, extensions as $$
+declare
+  r record; doc text; snd jsonb; need_pricing boolean;
+  s_senders jsonb; s_pricing jsonb; s_facts jsonb; s_brands jsonb;
+  s_library jsonb; s_images jsonb; shared jsonb;
+begin
+  /* delt data leses fra pitchens eget selskap (fase 3) — funksjonen er security
+     definer og går utenom radsikkerheten, så filteret MÅ stå her */
+  select * into r from pitches where slug = p_slug;
+  if not found then return jsonb_build_object('ok', false, 'error', 'not_found'); end if;
+  if r.expires_at is not null and r.expires_at < now() then
+    return jsonb_build_object('ok', false, 'error', 'expired');
+  end if;
+  if r.view_password is not null then
+    if p_password is null or crypt(p_password, r.view_password) <> r.view_password then
+      return jsonb_build_object('ok', false, 'error', 'bad_password');
+    end if;
+  end if;
+
+  /* avsender: samme valg som senderOf() i klienten */
+  select coalesce(
+    (select e from jsonb_array_elements(coalesce((select value from shared_data where company = lower(coalesce(r.company, '')) and key = 'senders'), '[]'::jsonb)) e
+      where e->>'id' = r.data->'meta'->>'sender' limit 1),
+    (select e from jsonb_array_elements(coalesce((select value from shared_data where company = lower(coalesce(r.company, '')) and key = 'senders'), '[]'::jsonb)) e limit 1))
+  into snd;
+  s_senders := case when snd is null then '[]'::jsonb else jsonb_build_array(jsonb_strip_nulls(jsonb_build_object(
+    'id', snd->'id', 'name', snd->'name', 'logo', snd->'logo', 'tint', snd->'tint',
+    'email', snd->'email', 'phone', snd->'phone', 'contact', snd->'contact',
+    'closingImg', snd->'closingImg', 'closingLabel', snd->'closingLabel', 'domain', snd->'domain'))) end;
+
+  need_pricing := exists (select 1 from jsonb_array_elements(coalesce(r.data->'blocks', '[]'::jsonb)) b
+    where b->>'type' in ('tiers','configurator','adrates') or b->>'base' in ('tiers','configurator','adrates'));
+  if need_pricing then
+    s_pricing := coalesce(
+      (select value->lower(coalesce(r.company, '')) from shared_data where company = lower(coalesce(r.company, '')) and key = 'pricingByDomain'),
+      (select value from shared_data where company = lower(coalesce(r.company, '')) and key = 'pricing'), '{}'::jsonb);
+    if jsonb_typeof(s_pricing->'addons') = 'array' then
+      s_pricing := jsonb_set(s_pricing, '{addons}',
+        coalesce((select jsonb_agg(a - 'provisional') from jsonb_array_elements(s_pricing->'addons') a), '[]'::jsonb));
+    end if;
+  end if;
+
+  /* alt fakta, merkevarer og bilder filtreres mot, i ett dokument */
+  doc := r.data::text || s_senders::text || coalesce(s_pricing::text, '');
+
+  select coalesce(jsonb_object_agg(f.key, f.value - 'history'), '{}'::jsonb) into s_facts
+    from jsonb_each(coalesce((select value from shared_data where company = lower(coalesce(r.company, '')) and key = 'facts'), '{}'::jsonb)) f
+   where position('"' || f.key || '"' in doc) > 0;
+
+  select coalesce(jsonb_object_agg(b.key, b.value), '{}'::jsonb) into s_brands
+    from jsonb_each(coalesce((select value from shared_data where company = lower(coalesce(r.company, '')) and key = 'brands'), '{}'::jsonb)) b
+   where position('"' || b.key || '"' in doc) > 0;
+
+  select coalesce(jsonb_agg(e), '[]'::jsonb) into s_library
+    from jsonb_array_elements(coalesce((select value from shared_data where company = lower(coalesce(r.company, '')) and key = 'library'), '[]'::jsonb)) e
+   where e->>'type' in (select distinct b->>'type' from jsonb_array_elements(coalesce(r.data->'blocks', '[]'::jsonb)) b);
+
+  select coalesce(jsonb_agg(e), '[]'::jsonb) into s_images
+    from jsonb_array_elements(coalesce((select value from shared_data where company = lower(coalesce(r.company, '')) and key = 'images'), '[]'::jsonb)) e
+   where position('"' || (e->>'id') || '"' in doc) > 0;
+
+  shared := jsonb_build_object('facts', s_facts, 'brands', s_brands, 'senders', s_senders,
+                               'library', s_library, 'images', s_images);
+  if need_pricing then
+    shared := shared || jsonb_build_object('pricing', s_pricing,
+      'cases', coalesce((select value from shared_data where company = lower(coalesce(r.company, '')) and key = 'cases'), '[]'::jsonb));
+  end if;
+
+  doc := doc || shared::text;
+  return jsonb_build_object(
+    'ok', true,
+    'pitch', jsonb_build_object('id', r.id, 'slug', r.slug, 'client', r.client,
+                                'title', r.title, 'status', r.status) || r.data,
+    'shared', shared,
+    'assets', (select coalesce(jsonb_object_agg(id, path), '{}'::jsonb)
+                 from assets where position(id in doc) > 0));
+end $$;
+
+grant execute on function pitch_public(text, text) to anon, authenticated;

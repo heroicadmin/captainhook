@@ -22,10 +22,21 @@ const SHARED_KEYS = ['facts', 'pricing', 'brands', 'senders', 'library',
                      /* Styringsnøkler. De MÅ lagres: gravsteinene husker hva som er slettet, og
                         versjonstallene stopper re-seedingen. Uten dem kom kodens standardbilder
                         og -caser tilbake ved neste innlasting, så «slett» så ut til å ikke virke. */
-                     'imagesRemoved', 'imagesVersion', 'casesRemoved', 'casesVersion',
+                     'imagesRemoved', 'imagesVersion', 'casesRemoved', 'casesVersion', 'libraryRemoved',
                      'catsNoFill', 'noFillStamp', 'logoRefiled'];
 
 let _sb = null, _cfg = null, _snapshot = { pitches: {}, shared: {} }, _saveTimer = null;
+/* Delt data lagres per selskap (sikkerhetsgjennomgang, fase 3): én rad per
+   (company, key), og radsikkerheten gir hver bruker bare sitt eget selskap.
+   _company er selskapet lageret er lastet for. For en vanlig bruker er det eget
+   domene; en superadmin velger det med «Se som».
+   _perCompany er null til første lesing avgjør om databasen har fått den nye
+   kolonnen. Koden virker med begge, slik at klienten kan rulles ut før
+   migrasjonen uten et vindu der lagring feiler. */
+let _company = '', _perCompany = null;
+export function setCompany(c) { _company = String(c || '').toLowerCase(); }
+export function activeCompany() { return _company; }
+export function perCompany() { return _perCompany === true; }
 let _pending = null, _saving = false, _listeners = new Set();
 
 /* ------------------------------------------------------------------ oppsett */
@@ -125,11 +136,24 @@ export async function signOut() {
    kan brukes uendret: { version, pitches: [...], facts, pricing, ... } */
 export async function loadStore() {
   const sb = await client();
-  const [pitchRes, sharedRes] = await Promise.all([
-    sb.from('pitches').select('id, slug, client, title, status, data, owner_id, expires_at, view_password, company, updated_at')
-      .order('updated_at', { ascending: false }),
-    sb.from('shared_data').select('key, value')
-  ]);
+  /* Har shared_data fått company-kolonnen? 42703 = kolonnen finnes ikke. */
+  if (_perCompany === null) {
+    const probe = await sb.from('shared_data').select('company').limit(1);
+    _perCompany = !probe.error;
+    if (probe.error && probe.error.code !== '42703') throw probe.error;
+  }
+  let pq = sb.from('pitches').select('id, slug, client, title, status, data, owner_id, expires_at, view_password, company, updated_at')
+    .order('updated_at', { ascending: false });
+  let sq = sb.from('shared_data').select('key, value');
+  if (_perCompany) {
+    if (!_company) throw new Error('Mangler selskap å laste — logg inn på nytt.');
+    /* Radsikkerheten gir en vanlig bruker bare eget selskap uansett. En superadmin
+       ser begge, og må derfor filtrere: pitcher rendret med et annet selskaps
+       merkevarer og maler mister logoene sine. */
+    pq = pq.eq('company', _company);
+    sq = sq.eq('company', _company);
+  }
+  const [pitchRes, sharedRes] = await Promise.all([pq, sq]);
   if (pitchRes.error) throw pitchRes.error;
   if (sharedRes.error) throw sharedRes.error;
 
@@ -208,7 +232,8 @@ export async function flush() {
       if (store[k] === undefined) return;
       const json = JSON.stringify(store[k]);
       if (_snapshot.shared[k] === json) return;
-      sharedRows.push({ key: k, value: store[k], updated_at: new Date().toISOString(), updated_by: uid });
+      sharedRows.push({ ...(_perCompany ? { company: _company } : {}),
+        key: k, value: store[k], updated_at: new Date().toISOString(), updated_by: uid });
       _snapshot.shared[k] = json;
     });
 
@@ -219,7 +244,7 @@ export async function flush() {
       if (error) throw error;
     }
     if (sharedRows.length) {
-      const { error } = await sb.from('shared_data').upsert(sharedRows, { onConflict: 'key' });
+      const { error } = await sb.from('shared_data').upsert(sharedRows, { onConflict: _perCompany ? 'company,key' : 'key' });
       if (error) throw error;
     }
     if (removed.length) {
@@ -312,7 +337,10 @@ export async function putAsset(file, meta = {}) {
   const rec = {
     id, path, name: meta.name || file.name || 'uten navn',
     cat: meta.cat || null, mime: blob.type, width: w, height: h,
-    bytes: blob.size, created_by: s ? s.user.id : null
+    bytes: blob.size, created_by: s ? s.user.id : null,
+    /* filen tilhører selskapet den lastes opp i — også når en superadmin står i
+       «Se som». Uten dette ville den havnet hos superadminens eget selskap. */
+    ...(_perCompany && _company ? { companies: [_company] } : {})
   };
   const { error } = await sb.from('assets').upsert(rec, { onConflict: 'id' });
   if (error) throw error;
@@ -518,8 +546,9 @@ export async function migrateFromBrowser(onProgress = () => {}) {
   for (const k of SHARED_KEYS) {
     if (local[k] === undefined) { step(k); continue; }
     await sb.from('shared_data').upsert(
-      { key: k, value: local[k], updated_by: s.user.id, updated_at: new Date().toISOString() },
-      { onConflict: 'key' });
+      { ...(_perCompany ? { company: _company } : {}),
+        key: k, value: local[k], updated_by: s.user.id, updated_at: new Date().toISOString() },
+      { onConflict: _perCompany ? 'company,key' : 'key' });
     step(k);
   }
 

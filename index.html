@@ -223,6 +223,10 @@
         </div>
       </sc-if>
 
+      <sc-if value="{{ gate.isIngen }}" hint-placeholder-val="{{ false }}">
+        <button type="button" onClick="{{ gate.onDashboard }}" style="width:100%;background:#0E9E8F;color:#fff;border:0;border-radius:8px;font-size:14px;font-weight:700;padding:12px 18px;cursor:pointer" style-hover="filter:brightness(1.08)">Til dashbordet</button>
+      </sc-if>
+
       <sc-if value="{{ gate.hasErr }}" hint-placeholder-val="{{ false }}">
         <div style="margin-top:14px;background:#FDF0EF;border:1px solid #F3C9C5;border-radius:8px;padding:10px 12px;font-size:12.5px;line-height:1.5;color:#A8352C">{{ gate.err }}</div>
       </sc-if>
@@ -2180,6 +2184,16 @@ class Component extends DCLogic {
         const wait = 400 - (performance.now() - (this._saveShownAt || 0));
         if (wait > 0) this._saveTimer = setTimeout(apply, wait); else apply();
       });
+      /* Delt data lastes per selskap. En vanlig bruker står alltid i sitt eget —
+         radsikkerheten gir ingenting annet. En superadmin står i det selskapet han
+         valgte sist med «Se som» (huskes i nettleseren), ellers sitt eget. */
+      {
+        const epost = String(sess.user.email || '').toLowerCase();
+        let valgt = '';
+        if (this.erSuperadmin(epost)) { try { valgt = localStorage.getItem('ps.viewAs') || ''; } catch (e) {} }
+        A.setCompany(valgt || epost.split('@')[1] || '');
+        if (valgt) this.setState({ viewAs: valgt });
+      }
       this.loadAssetMap();
       let store = null;
       try { store = await A.loadStore(); } catch (e) { return this.setState({ gate: 'login', gateErr: e.message || String(e) }); }
@@ -2190,15 +2204,11 @@ class Component extends DCLogic {
            fra fasit før migreringene under, som regner med at de finnes */
         Object.keys(seeded).forEach(k => { if (store[k] === undefined) store[k] = seeded[k]; });
         // migrer inn nye delte lag uten å røre lagrede pitcher
-        if ((store.templatesVersion || 0) < D.VERSION.templates) {
-          // kodeeide templates settes tilbake til fasit; egendefinerte blir stående
-          store.templates = [
-            ...D.TEMPLATES.map(t => JSON.parse(JSON.stringify(t))),
-            ...store.templates.filter(t => !D.BUILTIN_TEMPLATES.includes(t.id))
-          ];
-          store.templatesVersion = D.VERSION.templates;
-        }
-        D.TEMPLATES.forEach(t => { if (!store.templates.some(x => x.id === t.id)) store.templates.push(JSON.parse(JSON.stringify(t))); });
+        /* Malene eies av databasen, per selskap (sikkerhetsgjennomgang, fase 3).
+           Før ble de innebygde malene satt tilbake fra system-data.js ved HVER
+           innlogging — templatesVersion ble aldri lagret — og la da alle malene inn
+           hos alle, også Malta-malen hos Skagerrak. Og system-data.js serveres
+           offentlig, så malene lå åpne for hvem som helst. */
         /* biblioteket eier nå navn, felter og standardinnhold. Gamle stores hadde bare
            {type,desc} — beskrivelsen tas med videre inn i den fulle raden. */
         {
@@ -2208,7 +2218,11 @@ class Component extends DCLogic {
             seeded.forEach(s => { const old = thin.find(x => x.type === s.type); if (old && old.desc) s.desc = old.desc; });
             store.library = [...seeded, ...(store.library || []).filter(x => x && x.fields)];
           }
-          D.seedLibrary().forEach(s => { if (!store.library.some(x => x.type === s.type)) store.library.push(s); });
+          /* nye slidetyper fra koden kommer inn — men ikke de et selskap ikke eier.
+             libraryRemoved er gravsteinene for dem, satt da delt data ble skilt per
+             selskap. Uten dem ville Heroic fått Skagerraks slidetyper ved hver innlasting. */
+          const libGone = store.libraryRemoved || [];
+          D.seedLibrary().forEach(s => { if (!libGone.includes(s.type) && !store.library.some(x => x.type === s.type)) store.library.push(s); });
           /* nye felter på en eksisterende slidetype (f.eks. underlinje på forsiden) må inn i
              det lagrede biblioteket, ellers finnes de i utformingen men ikke i redigeringen */
           D.seedLibrary().forEach(sd => {
@@ -2243,10 +2257,12 @@ class Component extends DCLogic {
             .forEach(b => { if (b && b.type === 'placement') fill((b.data || {}).spots); }));
         }
         Object.keys(D.FACTS).forEach(k => { if (!store.facts[k]) store.facts[k] = { ...D.FACTS[k] }; });
+        /* Merkevarene eies av hvert selskap. Før la flettingen inn alle kodens
+           merkevarer hos alle — Heroic fikk Skagerraks sju produkter ved hver
+           innlasting. Nå fylles bare manglende felt på merkevarer selskapet har. */
         if (!store.brands) store.brands = JSON.parse(JSON.stringify(D.BRANDS));
         else Object.keys(D.BRANDS).forEach(k => {
-          if (!store.brands[k]) store.brands[k] = { ...D.BRANDS[k] };
-          else if (store.brands[k].note == null) store.brands[k].note = D.BRANDS[k].note || '';
+          if (store.brands[k] && store.brands[k].note == null) store.brands[k].note = D.BRANDS[k].note || '';
         });
         // nye felter på prisnivåer (f.eks. cases) back-fylles fra fasit per id
         if (store.pricing && store.pricing.tiers) {
@@ -3002,6 +3018,26 @@ class Component extends DCLogic {
      helt uten internett. Bakgrunnsanimasjonene (hex-ripple, ambient-field, bg-scenes) er egne
      custom elements uten React-avhengighet, så kildefilene deres sendes med og three.js bakes
      inn som en blob-URL — de booter seg selv og animerer i den ferdige filen også. */
+  /* Hvem som får se «Se som». Dette styrer bare hva som VISES — hva som kan leses
+     og skrives avgjør radsikkerheten gjennom is_superadmin() i databasen. */
+  erSuperadmin(epost) { return ['sindre@heroic.gg'].includes(String(epost || '').toLowerCase()); }
+
+  /* «Se som» bytter selskap. Med delt data per selskap finnes det ikke lenger et
+     blandet lager å filtrere — hvert selskap har egne merkevarer, maler og priser,
+     og et annet selskaps pitcher ville mistet logoene sine. Siden lastes derfor på
+     nytt med det valgte selskapets lager, gjennom nøyaktig samme oppstart. Ventende
+     endringer lagres først. Før migrasjonen (gammelt skjema) filtreres som før. */
+  async byttSelskap(v) {
+    const eget = String(this.state.who || '').toLowerCase().split('@')[1] || '';
+    const d = String(v || '').toLowerCase() === eget ? '' : String(v || '').toLowerCase();
+    if (!(this.A && this.A.perCompany())) {
+      return this.setState({ viewAs: d, adminShareId: null, caseSel: null, libSel: null, imgPage: 0 });
+    }
+    try { if (this.state.store) await this.A.saveStore(this.state.store, { immediate: true }); } catch (e) {}
+    try { if (d) localStorage.setItem('ps.viewAs', d); else localStorage.removeItem('ps.viewAs'); } catch (e) {}
+    location.reload();
+  }
+
   /* PDF-eksport er nettleserens egen «skriv ut til PDF». To ting må stemme:
      print-CSS-en må treffe elementene som finnes, og flaten må være ferdig
      før dialogen åpnes. Begge var feil. Den gamle koden byttet rute og kalte
@@ -3384,12 +3420,18 @@ class Component extends DCLogic {
   }
 
   gateVals() {
-    const S = this.state, g = S.gate;
+    const S = this.state;
+    /* «Ingen tilgang»: en editorlenke til en pitch som ikke er i lageret. Radsikkerheten
+       sender den ikke — verken til et annet selskap eller til en som ikke finnes — så
+       dataene har aldri vært i nettleseren. Dette er bare beskjeden, ikke vernet.
+       Med vilje én beskjed for begge: å skille dem ville fortalt hvilke id-er som finnes. */
+    const ingen = !S.gate && !!S.store && /^#\/edit\//.test(S.hash || '') && !this.currentPitch();
+    const g = S.gate || (ingen ? 'ingen' : null);
     const show = !!g && g !== 'boot';
     const titles = { config: 'Ikke koblet til databasen', login: 'Logg inn',
                      password: S.clientName ? 'Pitch til ' + S.clientName : 'Passordbeskyttet',
                      missing: 'Fant ikke pitchen', expired: 'Lenken har utløpt',
-                     feil: 'Kunne ikke åpne pitchen' };
+                     feil: 'Kunne ikke åpne pitchen', ingen: 'Ingen tilgang' };
     const texts = {
       config: 'Appen henter nå pitcher, tall og bilder fra Supabase. Åpne Sky-oppsett og lim inn prosjekt-URL og anon-nøkkel én gang.',
       login: 'Pitchene ligger i databasen. Logg inn med din egen konto for å se og redigere dem.',
@@ -3399,13 +3441,16 @@ class Component extends DCLogic {
       /* Siste utvei. Uten denne ble gate stående på «boot» ved en uventet feil,
          og siden «boot» ikke vises, satt kunden igjen med en blank skjerm uten
          beskjed. Alt som kan feile under lasting skal ende her. */
-      feil: 'Prøv å laste siden på nytt. Hjelper det ikke, ta kontakt med avsender.'
+      feil: 'Prøv å laste siden på nytt. Hjelper det ikke, ta kontakt med avsender.',
+      ingen: 'Denne pitchen finnes ikke, eller den tilhører et annet selskap enn ditt.'
     };
     return {
       show,
       isConfig: g === 'config',
       isLogin: g === 'login',
       isPassword: g === 'password',
+      isIngen: g === 'ingen',
+      onDashboard: () => { location.hash = '#/arkiv'; },
       title: titles[g] || '',
       text: texts[g] || '',
       err: S.gateErr || '',
@@ -3500,7 +3545,7 @@ class Component extends DCLogic {
        En innlogget bruker velger bare fra merkevarene sitt eget domene eier;
        tomt domene = synlig for alle. Admin → Merkevare filtreres ikke, så eier kan settes. */
     /* Superadmin ser tannhjulet i menylinjen (eierskap for bildemapper). Utvid lista ved behov. */
-    const isSuperadmin = ['sindre@heroic.gg'].includes((S.who || '').toLowerCase());
+    const isSuperadmin = this.erSuperadmin(S.who);
     const realDomain = (S.who || '').split('@')[1] || '';
     /* «Se som»: superadmin kan bytte til et annet selskap for å se akkurat det de ser.
        Alt som filtrerer på domene henger på myDomain, så ett bytte her slår gjennom i
@@ -3743,7 +3788,7 @@ class Component extends DCLogic {
         ...statusStyle(p.meta.status),
         cover: p.blocks[0] || null, coverMeta: stillMeta(p.meta), count: p.blocks.length, ...fontVars(p.meta), sfVars: sfVarText(p.meta),
         hasCover: !!p.blocks.length, noCover: !p.blocks.length,
-        line: p.blocks.length + ' blokker · ' + (D.TEMPLATES.find(t => t.id === p.meta.template)?.name || '—') + ' · ' + p.meta.created,
+        line: p.blocks.length + ' blokker · ' + ((store.templates || []).find(t => t.id === p.meta.template)?.name || '—') + ' · ' + p.meta.created,
         editHref: '#/edit/' + p.id, viewHref: '#/p/' + p.meta.slug,
         onDup: e => { e.stopPropagation(); const st = this.clone(store); const c = this.clone(p);
           c.id = D.uid(); c.meta.client += ' (kopi)'; c.meta.slug = D.newSlug(c.meta.client);
@@ -5615,8 +5660,8 @@ class Component extends DCLogic {
           return [{ v: '', label: 'Alt (superadmin)' },
             ...[...d].filter(Boolean).sort().map(v => ({ v, label: v }))];
         })(),
-        onPick: e => this.setState({ viewAs: e.target.value, adminShareId: null, caseSel: null, libSel: null, imgPage: 0 }),
-        onReset: () => this.setState({ viewAs: '', adminShareId: null, caseSel: null, libSel: null, imgPage: 0 })
+        onPick: e => this.byttSelskap(e.target.value),
+        onReset: () => this.byttSelskap('')
       },
       /* Alle selskapsdomener som finnes i basen — brukes til autocomplete i eierfeltene,
          slik at man ikke må huske «skagerrak.tech» utenat og risikere en skrivefeil
