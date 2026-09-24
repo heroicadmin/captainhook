@@ -1189,6 +1189,7 @@
             <div>
               <label style="display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#55506B;margin-bottom:7px">Lenke</label>
               <input type="text" value="{{ ed.slug }}" onInput="{{ ed.onSlug }}" onBlur="{{ ed.onSlugDone }}" style="width:100%;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:5px;color:#16131F;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;padding:9px 10px">
+              <div title="Tilfeldig nøkkel som gjør lenken umulig å gjette. Kan ikke endres." style="font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#8A85A0;margin-top:5px;word-break:break-all">-{{ ed.slugKey }} <span style="font-family:Inter,system-ui,sans-serif;color:#A7A3B7">· låst nøkkel</span></div>
             </div>
             <div>
               <label style="display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#55506B;margin-bottom:7px">Status</label>
@@ -4498,7 +4499,7 @@ class Component extends DCLogic {
           }));
           alert('Oppdaterte ' + r.n + (r.n === 1 ? ' slide' : ' slides') + ' \u00b7 ' + r.taken + ' felter hentet inn \u00b7 ' + r.kept + ' egne endringer beholdt.');
         },
-        client: pitch.meta.client, subtitle: pitch.meta.subtitle, slug: pitch.meta.slug,
+        client: pitch.meta.client, subtitle: pitch.meta.subtitle, slug: D.slugPrefix(pitch.meta.slug), slugKey: D.slugKey(pitch.meta.slug) || '',
         accent: pitch.meta.accent, status: pitch.meta.status, ...statusStyle(pitch.meta.status),
         ...contrastFor(pitch.meta.accent),
         logoLabel: pitch.meta.logo ? 'Bytt kundelogo' : 'Klikk for å laste opp kundelogo',
@@ -4524,9 +4525,13 @@ class Component extends DCLogic {
            skrive et mellomrom: «ikea » -> «ikea-» -> slugify stripper halen ->
            «ikea», og tegnet forsvinner under fingrene. Samme felle som hex-feltet.
            Full opprydding skjer på blur/Enter. */
+        /* Feltet redigerer bare den lesbare delen. Nøkkelen står fast bak og kan ikke
+           skrives bort — ellers var lenken gjettbar igjen i det noen skrev «dnb». En
+           pitch uten nøkkel (fra før) får en ved første redigering. */
         onSlug: e => { const v = D.slugify(e.target.value + 'x').replace(/x$/, '');
-          this.updatePitch(p => { p.meta.slug = v; }); },
-        onSlugDone: e => this.updatePitch(p => { p.meta.slug = D.slugify(e.target.value); }),
+          this.updatePitch(p => { p.meta.slug = v + '-' + (D.slugKey(p.meta.slug) || D.slugToken()); }); },
+        onSlugDone: e => this.updatePitch(p => {
+          p.meta.slug = D.slugify(e.target.value) + '-' + (D.slugKey(p.meta.slug) || D.slugToken()); }),
         onAccent: e => this.updatePitch(p => { p.meta.accent = e.target.value; }),
         accentHex: this.hexField('ed.accent', pitch.meta.accent,
           hex => this.updatePitch(p => { p.meta.accent = hex; })),

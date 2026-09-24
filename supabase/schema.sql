@@ -165,7 +165,7 @@ create policy "team settings" on app_settings for all to authenticated using (tr
 
 -- Sett/fjern passord (kun innlogget).
 create or replace function set_pitch_password(p_id text, p_password text)
-returns void language plpgsql security definer set search_path = public as $$
+returns void language plpgsql security definer set search_path = public, extensions as $$
 begin
   if auth.uid() is null then raise exception 'ikke innlogget'; end if;
   update pitches
@@ -179,7 +179,7 @@ end $$;
 
 -- Har pitchen passord? (trygt å spørre anonymt — avslører ikke passordet)
 create or replace function pitch_gate(p_slug text)
-returns jsonb language plpgsql security definer set search_path = public as $$
+returns jsonb language plpgsql security definer set search_path = public, extensions as $$
 declare r record;
 begin
   select client, view_password is not null as needs_password, expires_at
@@ -197,7 +197,7 @@ end $$;
 -- etter at dette skjemaet er kjørt: det ble en gang kjørt i en gammel versjon som
 -- gjeninnførte lekkasjen, uten at noen merket det.
 create or replace function pitch_public(p_slug text, p_password text default null)
-returns jsonb language plpgsql security definer set search_path = public as $$
+returns jsonb language plpgsql security definer set search_path = public, extensions as $$
 declare
   r record; doc text; snd jsonb; need_pricing boolean;
   s_senders jsonb; s_pricing jsonb; s_facts jsonb; s_brands jsonb;
@@ -426,3 +426,55 @@ drop policy if exists "company pitches" on public.pitches;
 create policy "company pitches" on public.pitches for all to authenticated
   using      (public.is_superadmin() or lower(coalesce(company, '')) = public.my_domain())
   with check (public.is_superadmin() or lower(coalesce(company, '')) = public.my_domain());
+
+-- ============================================================================
+-- Nøkkel i hver kundelenke (2026-09-24). Se supabase/2026-09-24-fase2-lange-nokler.sql.
+-- pgcrypto ligger i «extensions»; funksjonene som bruker crypt()/gen_salt()/
+-- gen_random_bytes() må ha den i search_path, ellers feiler de. set_pitch_password
+-- feilet slik fra første dag, og ingen pitch fikk noen gang passord.
+-- ============================================================================
+/* plpgsql, ikke sql: gen_random_bytes() i en FROM-delspørring ble målt til å gi
+   SAMME verdi for 200 av 200 rader i én setning, og en sql-funksjon kan bli
+   innebygd av planleggeren. Da ville alle pitcher oppdatert i samme setning fått
+   samme nøkkel. Her kalles gen_random_bytes() én gang per kall, målt til 500 av
+   500 unike. */
+create or replace function slug_token(n int default 26)
+returns text language plpgsql volatile set search_path = public, extensions as $$
+declare b bytea := gen_random_bytes(n); ut text := '';
+begin
+  for i in 0 .. n - 1 loop
+    ut := ut || substr('abcdefghijkmnpqrstuvwxyz23456789', (get_byte(b, i) % 32) + 1, 1);
+  end loop;
+  return ut;
+end $$;
+
+-- 3) håndhevingen
+create or replace function ensure_slug_key() returns trigger
+language plpgsql set search_path = public, extensions as $$
+declare pat text := '-[abcdefghijkmnpqrstuvwxyz23456789]{26}$'; eks text;
+begin
+  if new.slug is null or new.slug !~ pat then
+    /* Appen lagrer med upsert. Da kjører BEFORE INSERT før konflikten oppdages, med
+       tg_op = 'INSERT' og uten old — så en editor som sto åpen med gammel slug ville
+       fått en NY tilfeldig nøkkel her, og lenkene brukket likevel. Den eksisterende
+       raden slås derfor opp på id i begge greiner, og en nøkkel den har beholdes. */
+    if tg_op = 'UPDATE' then eks := old.slug;
+    else select p.slug into eks from pitches p where p.id = new.id;
+    end if;
+    if eks ~ pat then
+      new.slug := eks;                                        /* ikke fjern en nøkkel */
+    else
+      new.slug := coalesce(nullif(new.slug, ''), 'pitch') || '-' || slug_token();
+    end if;
+  end if;
+  /* data bærer også sluggen; hold den i takt med kolonnen */
+  new.data := jsonb_set(coalesce(new.data, '{}'::jsonb), '{slug}', to_jsonb(new.slug));
+  if new.data ? 'meta' then
+    new.data := jsonb_set(new.data, '{meta,slug}', to_jsonb(new.slug));
+  end if;
+  return new;
+end $$;
+
+drop trigger if exists pitch_slug_key on pitches;
+create trigger pitch_slug_key before insert or update of slug on pitches
+  for each row execute function ensure_slug_key();

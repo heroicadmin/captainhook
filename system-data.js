@@ -1603,23 +1603,28 @@ export const slugify = s => String(s || 'pitch').toLowerCase().normalize('NFD')
   .replace(/[\u0300-\u036f]/g, '').replace(/[æ]/g,'ae').replace(/[ø]/g,'o').replace(/[å]/g,'a')
   .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'pitch';
 
-/* Slugen er i praksis den eneste hemmeligheten i en kundelenke uten passord.
-   «gjensidige» og «dnb» gjettes på første forsøk — derfor får nye pitcher et
-   tilfeldig haleledd. Alfabetet er uten l/o/0/1 (leses feil over telefon), og
-   32 tegn deler 256 jevnt, så det er ingen skjevhet i modulo. */
+/* Nøkkelen i sluggen er i praksis den eneste hemmeligheten i en kundelenke uten
+   passord. «gjensidige» og «dnb» ble gjettet på første forsøk, og en
+   sikkerhetsgjennomgang krevde en lang, kryptografisk tilfeldig nøkkel.
+   26 tegn fra et alfabet på 32 er 130 bit. Alfabetet er uten l/o/0/1 (leses feil
+   over telefon), og 32 deler 256 jevnt, så det er ingen skjevhet i modulo.
+   Databasen håndhever det samme (trigger på pitches), så en slug uten nøkkel
+   kommer aldri inn, uansett hvem som skriver. */
 const SLUG_ALFA = 'abcdefghijkmnpqrstuvwxyz23456789';
-export const slugToken = (n = 6) => {
+export const SLUG_KEY_LEN = 26;
+const SLUG_KEY_RE = new RegExp('-([' + SLUG_ALFA + ']{' + SLUG_KEY_LEN + '})$');
+export const slugToken = (n = SLUG_KEY_LEN) => {
+  /* Ingen reserve med Math.random: den gir en nøkkel som kan forutsies, og da er
+     lenken ikke lenger en hemmelighet. Alle nettlesere i bruk har crypto. */
   const c = globalThis.crypto;
-  if (c && c.getRandomValues) {
-    const a = new Uint8Array(n); c.getRandomValues(a);
-    return [...a].map(v => SLUG_ALFA[v % 32]).join('');
-  }
-  /* Math.random er ikke kryptografisk. Uten crypto er det bedre enn ingenting,
-     men da er slugen ikke en hemmelighet — sett passord på pitchen i stedet. */
-  let out = '';
-  for (let i = 0; i < n; i++) out += SLUG_ALFA[Math.floor(Math.random() * 32)];
-  return out;
+  if (!c || !c.getRandomValues) throw new Error('Nettleseren mangler kryptografisk tilfeldighet — kan ikke lage en trygg lenke.');
+  const a = new Uint8Array(n); c.getRandomValues(a);
+  return [...a].map(v => SLUG_ALFA[v % 32]).join('');
 };
+/* nøkkelen i en slug, eller null */
+export const slugKey = slug => { const m = SLUG_KEY_RE.exec(String(slug || '')); return m ? m[1] : null; };
+/* den lesbare delen foran nøkkelen */
+export const slugPrefix = slug => String(slug || '').replace(SLUG_KEY_RE, '');
 /* token sendes inn der forhåndsvisning og oppretting må vise samme slug */
 export const newSlug = (s, token) => slugify(s) + '-' + (token || slugToken());
 
