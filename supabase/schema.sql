@@ -182,23 +182,26 @@ create or replace function pitch_gate(p_slug text)
 returns jsonb language plpgsql security definer set search_path = public as $$
 declare r record;
 begin
-  select client, title, view_password is not null as needs_password, expires_at
+  select client, view_password is not null as needs_password, expires_at
     into r from pitches where slug = p_slug;
   if not found then return jsonb_build_object('found', false); end if;
   if r.expires_at is not null and r.expires_at < now() then
     return jsonb_build_object('found', true, 'expired', true);
   end if;
-  return jsonb_build_object(
-    'found', true, 'expired', false,
-    'client', r.client, 'title', r.title,
-    'needs_password', r.needs_password);
+  return jsonb_build_object('found', true, 'expired', false, 'needs_password', r.needs_password)
+      || case when r.needs_password then jsonb_build_object('client', r.client) else '{}'::jsonb end;
 end $$;
 
--- Hele pitchen, kun med riktig passord. Returnerer også delt data,
--- slik at klientsiden kan rendre tall, logoer og priser uten innlogging.
+-- Hele pitchen, kun med riktig passord, og bare det delte innholdet decket viser.
+-- Se supabase/2026-09-24-fase1-slank-pitch-public.sql. Kjør tools/leak-check.mjs
+-- etter at dette skjemaet er kjørt: det ble en gang kjørt i en gammel versjon som
+-- gjeninnførte lekkasjen, uten at noen merket det.
 create or replace function pitch_public(p_slug text, p_password text default null)
 returns jsonb language plpgsql security definer set search_path = public as $$
-declare r record; shared jsonb; lib jsonb; doc text;
+declare
+  r record; doc text; snd jsonb; need_pricing boolean;
+  s_senders jsonb; s_pricing jsonb; s_facts jsonb; s_brands jsonb;
+  s_library jsonb; s_images jsonb; shared jsonb;
 begin
   select * into r from pitches where slug = p_slug;
   if not found then return jsonb_build_object('ok', false, 'error', 'not_found'); end if;
@@ -211,26 +214,56 @@ begin
     end if;
   end if;
 
-  select coalesce(jsonb_object_agg(key, value), '{}'::jsonb) into shared
-    from shared_data
-   where key in ('facts','pricing','brands','senders','cases');
+  /* avsender: samme valg som senderOf() i klienten */
+  select coalesce(
+    (select e from jsonb_array_elements(coalesce((select value from shared_data where key = 'senders'), '[]'::jsonb)) e
+      where e->>'id' = r.data->'meta'->>'sender' limit 1),
+    (select e from jsonb_array_elements(coalesce((select value from shared_data where key = 'senders'), '[]'::jsonb)) e limit 1))
+  into snd;
+  s_senders := case when snd is null then '[]'::jsonb else jsonb_build_array(jsonb_strip_nulls(jsonb_build_object(
+    'id', snd->'id', 'name', snd->'name', 'logo', snd->'logo', 'tint', snd->'tint',
+    'email', snd->'email', 'phone', snd->'phone', 'contact', snd->'contact',
+    'closingImg', snd->'closingImg', 'closingLabel', snd->'closingLabel', 'domain', snd->'domain'))) end;
 
-  /* Biblioteket: bare definisjonene for slidetypene denne pitchen bruker.
-     libAll() i system-data.js faller tilbake til seedLibrary() når lista er
-     tom, så et deck som bare bruker standardslides får dem derfra som før. */
-  select coalesce(jsonb_agg(e), '[]'::jsonb) into lib
-    from jsonb_array_elements(
-           coalesce((select value from shared_data where key = 'library'), '[]'::jsonb)) e
-   where e->>'type' in (
-           select distinct b->>'type'
-             from jsonb_array_elements(coalesce(r.data->'blocks', '[]'::jsonb)) b);
+  need_pricing := exists (select 1 from jsonb_array_elements(coalesce(r.data->'blocks', '[]'::jsonb)) b
+    where b->>'type' in ('tiers','configurator','adrates') or b->>'base' in ('tiers','configurator','adrates'));
+  if need_pricing then
+    s_pricing := coalesce(
+      (select value->lower(coalesce(r.company, '')) from shared_data where key = 'pricingByDomain'),
+      (select value from shared_data where key = 'pricing'), '{}'::jsonb);
+    if jsonb_typeof(s_pricing->'addons') = 'array' then
+      s_pricing := jsonb_set(s_pricing, '{addons}',
+        coalesce((select jsonb_agg(a - 'provisional') from jsonb_array_elements(s_pricing->'addons') a), '[]'::jsonb));
+    end if;
+  end if;
 
-  shared := shared || jsonb_build_object('library', lib);
+  /* alt fakta, merkevarer og bilder filtreres mot, i ett dokument */
+  doc := r.data::text || s_senders::text || coalesce(s_pricing::text, '');
 
-  /* assets: bare filene pitchen eller det delte innholdet nevner.
-     id-ene er korte og unike, så et treff i teksten er en ekte referanse. */
-  doc := coalesce(r.data::text, '') || coalesce(shared::text, '');
+  select coalesce(jsonb_object_agg(f.key, f.value - 'history'), '{}'::jsonb) into s_facts
+    from jsonb_each(coalesce((select value from shared_data where key = 'facts'), '{}'::jsonb)) f
+   where position('"' || f.key || '"' in doc) > 0;
 
+  select coalesce(jsonb_object_agg(b.key, b.value), '{}'::jsonb) into s_brands
+    from jsonb_each(coalesce((select value from shared_data where key = 'brands'), '{}'::jsonb)) b
+   where position('"' || b.key || '"' in doc) > 0;
+
+  select coalesce(jsonb_agg(e), '[]'::jsonb) into s_library
+    from jsonb_array_elements(coalesce((select value from shared_data where key = 'library'), '[]'::jsonb)) e
+   where e->>'type' in (select distinct b->>'type' from jsonb_array_elements(coalesce(r.data->'blocks', '[]'::jsonb)) b);
+
+  select coalesce(jsonb_agg(e), '[]'::jsonb) into s_images
+    from jsonb_array_elements(coalesce((select value from shared_data where key = 'images'), '[]'::jsonb)) e
+   where position('"' || (e->>'id') || '"' in doc) > 0;
+
+  shared := jsonb_build_object('facts', s_facts, 'brands', s_brands, 'senders', s_senders,
+                               'library', s_library, 'images', s_images);
+  if need_pricing then
+    shared := shared || jsonb_build_object('pricing', s_pricing,
+      'cases', coalesce((select value from shared_data where key = 'cases'), '[]'::jsonb));
+  end if;
+
+  doc := doc || shared::text;
   return jsonb_build_object(
     'ok', true,
     'pitch', jsonb_build_object('id', r.id, 'slug', r.slug, 'client', r.client,

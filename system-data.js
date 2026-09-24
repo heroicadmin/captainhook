@@ -19,9 +19,12 @@ export const BRANDS = {
 export const SKAGERRAK_LOGO = 'logos/skagerrak.png';
 
 /* Avsender: hvem pitchen kommer fra. Ikke alltid Skagerrak. */
+/* Tømt 2026-09-24 (sikkerhetsgjennomgang, punkt 1). Denne filen serveres
+   offentlig uten innlogging. Innholdet ligger i databasen, bak radsikkerheten.
+   Flettingen ved innlogging legger bare til det som mangler eller er
+   versjonsstyrt, så en tom liste her er en no-op for eksisterende data. */
 export const SENDERS = [
-  { id:'skagerrak', name:'Skagerrak', logo:'logos/skagerrak.png',
-    email:'sindre@heroic.gg', phone:'', contact:'skagerrak.tech' }
+  { id:'skagerrak', name:'Skagerrak', logo:'logos/skagerrak.png', email:'', phone:'', contact:'' }
 ];
 
 /* Kontaktlinja på avslutningssliden bygges av avsenderen — én kilde, ikke tekst per pitch. */
@@ -37,39 +40,11 @@ export const LOGO_CAT = 'Logoer';
 /* Kategorier som ikke skal fylle bildeflater i pitcher (logomapper). Redigeres i Admin → Bilder. */
 /* «Mockups» holdes utenfor bildeflater — en artikkelskjerm er ikke et stemningsfoto. */
 export const NOFILL_CATS = [LOGO_CAT, 'Heroic Logoer', 'Mockups'];
-export const IMAGES = [
-  { id:'img-ashes',    name:'Rise from the ashes',   cat:'Hardcore Esport', src:'images/heroic-ashes-banner.jpg' },
-  { id:'img-jersey',   name:'Draktdetalj',           cat:'Hardcore Esport', src:'images/jersey-detalj.jpg' },
-  { id:'img-stage',    name:'Spiller på scene',      cat:'Hardcore Esport', src:'images/spiller-scene.jpg' },
-  { id:'img-team',     name:'Laggrafikk',            cat:'Generelt',        src:'images/lag-grafikk.jpg' },
-  { id:'img-logo',     name:'Logo i gull',           cat:'Generelt',        src:'images/logo-gull.jpg' },
-  { id:'img-portrait', name:'Portrett',              cat:'Generelt',        src:'images/portrett.jpg' },
-  { id:'img-arena',    name:'Arena, isometrisk',     cat:'Casual Gaming',   src:'images/arena-isometrisk.jpg' },
-  { id:'img-creator',  name:'Innholdsprodusent',     cat:'Casual Gaming',   src:'images/creator-thumbnail.jpg' },
-
-  /* HEROIC × Malta — hentet ut av forslaget kunden sendte inn */
-  { id:'mt-cover',      name:'Forside — scene',            cat:'Malta',  src:'images/malta/malta-cover-stage.jpg' },
-  { id:'mt-celebration',name:'Lagjubel',                   cat:'Malta',  src:'images/malta/malta-team-celebration.jpg' },
-  { id:'mt-audience',   name:'Publikumsdiagram — CS2',     cat:'Malta',  src:'images/malta/malta-audience-chart.png' },
-  { id:'mt-lineup',     name:'Laget på scenen',            cat:'Malta',  src:'images/malta/malta-team-lineup.jpg' },
-  { id:'mt-darkhorse',  name:'Dark horse to title contender', cat:'Malta', src:'images/malta/malta-darkhorse-card.jpg' },
-  { id:'mt-crowd',      name:'Publikum',                   cat:'Malta',  src:'images/malta/malta-crowd.jpg' },
-  { id:'mt-ambassadors',name:'Ambassadører',               cat:'Malta',  src:'images/malta/malta-ambassadors.png' },
-  { id:'mt-proof',      name:'Proof of performance',       cat:'Malta',  src:'images/malta/malta-proof-of-performance.jpg' },
-  { id:'mt-fronts',     name:'Fire fronter',               cat:'Malta',  src:'images/malta/malta-four-fronts.png' },
-  { id:'mt-plate',      name:'GamingMalta på flate',       cat:'Malta',  src:'images/malta/malta-gamingmalta-plate.jpg' },
-  { id:'mt-island',     name:'Malta — polaroider',         cat:'Malta',  src:'images/malta/malta-island-polaroids.png' },
-  { id:'mt-industry',   name:'Bransjescene',               cat:'Malta',  src:'images/malta/malta-industry-stage.jpg' },
-  { id:'mt-banner',     name:'Bransjebanner',              cat:'Malta',  src:'images/malta/malta-industry-banner.jpg' },
-  { id:'mt-academy',    name:'Malta Esports Academy',      cat:'Malta',  src:'images/malta/malta-esports-academy.jpg' },
-  { id:'mt-facility',   name:'Akademiet — lokalene',       cat:'Malta',  src:'images/malta/malta-academy-facility.jpg' },
-  { id:'mt-homebase',   name:'Malta as home base',         cat:'Malta',  src:'images/malta/malta-home-base.jpg' },
-  { id:'mt-deliver',    name:'Leveranser og investering',  cat:'Malta',  src:'images/malta/malta-deliverables.jpg' },
-
-  { id:'mt-crest',      name:'HEROIC-logo',                cat:'Logoer', src:'images/malta/malta-heroic-crest.png' },
-  { id:'mt-mascot',     name:'HEROIC-maskot',              cat:'Logoer', src:'images/malta/malta-heroic-mascot.png' },
-  { id:'mt-gm-mark',    name:'GamingMalta-logo',           cat:'Logoer', src:'images/malta/malta-gamingmalta-wordmark.png' }
-];
+/* Tømt 2026-09-24 (sikkerhetsgjennomgang, punkt 1). Denne filen serveres
+   offentlig uten innlogging. Innholdet ligger i databasen, bak radsikkerheten.
+   Flettingen ved innlogging legger bare til det som mangler eller er
+   versjonsstyrt, så en tom liste her er en no-op for eksisterende data. */
+export const IMAGES = [];
 
 /* src kan være en filsti eller «asset:<id>» — sistnevnte ligger i IndexedDB. */
 export function resolveSrc(src, assets) {
@@ -138,97 +113,28 @@ export const BRAND_CONTENT = {
 };
 
 /* ---------- facts.json — én kilde til sannhet. Eier: én navngitt person. ---------- */
-export const FACTS = {
-  'gamer.readers':    { value: '250 000', label: 'Lesere pr. mnd',   source: 'Google Analytics, snitt H1 2026', updated: '2026-07-01' },
-  'gamer.demo':       { value: '18–39',   label: 'Demografi',        source: 'Brukerundersøkelse 2025',         updated: '2025-11-14' },
-  'gamer.mobile':     { value: '60 %',    label: 'Mobil',            source: 'Google Analytics 2026',           updated: '2026-07-01' },
-  'gamer.men':        { value: '93 %',    label: 'Menn',             source: 'Brukerundersøkelse 2025',         updated: '2025-11-14' },
-  'gamer.community':  { value: '100 000', label: 'Community',        source: 'Registrerte brukere, juni 2026',  updated: '2026-06-30' },
-  'gamer.gull':       { value: '10 000',  label: 'Gamer Gull-medlemmer', source: 'Medlemsregister 2026',        updated: '2026-06-30' },
-  'gamer.uniques':    { value: '200 000', label: 'Unike lesere pr. mnd', source: 'skagerrak.tech/annonsering-pa-gamerno, 13.09.2022', updated: '2022-09-13' },
-  'gamer.pageviews':  { value: '1 500 000', label: 'Sidevisninger pr. mnd', source: 'skagerrak.tech/annonsering-pa-gamerno, 13.09.2022', updated: '2022-09-13' },
-  'gamer.registered': { value: '115 000', label: 'Registrerte brukere', source: 'skagerrak.tech/annonsering-pa-gamerno, 13.09.2022', updated: '2022-09-13' },
-  'gamer.age':        { value: '20–40',   label: 'Alder',             source: 'skagerrak.tech/annonsering-pa-gamerno, 13.09.2022', updated: '2022-09-13' },
-
-  'ads.cpm.standard': { value: '190',     label: 'CPM standardformater', source: 'Prisliste Gamer.no, skagerrak.tech', updated: '2022-09-13' },
-  'ads.cpm.premium':  { value: '370',     label: 'CPM storformater',  source: 'Prisliste Gamer.no, skagerrak.tech', updated: '2022-09-13' },
-  'ads.cpm.fullscreen': { value: '620',   label: 'CPM fullskjerm',    source: 'Prisliste Gamer.no, skagerrak.tech', updated: '2022-09-13' },
-  'ads.cpm.programmatic': { value: 'fra 40', label: 'CPM programmatisk', source: 'Prisliste Gamer.no, skagerrak.tech', updated: '2022-09-13' },
-  'ads.content.distribution': { value: '19 000', label: 'Distribusjon, 4 uker', source: 'Prisliste Gamer.no, skagerrak.tech', updated: '2022-09-13' },
-  'ads.content.production':   { value: 'fra 19 000', label: 'Produksjon', source: 'Prisliste Gamer.no, skagerrak.tech', updated: '2022-09-13' },
-
-  'komplett.players': { value: '10 000',  label: 'Utøvere pr. år',   source: 'Plattformdata 2025',              updated: '2026-01-20' },
-  'komplett.teams':   { value: '1 000',   label: 'Lag',              source: 'Plattformdata 2025',              updated: '2026-01-20' },
-  'komplett.watch':   { value: '950 000', label: 'Watch time min',   source: 'Twitch-analyse 2025',             updated: '2026-01-20' },
-  'komplett.visitors':{ value: '30 000',  label: 'Besøkende playoffs', source: 'Arrangørtall 2025',             updated: '2025-12-02' },
-  'komplett.demo':    { value: '18–34',   label: 'Demografi',        source: 'Publikumsundersøkelse 2025',      updated: '2025-11-14' },
-
-  'bl.companies':     { value: '350',     label: 'Bedrifter',        source: 'Påmeldingsdata sesong 2025/26',   updated: '2026-02-11' },
-  'bl.employees':     { value: '2 450',   label: 'Ansatte',          source: 'Påmeldingsdata sesong 2025/26',   updated: '2026-02-11' },
-  'bl.demo':          { value: '24–40',   label: 'Demografi',        source: 'Deltakerundersøkelse 2025',       updated: '2025-11-14' },
-  'bl.obx':           { value: '1/5',     label: 'av OBX-selskaper', source: 'Egen opptelling februar 2026',    updated: '2026-02-11' },
-
-  'social.impressions': { value: '7 328 284', label: 'Impressions',  source: 'Instagram, Facebook, X og TikTok, 2025', updated: '2026-01-15' },
-  'social.views':       { value: '3 693 407', label: 'Video views',  source: 'Visninger over 3 sekunder, 2025',        updated: '2026-01-15' },
-  'social.watch':       { value: '1 341 734', label: 'Watch time',   source: 'Konsumerte minutter Twitch 2025',        updated: '2026-01-15' },
-  'social.followers':   { value: '55 887',    label: 'Følgere',      source: 'Sum alle kanaler, januar 2026',          updated: '2026-01-15' }
-};
+/* Tømt 2026-09-24 (sikkerhetsgjennomgang, punkt 1). Denne filen serveres
+   offentlig uten innlogging. Innholdet ligger i databasen, bak radsikkerheten.
+   Flettingen ved innlogging legger bare til det som mangler eller er
+   versjonsstyrt, så en tom liste her er en no-op for eksisterende data. */
+export const FACTS = {};
 
 /* ---------- pris og satser ---------- */
+/* Tømt 2026-09-24 (sikkerhetsgjennomgang, punkt 1). Denne filen serveres
+   offentlig uten innlogging. Innholdet ligger i databasen, bak radsikkerheten.
+   Flettingen ved innlogging legger bare til det som mangler eller er
+   versjonsstyrt, så en tom liste her er en no-op for eksisterende data. */
+/* markets MÅ bli stående: flettingen beskjærer databasens markeder mot denne
+   lista, så en tom liste ville slettet dem. Markedene er struktur, ikke priser. */
 export const PRICING = {
   currency: 'NOK',
-  tiers: [
-    { id:'single', name:'Enkeltstående', price:25000, reach:400000, emv:2.0, from:true,
-      claim:'Én kampanje, ett øyeblikk, målbart resultat',
-      incl:['1 aktivering, valgfri flate','Distribusjon i sosiale kanaler','Resultatrapport','Ingen binding'],
-      cases:[
-        { kicker:'Produktlansering', title:'Én kampanjeuke på Gamer.no', text:'Takeover, native artikkel og socials i samme uke. Alt målt mot ett tydelig mål.', imgHint:'Skjermbilde av takeover på Gamer.no' },
-        { kicker:'Turneringsdag', title:'Synlighet rundt sending', text:'Merkevaren eksponeres i en enkelt sending med bumpere og omtale i studio.', imgHint:'Foto fra sending eller broadcast-overlay' }
-      ] },
-    { id:'t1', name:'Visibility', price:100000, reach:1500000, emv:2.2,
-      claim:'Til stede der publikummet er',
-      incl:['Display på Gamer.no','2 native artikler','Logo i broadcast','Løpende socials'],
-      cases:[
-        { kicker:'Alltid til stede', title:'Display gjennom hele sesongen', text:'Kontinuerlig eksponering på Gamer.no gjennom sesongen, med frekvens mot en dedikert gamingmålgruppe.', imgHint:'Display-format i kontekst på Gamer.no' },
-        { kicker:'Redaksjonelt', title:'To native artikler', text:'Innhold produsert av redaksjonen, distribuert i kanalene der publikummet allerede er.', imgHint:'Native artikkel på mobil og desktop' },
-        { kicker:'Broadcast', title:'Logo i sending', text:'Fast plassering i sendingsgrafikk gjennom seriespillet.', imgHint:'Broadcast-grafikk med logoplassering' }
-      ] },
-    { id:'t2', name:'Integrated', price:250000, reach:4200000, emv:2.5,
-      claim:'Del av innholdet, ikke bare rundt det',
-      incl:['Alt i Visibility','Integrasjon i én liga','4 native artikler','Bumpere og overlay','Produktplassering','Synlighet på playoffs'],
-      cases:[
-        { kicker:'Ligaintegrasjon', title:'Del av selve konkurransen', text:'Merkevaren knyttes til en liga gjennom sesongen, ikke bare til flatene rundt den.', imgHint:'Ligagrafikk med partnernavn' },
-        { kicker:'Produktplassering', title:'Produktet i studio', text:'Fysisk tilstedeværelse i sending og i hendene på spillerne.', imgHint:'Produkt synlig i studiooppsett' },
-        { kicker:'Playoffs', title:'Toppen av sesongen', text:'Ekstra synlighet i den perioden med høyest seertall og mest oppmerksomhet.', imgHint:'Foto fra playoffs-arrangement' }
-      ] },
-    { id:'t3', name:'Partner', price:500000, reach:9500000, emv:2.8,
-      claim:'Eier en flate på tvers av økosystemet',
-      incl:['Alt i Integrated','Begge ligaer','Care package-integrasjon','Fordel i Gamer Gull','Stand på playoffs','1 creator-aktivering','Kvartalsvis data'],
-      cases:[
-        { kicker:'Care package', title:'Produktet i hendene på lagene', text:'Fysisk pakke til alle påmeldte lag. Unboxing deles organisk i sosiale kanaler.', imgHint:'Care package med kundens produkt' },
-        { kicker:'Creator', title:'Én creator-aktivering', text:'Samarbeid med en creator fra økosystemet, produsert og distribuert av oss.', imgHint:'Creator med produkt, stillbilde fra video' },
-        { kicker:'Gamer Gull', title:'Fordel på bransjens kveld', text:'Eksponering mot bransje og publikum i én kveld med konsentrert oppmerksomhet.', imgHint:'Foto fra Gamer Gull' }
-      ] },
-    { id:'t4', name:'Title', price:1000000, reach:22000000, emv:3.2,
-      claim:'Kategorieksklusivitet og navngitt eierskap',
-      incl:['Alt i Partner','Kategorieksklusivitet','Navngitt liga eller segment','Skandinavisk rekkevidde','Dedikert produksjon','Felles årshjul','Rapport på styrenivå'],
-      cases:[
-        { kicker:'Navngitt eierskap', title:'Ligaen bærer navnet', text:'Merkevaren står i navnet på liga eller segment, i all kommunikasjon gjennom året.', imgHint:'Ligalogo med partnernavn' },
-        { kicker:'Skandinavia', title:'Tre markeder, én avtale', text:'Samme posisjon i Norge, Sverige og Danmark, koordinert fra ett sted.', imgHint:'Kart eller kampanjebilder fra tre markeder' },
-        { kicker:'Dedikert produksjon', title:'Innhold laget for dere', text:'Egen produksjon gjennom sesongen, planlagt i et felles årshjul.', imgHint:'Bak kulissene fra produksjon' }
-      ] }
-  ],
-  years: [ {n:1,discount:0},{n:2,discount:.08},{n:3,discount:.12} ],
+  tiers: [],
+  years: [ {n:1,discount:0} ],
   markets: [
     { id:'no', label:'Norge', price:1.00, reach:1.00 }
   ],
-  activation: { price:35000, volumeBreakAt:5, volumeDiscount:.15 },
-  addons: [
-    { id:'maelstrom', name:'Maelstrom', price:350000, provisional:true,
-      desc:'White-label konkurranseplattform, årlig SaaS-lisens' },
-    { id:'frag', name:'FragTrial', price:95000, requires:'maelstrom', provisional:true,
-      desc:'Aktiveringsmodul for fysisk og digital kundeaktivering' }
-  ]
+  activation: { price:0, volumeBreakAt:5, volumeDiscount:0 },
+  addons: []
 };
 
 export function compute(st, pricing = PRICING) {
@@ -695,22 +601,11 @@ export const CASE_FIELDS = [
   ['client', 'Kunde'], ['year', 'Årstall'], ['result', 'Resultat'], ['img', 'Bilde'], ['brand', 'Merkevare']
 ];
 
-export const CASES = [
-  { id:'c-launch', kicker:'Produktlansering', title:'Én kampanjeuke på Gamer.no', text:'Takeover, native artikkel og socials i samme uke. Alt målt mot ett tydelig mål.', client:'', year:'', result:'', img:'', brand:'gamer', tiers:['single'] },
-  { id:'c-tourday', kicker:'Turneringsdag', title:'Synlighet rundt sending', text:'Merkevaren eksponeres i en enkelt sending med bumpere og omtale i studio.', client:'', year:'', result:'', img:'', brand:'komplett', tiers:['single'] },
-  { id:'c-always', kicker:'Alltid til stede', title:'Display gjennom hele sesongen', text:'Kontinuerlig eksponering på Gamer.no gjennom sesongen, med frekvens mot en dedikert gamingmålgruppe.', client:'', year:'', result:'', img:'', brand:'gamer', tiers:['t1'] },
-  { id:'c-native', kicker:'Redaksjonelt', title:'To native artikler', text:'Innhold produsert av redaksjonen, distribuert i kanalene der publikummet allerede er.', client:'', year:'', result:'', img:'', brand:'gamer', tiers:['t1'] },
-  { id:'c-broadcast', kicker:'Broadcast', title:'Logo i sending', text:'Fast plassering i sendingsgrafikk gjennom seriespillet.', client:'', year:'', result:'', img:'', brand:'komplett', tiers:['t1'] },
-  { id:'c-league', kicker:'Ligaintegrasjon', title:'Del av selve konkurransen', text:'Merkevaren knyttes til en liga gjennom sesongen, ikke bare til flatene rundt den.', client:'', year:'', result:'', img:'', brand:'komplett', tiers:['t2'] },
-  { id:'c-product', kicker:'Produktplassering', title:'Produktet i studio', text:'Fysisk tilstedeværelse i sending og i hendene på spillerne.', client:'', year:'', result:'', img:'', brand:'komplett', tiers:['t2'] },
-  { id:'c-playoffs', kicker:'Playoffs', title:'Toppen av sesongen', text:'Ekstra synlighet i den perioden med høyest seertall og mest oppmerksomhet.', client:'', year:'', result:'', img:'', brand:'komplett', tiers:['t2'] },
-  { id:'c-carepack', kicker:'Care package', title:'Produktet i hendene på lagene', text:'Fysisk pakke til alle påmeldte lag. Unboxing deles organisk i sosiale kanaler.', client:'', year:'', result:'', img:'', brand:'bl', tiers:['t3'] },
-  { id:'c-creator', kicker:'Creator', title:'Én creator-aktivering', text:'Samarbeid med en creator fra økosystemet, produsert og distribuert av oss.', client:'', year:'', result:'', img:'', brand:'gamer', tiers:['t3'] },
-  { id:'c-gull', kicker:'Gamer Gull', title:'Fordel på bransjens kveld', text:'Eksponering mot bransje og publikum i én kveld med konsentrert oppmerksomhet.', client:'', year:'', result:'', img:'', brand:'gamer', tiers:['t3'] },
-  { id:'c-named', kicker:'Navngitt eierskap', title:'Ligaen bærer navnet', text:'Merkevaren står i navnet på liga eller segment, i all kommunikasjon gjennom året.', client:'', year:'', result:'', img:'', brand:'komplett', tiers:['t4'] },
-  { id:'c-scandi', kicker:'Skandinavia', title:'Tre markeder, én avtale', text:'Samme posisjon i Norge, Sverige og Danmark, koordinert fra ett sted.', client:'', year:'', result:'', img:'', brand:'bl', tiers:['t4'] },
-  { id:'c-production', kicker:'Dedikert produksjon', title:'Innhold laget for dere', text:'Egen produksjon gjennom sesongen, planlagt i et felles årshjul.', client:'', year:'', result:'', img:'', brand:'gamer', tiers:['t4'] }
-];
+/* Tømt 2026-09-24 (sikkerhetsgjennomgang, punkt 1). Denne filen serveres
+   offentlig uten innlogging. Innholdet ligger i databasen, bak radsikkerheten.
+   Flettingen ved innlogging legger bare til det som mangler eller er
+   versjonsstyrt, så en tom liste her er en no-op for eksisterende data. */
+export const CASES = [];
 
 export const MAX_TIER_CASES = 3;
 

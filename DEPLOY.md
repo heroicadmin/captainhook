@@ -17,11 +17,12 @@ push innholdet til `main`. Disse må med:
     system-data.js  i18n.js  sheet-io.js
     ambient-field.js  bg-scenes.js  hex-ripple.js
     vendor/three-0.160.0.module.js   (three.js ligger i repoet, ikke på CDN)
-    facts.json
     logos/  images/  assets/
     supabase/schema.sql   (kun referanse, kjøres i Supabase)
 
 Ikke med: tools/  (verifiseringsverktøy — kjøres lokalt, skal aldri serveres)
+Ikke med: facts.json  (fjernet 2026-09-24 — ble ikke lest av noe, men lå offentlig med
+          faktabasen inkludert annonsepriser. Faktaene ligger i databasen.)
 
 ## 2. Publiser
 

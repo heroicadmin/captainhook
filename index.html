@@ -3280,8 +3280,18 @@ class Component extends DCLogic {
       const pitch = res.pitch || {};
       pitch.meta = { ...(pitch.meta || {}), slug, client: pitch.client || (pitch.meta || {}).client || '' };
       const store = { version: 1, ...(res.shared || {}), pitches: [pitch] };
-      const seeded = this.seed(D);
-      Object.keys(seeded).forEach(k => { if (k !== 'pitches' && store[k] === undefined) store[k] = seeded[k]; });
+      /* Kundevisningen skal ha det pitch_public sender, og ikke mer. Før fylte den
+         alle manglende nøkler fra seed(D) — standardinnholdet i den offentlige
+         system-data.js — og fikk dermed maler, prisliste, caser og hele bildebasen
+         i minnet, selv om decket ikke viser noe av det. Det var det en
+         sikkerhetsgjennomgang fant i devtools.
+         Manglende nøkler får nå tomme verdier av riktig type, slik at renderVals
+         tåler dem. Biblioteket er unntaket: libAll() faller selv tilbake til
+         standardslidene, som er struktur og ikke kundedata. */
+      const TOM = { facts: {}, brands: {}, senders: [], cases: [], casesRemoved: [], templates: [],
+        imageCats: [], images: [], library: [],
+        pricing: { tiers: [], years: [], markets: [], addons: [], activation: { price: 0, volumeBreakAt: 5, volumeDiscount: 0 } } };
+      Object.keys(TOM).forEach(k => { if (store[k] === undefined) store[k] = TOM[k]; });
       this.resetHistory();
       this.setState({ store, assets, gate: null, gateErr: '', clientMode: true,
                       ready: true, hash: location.hash || '#/', nw: this.freshNew(D) });
