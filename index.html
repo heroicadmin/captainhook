@@ -759,7 +759,7 @@
             </div>
           </sc-if>
           <div data-noi18n="1" ref="{{ ed.swapRef }}" style="position:absolute;inset:0;z-index:1">
-            <dc-import name="PitchSlide" slide="{{ ed.sel.block }}" meta="{{ ed.meta }}" system="{{ system }}" index="{{ ed.sel.i }}" total="{{ ed.count }}" onConfig="{{ ed.onConfig }}" onLayout="{{ ed.onLayout }}" hint-size="100%,100%"></dc-import>
+            <dc-import name="PitchSlide" slide="{{ ed.sel.block }}" meta="{{ ed.meta }}" system="{{ system }}" index="{{ ed.sel.i }}" total="{{ ed.count }}" onConfig="{{ ed.onConfig }}" onLayout="{{ ed.onLayout }}" onFree="{{ ed.onFree }}" hint-size="100%,100%"></dc-import>
           </div>
         </div>
         <sc-if value="{{ ed.veilOn }}" hint-placeholder-val="{{ false }}">
@@ -771,6 +771,7 @@
           </div>
         </sc-if>
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:11.5px;color:#6E6883">
+          <button type="button" onClick="{{ ed.onAddFree }}" title="Last opp et bilde i sitt eget format. Det legges oppå sliden uten ramme og uten beskjæring, og kan dras, skaleres og roteres fritt." style="flex:none;font-size:11.5px;font-weight:600;border-radius:5px;padding:6px 10px;cursor:pointer;background:#F2F0F7;border:1px solid #D5D2E0;color:#322D45">+ Fritt bilde</button>
           <sc-if value="{{ ed.canLayout }}" hint-placeholder-val="{{ true }}">
             <span>Dra elementer på sliden for å flytte dem. Hjørnet skalerer, den runde knotten roterer, Alt slår av snapping. Flytting her gjelder bare denne pitchen.</span>
           </sc-if>
@@ -4695,7 +4696,27 @@ class Component extends DCLogic {
            blir sidene stående uten dem. Uten tilbakemelding ser knappen død ut. */
         printing: !!S.printing,
         printLabel: S.printing ? 'Forbereder …' : '↓ PDF',
-        onConfig: cfg => this.updatePitch(p => Object.assign(p.blocks[sel].data, cfg))
+        onConfig: cfg => this.updatePitch(p => Object.assign(p.blocks[sel].data, cfg)),
+        /* frie bilder: lastes opp i sitt eget format og legges midt på sliden.
+           Sideforholdet kommer fra filen, så ingenting beskjæres. */
+        onAddFree: () => this.upload((ref, rec) => {
+          const w = rec && rec.width, h = rec && rec.height;
+          const ar = w && h ? Math.round((w / h) * 1000) / 1000 : 1.5;
+          this.updatePitch(p => {
+            const b = p.blocks[sel]; if (!b) return;
+            /* 30 % av bredden, men aldri høyere enn 40 av slidens 56 — et høyt bilde
+               ville ellers stukket ut over og under sliden */
+            const bw = Math.max(6, Math.min(30, Math.round(40 * ar)));
+            b.free = [...(Array.isArray(b.free) ? b.free : []), { id: D.uid(), src: ref, w: bw, ar, name: this.cleanName(rec && rec.name) }];
+          });
+        }),
+        onFree: (id, v) => this.updatePitch(p => {
+          const b = p.blocks[sel]; if (!b || !Array.isArray(b.free)) return;
+          if (v === null) {
+            b.free = b.free.filter(f => f.id !== id);
+            if (b.layout) { const L = { ...b.layout }; delete L['free-' + id]; b.layout = L; }
+          } else b.free = b.free.map(f => f.id === id ? { ...f, ...v } : f);
+        })
       };
     }
 

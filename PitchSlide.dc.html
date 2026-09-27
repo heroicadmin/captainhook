@@ -2068,11 +2068,18 @@
     </sc-for>
   </div>
 
+  <!-- frie bilder: lastet opp i sitt eget format, uten ramme og uten beskjæring. De
+       ligger oppå sliden og flyttes, skaleres, roteres og skjules som alle andre
+       elementer — plasseringen står i slide.layout under nøkkelen free-<id>. -->
+  <sc-for list="{{ freeImgs }}" as="f" hint-placeholder-count="0">
+    <img loading="{{ imgLoad }}" decoding="async" data-el="{{ f.key }}" data-el-name="Fritt bilde" data-free="{{ f.id }}" src="{{ f.src }}" alt="" draggable="false" style="position:absolute;left:{{ f.left }};top:{{ f.top }};width:{{ f.w }};height:auto;max-width:none;z-index:7;display:block;user-select:none">
+  </sc-for>
+
   <!-- avsender-vannmerke: samme plassering på alle slidetyper, kan skjules/flyttes per slide -->
   <img loading="{{ imgLoad }}" decoding="async" data-el="watermark" data-el-name="Avsendervannmerke" src="{{ senderLogo }}" alt="{{ senderName }}" style="position:absolute;top:4.2cqw;right:5.5cqw;height:1.8cqw;opacity:.9;z-index:6;filter:{{ senderLogoFilter }}">
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:720},&quot;slide&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;{type:string,data:object}&quot;},&quot;meta&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;object&quot;},&quot;system&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;object&quot;},&quot;index&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:0,&quot;tsType&quot;:&quot;number&quot;},&quot;total&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:1,&quot;tsType&quot;:&quot;number&quot;},&quot;showNum&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;},&quot;onConfig&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;(s:object)=&gt;void&quot;},&quot;layout&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;Record&lt;string,{x?:number,y?:number,s?:number,hidden?:boolean}&gt;&quot;},&quot;onLayout&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;(key:string,v:object|null)=&gt;void&quot;}}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:720},&quot;slide&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;{type:string,data:object}&quot;},&quot;meta&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;object&quot;},&quot;system&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;object&quot;},&quot;index&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:0,&quot;tsType&quot;:&quot;number&quot;},&quot;total&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:1,&quot;tsType&quot;:&quot;number&quot;},&quot;showNum&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;},&quot;onConfig&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;(s:object)=&gt;void&quot;},&quot;layout&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;Record&lt;string,{x?:number,y?:number,s?:number,hidden?:boolean}&gt;&quot;},&quot;onLayout&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;(key:string,v:object|null)=&gt;void&quot;},&quot;onFree&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;(id:string,v:object|null)=&gt;void&quot;}}">
 class Component extends DCLogic {
   state = { cfg: null, openTier: null, umbSel: null, selEls: [] };
   root = React.createRef();
@@ -2289,6 +2296,7 @@ class Component extends DCLogic {
       + '<button data-hide type="button" style="font:600 11px Inter,system-ui,sans-serif;color:#fff;background:#2A2536;border:0;border-radius:5px;padding:5px 8px;cursor:pointer">Skjul</button>'
       + '<button data-invert type="button" style="font:600 11px Inter,system-ui,sans-serif;color:#fff;background:#2A2536;border:0;border-radius:5px;padding:5px 8px;cursor:pointer">Inverter</button>'
       + '<button data-reset type="button" style="font:600 11px Inter,system-ui,sans-serif;color:#fff;background:#2A2536;border:0;border-radius:5px;padding:5px 8px;cursor:pointer">Tilbakestill</button>'
+      + '<button data-del type="button" style="display:none;font:600 11px Inter,system-ui,sans-serif;color:#fff;background:#8A2A2A;border:0;border-radius:5px;padding:5px 8px;cursor:pointer">Slett</button>'
       + '</div>';
     c.querySelector('[data-hide]').addEventListener('click', e => {
       e.stopPropagation();
@@ -2303,6 +2311,14 @@ class Component extends DCLogic {
       const lay = this.lay();
       const allInv = keys.every(k => (lay[k] || {}).inv);
       keys.forEach(k => { const v = { ...(lay[k] || {}) }; if (allInv) delete v.inv; else v.inv = true; this.props.onLayout(k, v); });
+    });
+    /* bare frie bilder kan slettes herfra — de andre elementene hører til slidetypen */
+    c.querySelector('[data-del]').addEventListener('click', e => {
+      e.stopPropagation();
+      const ids = this.state.selEls.filter(k => /^free-/.test(k)).map(k => k.slice(5));
+      if (!ids.length || typeof this.props.onFree !== 'function') return;
+      this.setState({ selEls: [] });
+      ids.forEach(id => this.props.onFree(id, null));
     });
     c.querySelector('[data-reset]').addEventListener('click', e => {
       e.stopPropagation();
@@ -2354,8 +2370,12 @@ class Component extends DCLogic {
     rotStem.style.left = (cxp - .5) + 'px'; rotStem.style.top = (y - 22) + 'px'; rotStem.style.height = '22px';
     rotH.style.display = isGroup || hidden ? 'none' : 'block';
     rotH.style.left = (cxp - 6) + 'px'; rotH.style.top = (y - 28) + 'px';
+    c.querySelector('[data-del]').style.display =
+      typeof this.props.onFree === 'function' && nodesSel.every(o => /^free-/.test(o.key)) ? '' : 'none';
     bar.style.display = 'flex';
-    bar.style.left = Math.max(4, Math.min(rb.width - 220, x)) + 'px';
+    /* holdes innenfor sliden målt etter sin faktiske bredde — med «Slett» er raden
+       bredere enn de 220 px som sto her, og ble klippet i høyre kant */
+    bar.style.left = Math.max(4, Math.min(rb.width - bar.offsetWidth - 4, x)) + 'px';
     /* rammen kan gå tett på slidens topp- eller sidekant \u2014 med lite rom over
        (polaroid stikker lenger ut med tape og rotasjon) faller knapperaden ned
        under elementet i stedet for \u00e5 klippes bort av overflow:hidden */
@@ -2366,6 +2386,8 @@ class Component extends DCLogic {
     const invBtn = c.querySelector('[data-invert]');
     invBtn.textContent = inverted ? 'Uninverter' : 'Inverter';
     invBtn.style.background = inverted ? '#7C5CFF' : '#2A2536';
+    /* tekstene over endrer bredden — klem på nytt når raden har fått sitt endelige innhold */
+    bar.style.left = Math.max(4, Math.min(rb.width - bar.offsetWidth - 4, x)) + 'px';
   }
 
   endDrag() {
@@ -3326,6 +3348,14 @@ class Component extends DCLogic {
          eager: den er det største bildet over folden, og lazy der ville
          utsatt nettopp det kunden ser først. */
       imgLoad: idx === 0 ? 'eager' : 'lazy',
+      /* frie bilder: w er bredden i cqw, ar er bildets eget sideforhold (bredde/høyde).
+         Startplassen er midt på sliden; flytting og skalering ligger i layout. */
+      freeImgs: (Array.isArray(blk.free) ? blk.free : []).filter(f => f && f.id && f.src).map(f => {
+        const w = +f.w || 30, ar = +f.ar || 1.5;
+        const rm = /^asset:(.+)$/.exec(f.src);
+        return { id: f.id, key: 'free-' + f.id, src: rm ? (assets[rm[1]] || '') : f.src,
+          w: w + 'cqw', left: ((100 - w) / 2) + 'cqw', top: ((56.25 - w / ar) / 2) + 'cqw' };
+      }),
       showNum, num: String(P.index + 1).padStart(2, '0'), totalNum: String(P.total || 1).padStart(2, '0'),
       numRight: bracketed ? '7.8cqw' : '5.5cqw',
 
