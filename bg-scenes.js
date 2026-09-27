@@ -140,7 +140,7 @@
     const lPos = new Float32Array(pairs.length * 3);
     const lGeo = new THREE.BufferGeometry();
     lGeo.setAttribute('position', new THREE.BufferAttribute(lPos, 3));
-    const lMat = new THREE.LineBasicMaterial({ color: o.accent, transparent: true, opacity: 0.22, depthWrite: false });
+    const lMat = new THREE.LineBasicMaterial({ color: o.accent.clone().lerp(new THREE.Color(0xffffff), 0.35), transparent: true, opacity: 0.5, depthWrite: false });
     scene.add(new THREE.LineSegments(lGeo, lMat));
 
     return {
@@ -168,7 +168,7 @@
   /* ---------- 2. tunnel: heksagonrammer som kommer mot deg ---------- */
   define('bg-tunnel', (THREE, o) => {
     const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x12101a, 0.024);
+    scene.fog = new THREE.FogExp2(0x12101a, 0.016);
     const camera = new THREE.PerspectiveCamera(58, o.aspect, 0.1, 160);
     camera.position.set(0, 0, 0);
 
@@ -179,7 +179,7 @@
     const group = new THREE.Group();
     const mats = [];
     for (let i = 0; i < RINGS; i++) {
-      const m = new THREE.LineBasicMaterial({ color: o.accent.clone().lerp(new THREE.Color(0xffffff), (i % 5) === 0 ? 0.5 : 0.05), transparent: true, opacity: 0.42, depthWrite: false });
+      const m = new THREE.LineBasicMaterial({ color: o.accent.clone().lerp(new THREE.Color(0xffffff), (i % 5) === 0 ? 0.6 : 0.3), transparent: true, opacity: 0.75, depthWrite: false });
       mats.push(m);
       const line = new THREE.Line(geo, m);
       line.position.z = -i * GAP;
@@ -214,7 +214,7 @@
     const camera = new THREE.OrthographicCamera(-H * o.aspect / 2, H * o.aspect / 2, H / 2, -H / 2, -10, 10);
 
     const grid = new THREE.Group();
-    const gMat = new THREE.LineBasicMaterial({ color: o.accent.clone().lerp(new THREE.Color(0x12101a), 0.72), transparent: true, opacity: 0.4, depthWrite: false });
+    const gMat = new THREE.LineBasicMaterial({ color: o.accent.clone().lerp(new THREE.Color(0x12101a), 0.55), transparent: true, opacity: 0.6, depthWrite: false });
     const geos = [];
     for (let r = 4; r <= 26; r += 4) {
       const pts = [];
@@ -232,7 +232,7 @@
 
     /* selve sveipet: en kile som roterer og etterlater et kort spor */
     const wedge = new THREE.CircleGeometry(26, 40, 0, 0.85);
-    const wMat = new THREE.MeshBasicMaterial({ color: o.accent, transparent: true, opacity: 0.16, depthWrite: false, blending: THREE.AdditiveBlending });
+    const wMat = new THREE.MeshBasicMaterial({ color: o.accent, transparent: true, opacity: 0.28, depthWrite: false, blending: THREE.AdditiveBlending });
     const arm = new THREE.Mesh(wedge, wMat);
     scene.add(arm);
 

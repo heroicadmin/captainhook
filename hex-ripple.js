@@ -152,7 +152,7 @@
             v += band * Math.max(0, 1 - r / LIFE);
           }
           v = Math.min(1, v);
-          col.copy(dark).lerp(accent, Math.min(1, v * 1.25)).lerp(white, Math.min(0.2, v * v * 0.24)).multiplyScalar(0.006 + v * 0.32);
+          col.copy(dark).lerp(accent, Math.min(1, v * 1.25)).lerp(white, Math.min(0.2, v * v * 0.24)).multiplyScalar(0.02 + v * 0.55);
           mesh.setColorAt(i, col);
         }
         mesh.instanceColor.needsUpdate = true;

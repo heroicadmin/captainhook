@@ -76,7 +76,7 @@
       this.appendChild(renderer.domElement);
 
       const scene = new THREE.Scene();
-      scene.fog = new THREE.FogExp2(0x12101a, 0.058);
+      scene.fog = new THREE.FogExp2(0x12101a, 0.04);
 
       const camera = new THREE.PerspectiveCamera(42, w / h, 0.1, 120);
       camera.position.set(0, 3.4, 10.5);
@@ -100,7 +100,7 @@
           // fargen går fra aksent i dybden til nesten hvitt nærmest
           const t = Math.pow(z / (NZ - 1), 1.6);
           tint.copy(accent).lerp(new THREE.Color(0xffffff), 0.25 + t * 0.55);
-          const fade = 0.3 + t * 0.7;
+          const fade = 0.5 + t * 0.5;
           col[i * 3] = tint.r * fade; col[i * 3 + 1] = tint.g * fade; col[i * 3 + 2] = tint.b * fade;
         }
       }
@@ -112,7 +112,7 @@
       geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
       geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
       geo.setIndex(idx);
-      const mat = new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.5, depthWrite: false });
+      const mat = new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.85, depthWrite: false });
       const points = new THREE.LineSegments(geo, mat);
       scene.add(points);
 
