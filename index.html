@@ -549,8 +549,8 @@
             <div style="height:6px;background:{{ p.accent }}"></div>
             <a href="{{ p.viewHref }}" title="Åpne kundesiden" style="display:block;position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;background:#16131F;border-bottom:1px solid #E6E4EE">
               <sc-if value="{{ p.hasCover }}" hint-placeholder-val="{{ true }}">
-                <div data-noi18n="1" style="position:absolute;inset:0;pointer-events:none;--font-head:{{ p.fontHead }};--font-body:{{ p.fontBody }};{{ p.sfVars }}">
-                  <dc-import name="PitchSlide" slide="{{ p.cover }}" meta="{{ p.coverMeta }}" system="{{ system }}" index="{{ 0 }}" total="{{ p.count }}" show-num="{{ false }}" hint-size="100%,100%"></dc-import>
+                <div data-noi18n="1" style="position:absolute;inset:0;pointer-events:none;--font-head:{{ p.fontHead }};--font-body:{{ p.fontBody }};--plate:{{ p.plate }};{{ p.sfVars }}">
+                  <dc-import name="PitchSlide" slide="{{ p.cover }}" meta="{{ p.coverMeta }}" system="{{ p.system }}" index="{{ 0 }}" total="{{ p.count }}" show-num="{{ false }}" hint-size="100%,100%"></dc-import>
                 </div>
               </sc-if>
               <sc-if value="{{ p.noCover }}" hint-placeholder-val="{{ false }}">
@@ -3036,6 +3036,9 @@ class Component extends DCLogic {
     }
     try { if (this.state.store) await this.A.saveStore(this.state.store, { immediate: true }); } catch (e) {}
     try { if (d) sessionStorage.setItem('ps.viewAs', d); else sessionStorage.removeItem('ps.viewAs'); } catch (e) {}
+    /* til «Alle» fra editoren: gå til arkivet, ellers bytter tilPitchensSelskap()
+       straks tilbake til pitchens selskap når siden er lastet på nytt */
+    if (!d && /^#\/edit\//.test(location.hash || '')) location.hash = '#/arkiv';
     location.reload();
   }
 
@@ -3551,7 +3554,8 @@ class Component extends DCLogic {
     const meta = pitch ? pitch.meta : { accent: '#1434CB', logoPlate: 'light', lang: 'no' };
     const accent = (isNew && S.nw ? S.nw.accent : meta.accent) || '#1434CB';
     const accentInk = D.readableInk(accent);
-    const plate = meta.logoPlate === 'dark' ? '#12101A' : meta.logoPlate === 'none' ? 'transparent' : '#fff';
+    const plateOf = mt => (mt || {}).logoPlate === 'dark' ? '#12101A' : (mt || {}).logoPlate === 'none' ? 'transparent' : '#fff';
+    const plate = plateOf(meta);
     /* skrift: templaten setter valget, pitchen kan overstyre det */
     const tplOf = mt => (store.templates || []).find(t => t.id === (mt && mt.template));
     const fontFor = mt => this.ensureFont(D.resolveFont(mt, tplOf(mt)));
@@ -3810,6 +3814,11 @@ class Component extends DCLogic {
           this.setState({ renameId: null, renameVal: null }); },
         ...statusStyle(p.meta.status),
         cover: p.blocks[0] || null, coverMeta: stillMeta(p.meta), count: p.blocks.length, ...fontVars(p.meta), sfVars: sfVarText(p.meta),
+        /* Avsender og logoplate følger kortets EGEN pitch. Før kom begge fra siden rundt:
+           i arkivet er ingen pitch valgt, så alle kortene fikk første avsender (Heroic i
+           «Alle selskaper») og hvit plate — og en hvit kundelogo forsvant på platen. */
+        system: { ...system, sender: senderOf(p.meta) },
+        plate: plateOf(p.meta),
         hasCover: !!p.blocks.length, noCover: !p.blocks.length,
         line: p.blocks.length + ' blokker · ' + ((store.templates || []).find(t => t.id === p.meta.template)?.name || '—') + ' · ' + p.meta.created,
         editHref: '#/edit/' + p.id, viewHref: '#/p/' + p.meta.slug,
