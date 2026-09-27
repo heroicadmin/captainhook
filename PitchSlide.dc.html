@@ -33,7 +33,7 @@
     <div style="position:absolute;inset:0;background:var(--paper,#1B1826)"></div>
   </sc-if>
   <sc-if value="{{ ambientBase }}" hint-placeholder-val="{{ false }}">
-    <div style="position:absolute;inset:0;background:{{ baseBg }}"></div>
+    <div data-slidebase="1" style="position:absolute;inset:0;background:{{ baseBg }}"></div>
   </sc-if>
 
   <!-- ============ COVER ============ -->
@@ -3135,7 +3135,10 @@ class Component extends DCLogic {
       ambientBase: bg !== 'still' && !!bg,
       baseBg: (() => {
         const a = { tett: 1, lett: 0.9, middels: 0.72, apen: 0.5 }[(s && s.veil) || (this.props.slide && this.props.slide.veil) || 'auto'];
-        const alpha = a == null ? ((is.cover || is.divider) ? 0.34 : 0.9) : a;
+        /* samme tall som veilBg() i system-data.js, som maler arket i kundevisningen.
+           Innholdsslidene sto før på 0.9 her og 0.55 der — editoren viste da nesten
+           ingenting av bakgrunnen, og kundevisningen la de to lagene oppå hverandre. */
+        const alpha = a == null ? ((is.cover || is.divider) ? 0.34 : 0.55) : a;
         return 'color-mix(in srgb, var(--paper,#1B1826) ' + Math.round(alpha * 100) + '%, transparent)';
       })(),
       stillBg: bg === 'still' && !imgSrc, accentHex: m.accent || '#1434CB',

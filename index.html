@@ -162,6 +162,10 @@
   [data-reveal][data-elreveal] [data-band].is-in [data-in="4"]:nth-child(n+7){transition-delay:.62s}
   @media (max-width:760px){[data-hide-sm]{display:none!important}}
   @media (max-width:520px){[data-hide-xs]{display:none!important}}
+  /* I kundevisningen males sløret på arket (sl.base), så det står ferdig før innholdet
+     tones inn. Slidens eget slør må da vekk — ellers lå to lag oppå hverandre, og
+     innholdsslidene slapp bare gjennom 1–5 % av den levende bakgrunnen. */
+  [data-page] [data-slidebase]{display:none}
   /* 338 x 190 mm er 16:9 i liggende format. Én slide per side. */
   @page{size:338mm 190mm;margin:0}
   @media print{
