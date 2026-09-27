@@ -10,7 +10,7 @@ export const NO_EN = {
   'Ny pitch': 'New pitch',
   '+ Ny pitch': '+ New pitch',
   'Kundeside': 'Client view',
-  '+ Fritt bilde': '+ Free image',
+  'Frie bilder': 'Free images',
   'Rediger': 'Edit',
   'Ta kontakt': 'Get in touch',
   'Åpne i Pitch Studio': 'Open in Pitch Studio',

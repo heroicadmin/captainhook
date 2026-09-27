@@ -732,8 +732,6 @@
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:20px">
           <span style="font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:4px 8px;border-radius:4px;background:{{ ed.statusBg }};color:{{ ed.statusFg }}">{{ ed.status }}</span>
           <span style="flex:1"></span>
-          <!-- står i knapperaden over sliden: nede under slideflaten havnet den under skjermkanten -->
-          <button type="button" onClick="{{ ed.onAddFree }}" title="Last opp et bilde i sitt eget format. Det legges oppå sliden uten ramme og uten beskjæring, og kan dras, skaleres og roteres fritt." style="font-size:12px;font-weight:600;color:#322D45;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:6px;padding:8px 12px;cursor:pointer">+ Fritt bilde</button>
           <button type="button" onClick="{{ ed.onView }}" title="Åpner kundesiden på samme slide" style="font-size:12px;font-weight:600;color:#322D45;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:6px;padding:8px 12px;cursor:pointer">Kundeside</button>
           <button type="button" onClick="{{ ed.onPrint }}" disabled="{{ ed.printing }}" title="Åpner utskriftsdialogen — velg «Lagre som PDF». Én slide per side." style="font-size:12px;font-weight:600;color:#322D45;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:6px;padding:8px 12px;cursor:pointer">{{ ed.printLabel }}</button>
           <button type="button" onClick="{{ ed.onExportHtml }}" title="Selvstendig HTML-fil \u2014 \u00e5pnes offline, uten internett" style="font-size:12px;font-weight:600;color:#322D45;background:#F2F0F7;border:1px solid #D5D2E0;border-radius:6px;padding:8px 12px;cursor:pointer">{{ ed.exportHtmlLabel }}</button>
@@ -3002,6 +3000,23 @@ class Component extends DCLogic {
         .catch(e => alert('Kunne ikke lagre bildene: ' + (e && e.message ? e.message : e)));
     });
   }
+  /* Legger et fritt bilde på sliden som redigeres, eller bytter bildet i et
+     eksisterende (id). Sideforholdet leses fra selve bildet, så ingenting beskjæres.
+     Startbredden er 30 % av sliden, men aldri høyere enn 40 av slidens 56. */
+  putFreeImage(src, id) {
+    const sel = this.state.sel;
+    const add = ar => this.updatePitch(p => {
+      const b = p.blocks[Math.min(sel, p.blocks.length - 1)]; if (!b) return;
+      const list = Array.isArray(b.free) ? b.free : [];
+      if (id) { b.free = list.map(f => f.id === id ? { ...f, src, ar } : f); return; }
+      const w = Math.max(6, Math.min(30, Math.round(40 * ar)));
+      b.free = [...list, { id: this.D.uid(), src, w, ar }];
+    });
+    const im = new Image();
+    im.onload = () => add(im.naturalWidth && im.naturalHeight ? Math.round(im.naturalWidth / im.naturalHeight * 1000) / 1000 : 1.5);
+    im.onerror = () => add(1.5);
+    im.src = this.resolve(src);
+  }
   cleanName(n) { return String(n || 'Bilde').replace(/\.[a-z0-9]+$/i, '').replace(/[_-]+/g, ' ').slice(0, 40); }
   pickFile(accept, cb, cbMulti) {
     const el = this._file; el.accept = accept; el.value = ''; el.multiple = !!cbMulti;
@@ -4516,6 +4531,29 @@ class Component extends DCLogic {
           onAdd: () => { if (extra.length < 5) this.editData(['images'], [...extra, { img: '', imgHint: 'Bilde', id: D.uid(), slot: extra.length }]); } });
       }
 
+      /* frie bilder: på alle slidetyper, i sitt eget format uten ramme. Velges fra
+         bildebasen eller lastes opp via samme velger som de andre bildefeltene.
+         Plassering, størrelse og rotasjon gjøres ved å dra på sliden. */
+      {
+        const free = Array.isArray(block.free) ? block.free : [];
+        F.push({ label: 'Frie bilder', isText: false, isArea: false, isNum: false, isSelect: false,
+          isList: false, isStats: false, isRepeat: true, canAdd: true, options: [], factOptions: [],
+          items: free.map((f, i) => ({
+            head: 'Fritt bilde ' + (i + 1), tint: 'var(--accent)', canAddSub: false, hasMove: false,
+            upColor: '#D5D2E0', downColor: '#D5D2E0', onUp: () => {}, onDown: () => {},
+            subs: [
+              { isImg: true, ph: 'Bytt bilde', thumb: this.cssUrl(f.src),
+                on: () => this.setState({ picker: { mode: 'free', id: f.id }, pickerCat: pitch.meta.imageProfile || 'Alle' }) }
+            ],
+            onDel: () => this.updatePitch(p => {
+              const b = p.blocks[sel]; if (!b || !Array.isArray(b.free)) return;
+              b.free = b.free.filter(x => x.id !== f.id);
+              if (b.layout) { const L = { ...b.layout }; delete L['free-' + f.id]; b.layout = L; }
+            })
+          })),
+          onAdd: () => this.setState({ picker: { mode: 'free' }, pickerCat: pitch.meta.imageProfile || 'Alle' }) });
+      }
+
       if (block.type === 'pillars') {
         const ba = block.data.boxAccent || '';
         F.push({ label: 'Aksentfarge på boksene', isText: false, isArea: false, isNum: false, isSelect: false,
@@ -4698,19 +4736,6 @@ class Component extends DCLogic {
         printing: !!S.printing,
         printLabel: S.printing ? 'Forbereder …' : '↓ PDF',
         onConfig: cfg => this.updatePitch(p => Object.assign(p.blocks[sel].data, cfg)),
-        /* frie bilder: lastes opp i sitt eget format og legges midt på sliden.
-           Sideforholdet kommer fra filen, så ingenting beskjæres. */
-        onAddFree: () => this.upload((ref, rec) => {
-          const w = rec && rec.width, h = rec && rec.height;
-          const ar = w && h ? Math.round((w / h) * 1000) / 1000 : 1.5;
-          this.updatePitch(p => {
-            const b = p.blocks[sel]; if (!b) return;
-            /* 30 % av bredden, men aldri høyere enn 40 av slidens 56 — et høyt bilde
-               ville ellers stukket ut over og under sliden */
-            const bw = Math.max(6, Math.min(30, Math.round(40 * ar)));
-            b.free = [...(Array.isArray(b.free) ? b.free : []), { id: D.uid(), src: ref, w: bw, ar, name: this.cleanName(rec && rec.name) }];
-          });
-        }),
         onFree: (id, v) => this.updatePitch(p => {
           const b = p.blocks[sel]; if (!b || !Array.isArray(b.free)) return;
           if (v === null) {
@@ -5549,6 +5574,7 @@ class Component extends DCLogic {
           this.save(st);
         }
       }
+      if (pk.mode === 'free') this.putFreeImage(src, pk.id);
       if (pk.mode === 'case') {
         this.withStore(st => { const c = (st.cases || []).find(x => x.id === pk.id); if (c) c.img = src; });
       }
