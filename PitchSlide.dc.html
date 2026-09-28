@@ -40,7 +40,12 @@
        bakgrunnslag. Beholderne med tekst løftes til lag 2 i liftText() mens slike
        bilder finnes. -->
   <sc-for list="{{ freeBack }}" as="f" hint-placeholder-count="0">
-    <img loading="{{ imgLoad }}" decoding="async" data-el="{{ f.key }}" data-el-name="Fritt bilde" data-free="{{ f.id }}" data-back="1" src="{{ f.src }}" alt="" draggable="false" style="position:absolute;left:{{ f.left }};top:{{ f.top }};width:{{ f.w }};height:{{ f.h }};object-fit:{{ f.fit }};--fb:{{ f.blur }};filter:blur(var(--fb,0px));transform:{{ f.tf }};max-width:none;z-index:1;display:block;user-select:none">
+    <div data-el="{{ f.key }}" data-el-name="Fritt bilde" data-free="{{ f.id }}" data-back="1" style="position:absolute;left:{{ f.left }};top:{{ f.top }};width:{{ f.w }};height:{{ f.h }};z-index:1;box-sizing:border-box;display:flex;flex-direction:column;overflow:hidden;padding:{{ f.pad }};background:{{ f.bg }};border:{{ f.bd }};border-radius:{{ f.rad }};box-shadow:{{ f.sh }};user-select:none">
+      <sc-if value="{{ f.bar }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:none;height:1.4cqw;background:var(--rule,#302B3F);display:flex;align-items:center;gap:.3cqw;padding:0 .6cqw"><b style="width:.4cqw;height:.4cqw;border-radius:50%;background:#4A4459;display:block"></b><b style="width:.4cqw;height:.4cqw;border-radius:50%;background:#4A4459;display:block"></b><b style="width:.4cqw;height:.4cqw;border-radius:50%;background:#4A4459;display:block"></b></div>
+      </sc-if>
+      <img loading="{{ imgLoad }}" decoding="async" src="{{ f.src }}" alt="" draggable="false" style="display:block;width:100%;height:{{ f.ih }};object-fit:{{ f.fit }};--fb:{{ f.blur }};filter:blur(var(--fb,0px));transform:{{ f.tf }};border-radius:{{ f.irad }};max-width:none;pointer-events:none">
+    </div>
   </sc-for>
 
   <!-- ============ COVER ============ -->
@@ -2083,7 +2088,12 @@
        ligger oppå sliden og flyttes, skaleres, roteres og skjules som alle andre
        elementer — plasseringen står i slide.layout under nøkkelen free-<id>. -->
   <sc-for list="{{ freeFront }}" as="f" hint-placeholder-count="0">
-    <img loading="{{ imgLoad }}" decoding="async" data-el="{{ f.key }}" data-el-name="Fritt bilde" data-free="{{ f.id }}" src="{{ f.src }}" alt="" draggable="false" style="position:absolute;left:{{ f.left }};top:{{ f.top }};width:{{ f.w }};height:{{ f.h }};object-fit:{{ f.fit }};--fb:{{ f.blur }};filter:blur(var(--fb,0px));transform:{{ f.tf }};max-width:none;z-index:7;display:block;user-select:none">
+    <div data-el="{{ f.key }}" data-el-name="Fritt bilde" data-free="{{ f.id }}" style="position:absolute;left:{{ f.left }};top:{{ f.top }};width:{{ f.w }};height:{{ f.h }};z-index:7;box-sizing:border-box;display:flex;flex-direction:column;overflow:hidden;padding:{{ f.pad }};background:{{ f.bg }};border:{{ f.bd }};border-radius:{{ f.rad }};box-shadow:{{ f.sh }};user-select:none">
+      <sc-if value="{{ f.bar }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:none;height:1.4cqw;background:var(--rule,#302B3F);display:flex;align-items:center;gap:.3cqw;padding:0 .6cqw"><b style="width:.4cqw;height:.4cqw;border-radius:50%;background:#4A4459;display:block"></b><b style="width:.4cqw;height:.4cqw;border-radius:50%;background:#4A4459;display:block"></b><b style="width:.4cqw;height:.4cqw;border-radius:50%;background:#4A4459;display:block"></b></div>
+      </sc-if>
+      <img loading="{{ imgLoad }}" decoding="async" src="{{ f.src }}" alt="" draggable="false" style="display:block;width:100%;height:{{ f.ih }};object-fit:{{ f.fit }};--fb:{{ f.blur }};filter:blur(var(--fb,0px));transform:{{ f.tf }};border-radius:{{ f.irad }};max-width:none;pointer-events:none">
+    </div>
   </sc-for>
 
   <!-- avsender-vannmerke: samme plassering på alle slidetyper, kan skjules/flyttes per slide -->
@@ -3442,10 +3452,23 @@ class Component extends DCLogic {
           const bl = Math.max(0, Math.min(100, +f.blur || 0));
           const src = rm ? (assets[rm[1]] || '') : f.src;
           const blur = bl ? (bl / 100 * 2.4).toFixed(3) + 'cqw' : '0px';
+          /* rammene beskjærer ikke: de legges rundt bildet i dets eget format */
+          const sh = '0 .8cqw 2cqw -.8cqw rgba(0,0,0,.6)';
+          const FR = {
+            border:   { bd: '1px solid var(--rule,#302B3F)', rad: '.5cqw', sh },
+            rounded:  { rad: '1.2cqw', sh },
+            shadow:   { sh: '0 1.4cqw 3.2cqw -1cqw rgba(0,0,0,.75)' },
+            polaroid: { pad: '.6cqw .6cqw 1.9cqw', bg: '#EFEDE7', rad: '.15cqw', sh },
+            browser:  { bd: '1px solid var(--rule,#302B3F)', bg: 'var(--plate2,#23202F)', rad: '.4cqw', sh, bar: true }
+          };
+          const fr = (!fill && FR[f.frame]) || {};
+          const base = { id: f.id, key: 'free-' + f.id, src, blur,
+            pad: fr.pad || '0', bg: fr.bg || 'transparent', bd: fr.bd || '0', rad: fr.rad || '0', sh: fr.sh || 'none',
+            bar: !!fr.bar, irad: f.frame === 'rounded' && !fill ? '1.2cqw' : '0' };
           return fill
-            ? { id: f.id, key: 'free-' + f.id, back: true, src, blur, w: '100%', h: '100%', left: '0', top: '0', fit: 'cover',
+            ? { ...base, back: true, w: '100%', h: '100%', left: '0', top: '0', ih: '100%', fit: 'cover',
                 tf: bl ? 'scale(' + (1 + bl / 100 * 0.08).toFixed(3) + ')' : 'none' }
-            : { id: f.id, key: 'free-' + f.id, back: f.layer === 'back', src, blur, h: 'auto', fit: 'fill', tf: 'none',
+            : { ...base, back: f.layer === 'back', h: 'auto', ih: 'auto', fit: 'fill', tf: 'none',
                 w: w + 'cqw', left: ((100 - w) / 2) + 'cqw', top: ((56.25 - w / ar) / 2) + 'cqw' };
         });
         return { freeBack: all.filter(f => f.back), freeFront: all.filter(f => !f.back) };
