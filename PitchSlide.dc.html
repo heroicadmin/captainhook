@@ -3509,8 +3509,8 @@ class Component extends DCLogic {
             /* fremheving: et felt over en del av bildet, i prosent av bildet. Ikke på
                fyllbilder — der er bildet beskåret, så prosentene ville truffet feil sted. */
             hasHot: !fill && !!(f.hot && f.hot.on),
-            hx: ((f.hot && +f.hot.x) || 0) + '%', hy: ((f.hot && +f.hot.y) || 0) + '%',
-            hw: ((f.hot && +f.hot.w) || 10) + '%', hh: ((f.hot && +f.hot.h) || 6) + '%',
+            ...(() => { const n = (v, d) => { const x = parseFloat(String(v == null ? '' : v).replace(',', '.')); return (isFinite(x) ? x : d) + '%'; };
+              const h = f.hot || {}; return { hx: n(h.x, 0), hy: n(h.y, 0), hw: n(h.w, 10), hh: n(h.h, 6) }; })(),
             hd: ((f.hot && f.hot.delay != null ? +f.hot.delay : 5)) + 's' };
           return fill
             ? { ...base, back: true, w: '100%', h: '100%', left: '0', top: '0', ih: '100%', fit: 'cover',
