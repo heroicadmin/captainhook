@@ -345,6 +345,7 @@ export const LIBRARY = [
             ['genderLabel','Overskrift kjønn','text'],['gender','Kjønnsfordeling','stats'],
             ['incomeLabel','Overskrift kjøpekraft','text'],['income','Tall kjøpekraft','text'],
             ['incomeNote','Linje kjøpekraft','text'],
+            ['uspLabel','Overskrift USP-er','text'],['usps','USP-er','list'],
             ['productsLabel','Overskrift produkter','text'],['brands','Produkter','umbstat'],
             ['approx','Anslagslinje','text'],['source','Fotnote','area']],
     defaults:{ eyebrow:'Rekkevidde', title:'Hvor mange vi når — og hvem de er',
