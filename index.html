@@ -2651,6 +2651,10 @@ class Component extends DCLogic {
     const vis = sc.getBoundingClientRect();
     bands.forEach(b => {
       if (b.classList.contains('is-in')) return;
+      /* et band som fortsatt er en placeholder er lavt, og rett etter lasting fikk alle
+         plass i vinduet samtidig — da ble hele decket merket som vist, og ingenting senere
+         tonet inn (heller ikke en fremheving med forsinkelse). Vent på ekte høyde. */
+      if (b.offsetHeight < Math.max(120, b.offsetWidth * 0.4)) return;
       const r = b.getBoundingClientRect();
       if (r.top < vis.bottom && r.bottom > vis.top) b.classList.add('is-in');
     });
@@ -2729,6 +2733,7 @@ class Component extends DCLogic {
     this._bandFail = setTimeout(() => {
       const r = root.getBoundingClientRect();
       root.querySelectorAll('[data-band]:not(.is-in)').forEach(el => {
+        if (el.offsetHeight < Math.max(120, el.offsetWidth * 0.4)) return;
         const b = el.getBoundingClientRect();
         if (b.top < r.bottom && b.bottom > r.top) el.classList.add('is-in');
       });
