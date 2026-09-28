@@ -36,6 +36,13 @@
     <div data-slidebase="1" style="position:absolute;inset:0;background:{{ baseBg }}"></div>
   </sc-if>
 
+  <!-- frie bilder bak teksten: lag 1, over grunnflaten og slidetypens egne mørke
+       bakgrunnslag. Beholderne med tekst løftes til lag 2 i liftText() mens slike
+       bilder finnes. -->
+  <sc-for list="{{ freeBack }}" as="f" hint-placeholder-count="0">
+    <img loading="{{ imgLoad }}" decoding="async" data-el="{{ f.key }}" data-el-name="Fritt bilde" data-free="{{ f.id }}" data-back="1" src="{{ f.src }}" alt="" draggable="false" style="position:absolute;left:{{ f.left }};top:{{ f.top }};width:{{ f.w }};height:auto;max-width:none;z-index:1;display:block;user-select:none">
+  </sc-for>
+
   <!-- ============ COVER ============ -->
   <sc-if value="{{ is.cover }}" hint-placeholder-val="{{ true }}">
     <sc-if value="{{ stillBg }}" hint-placeholder-val="{{ true }}">
@@ -2075,7 +2082,7 @@
   <!-- frie bilder: lastet opp i sitt eget format, uten ramme og uten beskjæring. De
        ligger oppå sliden og flyttes, skaleres, roteres og skjules som alle andre
        elementer — plasseringen står i slide.layout under nøkkelen free-<id>. -->
-  <sc-for list="{{ freeImgs }}" as="f" hint-placeholder-count="0">
+  <sc-for list="{{ freeFront }}" as="f" hint-placeholder-count="0">
     <img loading="{{ imgLoad }}" decoding="async" data-el="{{ f.key }}" data-el-name="Fritt bilde" data-free="{{ f.id }}" src="{{ f.src }}" alt="" draggable="false" style="position:absolute;left:{{ f.left }};top:{{ f.top }};width:{{ f.w }};height:auto;max-width:none;z-index:7;display:block;user-select:none">
   </sc-for>
 
@@ -2252,9 +2259,45 @@ class Component extends DCLogic {
         : baseFilter;
       n.style.cursor = this.editing() ? 'move' : '';
     });
+    this.liftText();
     this.chrome();
     this.drawChrome();
     this.settleChrome();
+  }
+
+  /* Et fritt bilde bak teksten ligger i lag 1. Slidetypenes bakgrunnslag (mørke
+     forløp, stripemønster) og tekstbeholderne ligger begge i lag «auto», så teksten
+     må løftes for å havne over bildet. Det er beholderen rett under sliden som
+     løftes — den er alltid posisjonert, så z-index virker uten å endre oppsettet.
+     Beholdere der det eneste elementet er et bakgrunnsfoto løftes ikke: bildet
+     skal ligge over fotoet, men under teksten. */
+  liftText() {
+    const r = this.root.current; if (!r) return;
+    const hasBack = !!r.querySelector('[data-back]');
+    const tops = new Set();
+    if (hasBack) r.querySelectorAll('[data-el]').forEach(n => {
+      if (n.hasAttribute('data-free') || n.getAttribute('data-el') === 'img') return;
+      let t = n; while (t.parentElement && t.parentElement !== r) t = t.parentElement;
+      if (t.parentElement === r && t !== n) tops.add(t);
+    });
+    const edit = this.editing();
+    [...r.children].forEach(ch => {
+      /* bare løft — en beholder som allerede ligger høyere enn 2 står som den står */
+      if (tops.has(ch)) { if (!ch.dataset.lifted && !((parseInt(getComputedStyle(ch).zIndex, 10) || 0) >= 2)) { ch.dataset.lifted = ch.style.zIndex || '-'; ch.style.zIndex = '2'; } }
+      else if (ch.dataset.lifted) { ch.style.zIndex = ch.dataset.lifted === '-' ? '' : ch.dataset.lifted; delete ch.dataset.lifted; }
+      /* I editoren dekker en løftet beholder ofte hele sliden, og tok da alle klikk —
+         bildet bak kunne verken velges eller dras. Beholderen slipper klikk gjennom,
+         elementene i den tar dem fortsatt. Bare i editoren: på kundesiden kan
+         beholderen ha knapper som må virke. */
+      const passThru = edit && (tops.has(ch) || ch.dataset.lifted !== undefined) && hasBack;
+      if (passThru && !ch.dataset.passthru) {
+        ch.dataset.passthru = '1'; ch.style.pointerEvents = 'none';
+        ch.querySelectorAll('[data-el]').forEach(n => { n.style.pointerEvents = 'auto'; });
+      } else if (!passThru && ch.dataset.passthru) {
+        delete ch.dataset.passthru; ch.style.pointerEvents = '';
+        ch.querySelectorAll('[data-el]').forEach(n => { n.style.pointerEvents = ''; });
+      }
+    });
   }
 
   /* Rammen tegnes fra elementets faktiske rektangel. Når plasseringen nullstilles
@@ -2300,6 +2343,7 @@ class Component extends DCLogic {
       + '<button data-hide type="button" style="font:600 11px Inter,system-ui,sans-serif;color:#fff;background:#2A2536;border:0;border-radius:5px;padding:5px 8px;cursor:pointer">Skjul</button>'
       + '<button data-invert type="button" style="font:600 11px Inter,system-ui,sans-serif;color:#fff;background:#2A2536;border:0;border-radius:5px;padding:5px 8px;cursor:pointer">Inverter</button>'
       + '<button data-reset type="button" style="font:600 11px Inter,system-ui,sans-serif;color:#fff;background:#2A2536;border:0;border-radius:5px;padding:5px 8px;cursor:pointer">Tilbakestill</button>'
+      + '<button data-layer type="button" style="display:none;font:600 11px Inter,system-ui,sans-serif;color:#fff;background:#2A2536;border:0;border-radius:5px;padding:5px 8px;cursor:pointer">Bak teksten</button>'
       + '<button data-del type="button" style="display:none;font:600 11px Inter,system-ui,sans-serif;color:#fff;background:#8A2A2A;border:0;border-radius:5px;padding:5px 8px;cursor:pointer">Slett</button>'
       + '</div>';
     c.querySelector('[data-hide]').addEventListener('click', e => {
@@ -2315,6 +2359,15 @@ class Component extends DCLogic {
       const lay = this.lay();
       const allInv = keys.every(k => (lay[k] || {}).inv);
       keys.forEach(k => { const v = { ...(lay[k] || {}) }; if (allInv) delete v.inv; else v.inv = true; this.props.onLayout(k, v); });
+    });
+    /* frie bilder: bak eller foran teksten */
+    c.querySelector('[data-layer]').addEventListener('click', e => {
+      e.stopPropagation();
+      const keys = this.state.selEls.filter(k => /^free-/.test(k));
+      if (!keys.length || typeof this.props.onFree !== 'function') return;
+      const free = (this.props.slide && this.props.slide.free) || [];
+      const allBack = keys.every(k => (free.find(f => 'free-' + f.id === k) || {}).layer === 'back');
+      keys.forEach(k => this.props.onFree(k.slice(5), { layer: allBack ? '' : 'back' }));
     });
     /* bare frie bilder kan slettes herfra — de andre elementene hører til slidetypen */
     c.querySelector('[data-del]').addEventListener('click', e => {
@@ -2374,8 +2427,15 @@ class Component extends DCLogic {
     rotStem.style.left = (cxp - .5) + 'px'; rotStem.style.top = (y - 22) + 'px'; rotStem.style.height = '22px';
     rotH.style.display = isGroup || hidden ? 'none' : 'block';
     rotH.style.left = (cxp - 6) + 'px'; rotH.style.top = (y - 28) + 'px';
-    c.querySelector('[data-del]').style.display =
-      typeof this.props.onFree === 'function' && nodesSel.every(o => /^free-/.test(o.key)) ? '' : 'none';
+    const onlyFree = typeof this.props.onFree === 'function' && nodesSel.every(o => /^free-/.test(o.key));
+    c.querySelector('[data-del]').style.display = onlyFree ? '' : 'none';
+    const layerBtn = c.querySelector('[data-layer]');
+    layerBtn.style.display = onlyFree ? '' : 'none';
+    if (onlyFree) {
+      const free = (this.props.slide && this.props.slide.free) || [];
+      const back = nodesSel.every(o => (free.find(f => 'free-' + f.id === o.key) || {}).layer === 'back');
+      layerBtn.textContent = back ? 'Foran teksten' : 'Bak teksten';
+    }
     bar.style.display = 'flex';
     /* holdes innenfor sliden målt etter sin faktiske bredde — med «Slett» er raden
        bredere enn de 220 px som sto her, og ble klippet i høyre kant */
@@ -3355,12 +3415,16 @@ class Component extends DCLogic {
       imgLoad: idx === 0 ? 'eager' : 'lazy',
       /* frie bilder: w er bredden i cqw, ar er bildets eget sideforhold (bredde/høyde).
          Startplassen er midt på sliden; flytting og skalering ligger i layout. */
-      freeImgs: (Array.isArray(blk.free) ? blk.free : []).filter(f => f && f.id && f.src).map(f => {
-        const w = +f.w || 30, ar = +f.ar || 1.5;
-        const rm = /^asset:(.+)$/.exec(f.src);
-        return { id: f.id, key: 'free-' + f.id, src: rm ? (assets[rm[1]] || '') : f.src,
-          w: w + 'cqw', left: ((100 - w) / 2) + 'cqw', top: ((56.25 - w / ar) / 2) + 'cqw' };
-      }),
+      ...(() => {
+        /* rekkefølgen i lista er rekkefølgen i laget: senere ligger over tidligere */
+        const all = (Array.isArray(blk.free) ? blk.free : []).filter(f => f && f.id && f.src).map(f => {
+          const w = +f.w || 30, ar = +f.ar || 1.5;
+          const rm = /^asset:(.+)$/.exec(f.src);
+          return { id: f.id, key: 'free-' + f.id, back: f.layer === 'back', src: rm ? (assets[rm[1]] || '') : f.src,
+            w: w + 'cqw', left: ((100 - w) / 2) + 'cqw', top: ((56.25 - w / ar) / 2) + 'cqw' };
+        });
+        return { freeBack: all.filter(f => f.back), freeFront: all.filter(f => !f.back) };
+      })(),
       showNum, num: String(P.index + 1).padStart(2, '0'), totalNum: String(P.total || 1).padStart(2, '0'),
       numRight: bracketed ? '7.8cqw' : '5.5cqw',
 

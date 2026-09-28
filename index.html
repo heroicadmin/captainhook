@@ -4536,14 +4536,23 @@ class Component extends DCLogic {
          Plassering, størrelse og rotasjon gjøres ved å dra på sliden. */
       {
         const free = Array.isArray(block.free) ? block.free : [];
+        const moveFree = (i, d) => this.updatePitch(p => {
+          const b = p.blocks[sel]; if (!b || !Array.isArray(b.free)) return;
+          const j = i + d; if (j < 0 || j >= b.free.length) return;
+          const next = [...b.free]; [next[i], next[j]] = [next[j], next[i]]; b.free = next;
+        });
         F.push({ label: 'Frie bilder', isText: false, isArea: false, isNum: false, isSelect: false,
           isList: false, isStats: false, isRepeat: true, canAdd: true, options: [], factOptions: [],
           items: free.map((f, i) => ({
-            head: 'Fritt bilde ' + (i + 1), tint: 'var(--accent)', canAddSub: false, hasMove: false,
-            upColor: '#D5D2E0', downColor: '#D5D2E0', onUp: () => {}, onDown: () => {},
+            head: 'Fritt bilde ' + (i + 1), tint: 'var(--accent)', canAddSub: false, hasMove: free.length > 1,
+            /* lista er lagrekkefølgen: lenger ned ligger over. Pilene flytter i laget. */
+            upColor: i === 0 ? '#D5D2E0' : '#8A85A0', downColor: i === free.length - 1 ? '#D5D2E0' : '#8A85A0',
+            onUp: () => moveFree(i, -1), onDown: () => moveFree(i, 1),
             subs: [
               { isImg: true, ph: 'Bytt bilde', thumb: this.cssUrl(f.src),
-                on: () => this.setState({ picker: { mode: 'free', id: f.id }, pickerCat: pitch.meta.imageProfile || 'Alle' }) }
+                on: () => this.setState({ picker: { mode: 'free', id: f.id }, pickerCat: pitch.meta.imageProfile || 'Alle' }) },
+              { isPick: true, value: f.layer === 'back' ? 'back' : '', options: [{ v: '', label: 'Foran teksten' }, { v: 'back', label: 'Bak teksten' }],
+                on: e => { const v = e.target.value; this.updatePitch(p => { const b = p.blocks[sel]; if (b && Array.isArray(b.free)) b.free = b.free.map(x => x.id === f.id ? { ...x, layer: v } : x); }); } }
             ],
             onDel: () => this.updatePitch(p => {
               const b = p.blocks[sel]; if (!b || !Array.isArray(b.free)) return;
