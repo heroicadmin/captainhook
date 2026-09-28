@@ -13,6 +13,8 @@ export const NO_EN = {
   'Frie bilder': 'Free images',
   'Foran teksten': 'In front of text',
   'Bak teksten': 'Behind text',
+  'Fyll bakgrunnen': 'Fill the background',
+  'Ingen uskarphet': 'No blur',
   'Rediger': 'Edit',
   'Ta kontakt': 'Get in touch',
   'Åpne i Pitch Studio': 'Open in Pitch Studio',

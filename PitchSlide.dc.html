@@ -40,7 +40,7 @@
        bakgrunnslag. Beholderne med tekst løftes til lag 2 i liftText() mens slike
        bilder finnes. -->
   <sc-for list="{{ freeBack }}" as="f" hint-placeholder-count="0">
-    <img loading="{{ imgLoad }}" decoding="async" data-el="{{ f.key }}" data-el-name="Fritt bilde" data-free="{{ f.id }}" data-back="1" src="{{ f.src }}" alt="" draggable="false" style="position:absolute;left:{{ f.left }};top:{{ f.top }};width:{{ f.w }};height:auto;max-width:none;z-index:1;display:block;user-select:none">
+    <img loading="{{ imgLoad }}" decoding="async" data-el="{{ f.key }}" data-el-name="Fritt bilde" data-free="{{ f.id }}" data-back="1" src="{{ f.src }}" alt="" draggable="false" style="position:absolute;left:{{ f.left }};top:{{ f.top }};width:{{ f.w }};height:{{ f.h }};object-fit:{{ f.fit }};--fb:{{ f.blur }};filter:blur(var(--fb,0px));transform:{{ f.tf }};max-width:none;z-index:1;display:block;user-select:none">
   </sc-for>
 
   <!-- ============ COVER ============ -->
@@ -2083,7 +2083,7 @@
        ligger oppå sliden og flyttes, skaleres, roteres og skjules som alle andre
        elementer — plasseringen står i slide.layout under nøkkelen free-<id>. -->
   <sc-for list="{{ freeFront }}" as="f" hint-placeholder-count="0">
-    <img loading="{{ imgLoad }}" decoding="async" data-el="{{ f.key }}" data-el-name="Fritt bilde" data-free="{{ f.id }}" src="{{ f.src }}" alt="" draggable="false" style="position:absolute;left:{{ f.left }};top:{{ f.top }};width:{{ f.w }};height:auto;max-width:none;z-index:7;display:block;user-select:none">
+    <img loading="{{ imgLoad }}" decoding="async" data-el="{{ f.key }}" data-el-name="Fritt bilde" data-free="{{ f.id }}" src="{{ f.src }}" alt="" draggable="false" style="position:absolute;left:{{ f.left }};top:{{ f.top }};width:{{ f.w }};height:{{ f.h }};object-fit:{{ f.fit }};--fb:{{ f.blur }};filter:blur(var(--fb,0px));transform:{{ f.tf }};max-width:none;z-index:7;display:block;user-select:none">
   </sc-for>
 
   <!-- avsender-vannmerke: samme plassering på alle slidetyper, kan skjules/flyttes per slide -->
@@ -2366,7 +2366,7 @@ class Component extends DCLogic {
       const keys = this.state.selEls.filter(k => /^free-/.test(k));
       if (!keys.length || typeof this.props.onFree !== 'function') return;
       const free = (this.props.slide && this.props.slide.free) || [];
-      const allBack = keys.every(k => (free.find(f => 'free-' + f.id === k) || {}).layer === 'back');
+      const allBack = keys.every(k => ['back', 'fill'].includes((free.find(f => 'free-' + f.id === k) || {}).layer));
       keys.forEach(k => this.props.onFree(k.slice(5), { layer: allBack ? '' : 'back' }));
     });
     /* bare frie bilder kan slettes herfra — de andre elementene hører til slidetypen */
@@ -2430,9 +2430,12 @@ class Component extends DCLogic {
     const onlyFree = typeof this.props.onFree === 'function' && nodesSel.every(o => /^free-/.test(o.key));
     c.querySelector('[data-del]').style.display = onlyFree ? '' : 'none';
     const layerBtn = c.querySelector('[data-layer]');
-    layerBtn.style.display = onlyFree ? '' : 'none';
+    const freeList = (this.props.slide && this.props.slide.free) || [];
+    /* et fyllbilde har ikke noe «foran» — det byttes i panelet */
+    const anyFill = onlyFree && nodesSel.some(o => (freeList.find(f => 'free-' + f.id === o.key) || {}).layer === 'fill');
+    layerBtn.style.display = onlyFree && !anyFill ? '' : 'none';
     if (onlyFree) {
-      const free = (this.props.slide && this.props.slide.free) || [];
+      const free = freeList;
       const back = nodesSel.every(o => (free.find(f => 'free-' + f.id === o.key) || {}).layer === 'back');
       layerBtn.textContent = back ? 'Foran teksten' : 'Bak teksten';
     }
@@ -3420,8 +3423,18 @@ class Component extends DCLogic {
         const all = (Array.isArray(blk.free) ? blk.free : []).filter(f => f && f.id && f.src).map(f => {
           const w = +f.w || 30, ar = +f.ar || 1.5;
           const rm = /^asset:(.+)$/.exec(f.src);
-          return { id: f.id, key: 'free-' + f.id, back: f.layer === 'back', src: rm ? (assets[rm[1]] || '') : f.src,
-            w: w + 'cqw', left: ((100 - w) / 2) + 'cqw', top: ((56.25 - w / ar) / 2) + 'cqw' };
+          /* «fill» dekker hele sliden bak teksten, beskåret som et bakgrunnsbilde.
+             Uskarphet 0–100 %: 100 % er 2,4 cqw. Et uskarpt bilde får myke, gjennomsiktige
+             kanter, så et fyllbilde forstørres litt så kantene havner utenfor sliden. */
+          const fill = f.layer === 'fill';
+          const bl = Math.max(0, Math.min(100, +f.blur || 0));
+          const src = rm ? (assets[rm[1]] || '') : f.src;
+          const blur = bl ? (bl / 100 * 2.4).toFixed(3) + 'cqw' : '0px';
+          return fill
+            ? { id: f.id, key: 'free-' + f.id, back: true, src, blur, w: '100%', h: '100%', left: '0', top: '0', fit: 'cover',
+                tf: bl ? 'scale(' + (1 + bl / 100 * 0.08).toFixed(3) + ')' : 'none' }
+            : { id: f.id, key: 'free-' + f.id, back: f.layer === 'back', src, blur, h: 'auto', fit: 'fill', tf: 'none',
+                w: w + 'cqw', left: ((100 - w) / 2) + 'cqw', top: ((56.25 - w / ar) / 2) + 'cqw' };
         });
         return { freeBack: all.filter(f => f.back), freeFront: all.filter(f => !f.back) };
       })(),

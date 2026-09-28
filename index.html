@@ -4551,8 +4551,17 @@ class Component extends DCLogic {
             subs: [
               { isImg: true, ph: 'Bytt bilde', thumb: this.cssUrl(f.src),
                 on: () => this.setState({ picker: { mode: 'free', id: f.id }, pickerCat: pitch.meta.imageProfile || 'Alle' }) },
-              { isPick: true, value: f.layer === 'back' ? 'back' : '', options: [{ v: '', label: 'Foran teksten' }, { v: 'back', label: 'Bak teksten' }],
-                on: e => { const v = e.target.value; this.updatePitch(p => { const b = p.blocks[sel]; if (b && Array.isArray(b.free)) b.free = b.free.map(x => x.id === f.id ? { ...x, layer: v } : x); }); } }
+              { isPick: true, value: ['back', 'fill'].includes(f.layer) ? f.layer : '',
+                options: [{ v: '', label: 'Foran teksten' }, { v: 'back', label: 'Bak teksten' }, { v: 'fill', label: 'Fyll bakgrunnen' }],
+                on: e => { const v = e.target.value; this.updatePitch(p => {
+                  const b = p.blocks[sel]; if (!b || !Array.isArray(b.free)) return;
+                  b.free = b.free.map(x => x.id === f.id ? { ...x, layer: v } : x);
+                  /* et fyllbilde dekker sliden — en gammel flytting ville dratt det skjevt */
+                  if (v === 'fill' && b.layout && b.layout['free-' + f.id]) { const L = { ...b.layout }; delete L['free-' + f.id]; b.layout = L; }
+                }); } },
+              { isPick: true, value: String(Math.round((+f.blur || 0) / 10) * 10),
+                options: [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100].map(n => ({ v: String(n), label: n ? 'Uskarphet ' + n + ' %' : 'Ingen uskarphet' })),
+                on: e => { const n = +e.target.value || 0; this.updatePitch(p => { const b = p.blocks[sel]; if (b && Array.isArray(b.free)) b.free = b.free.map(x => x.id === f.id ? { ...x, blur: n } : x); }); } }
             ],
             onDel: () => this.updatePitch(p => {
               const b = p.blocks[sel]; if (!b || !Array.isArray(b.free)) return;
