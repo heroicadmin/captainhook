@@ -1010,6 +1010,10 @@
 
         <!-- høyre: produktene tallene kommer fra -->
         <div data-el="products" data-el-name="Produkter" data-in="5" style="display:flex;flex-direction:column;justify-content:center;gap:.9cqw;min-height:0">
+          <!-- overskrift over listen, samme stil som overskriftene til venstre -->
+          <sc-if value="{{ reachHasProdLabel }}" hint-placeholder-val="{{ true }}">
+            <div style="font-size:.7cqw;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-mute,#8E88A3);padding-bottom:.7cqw;border-bottom:1px solid var(--rule,#302B3F)">{{ s.productsLabel }}</div>
+          </sc-if>
           <sc-for list="{{ reachProducts }}" as="pr" hint-placeholder-count="4">
             <div style="display:flex;align-items:center;gap:1.4cqw;background:color-mix(in srgb, var(--ink,#FFFFFF) 5%, transparent);border:1px solid var(--rule,#302B3F);border-radius:.5cqw;padding:1.15cqw 1.4cqw">
               <div style="flex:none;width:9cqw;display:flex;align-items:center">
@@ -3129,7 +3133,8 @@ class Component extends DCLogic {
               lead: x.lead || '', rest: x.rest || '',
               stat: x.stat || '', hasStat: !!x.stat };
           }),
-          reachHasIncome: !!(s.income || s.incomeNote)
+          reachHasIncome: !!(s.income || s.incomeNote),
+          reachHasProdLabel: !!s.productsLabel
         };
       })(),
       /* ---- caser ---- */
