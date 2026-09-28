@@ -4605,6 +4605,14 @@ class Component extends DCLogic {
                 options: [{ v: '', label: 'Uten ramme' }, { v: 'border', label: 'Kant' }, { v: 'rounded', label: 'Avrundet' },
                   { v: 'shadow', label: 'Skygge' }, { v: 'polaroid', label: 'Polaroid' }, { v: 'browser', label: 'Nettleser' }],
                 on: e => { const v = e.target.value; this.updatePitch(p => { const b = p.blocks[sel]; if (b && Array.isArray(b.free)) b.free = b.free.map(x => x.id === f.id ? { ...x, frame: v } : x); }); } },
+              /* fremheving: et glødende felt over en del av bildet, f.eks. en knapp i et
+                 skjermbilde. Posisjon og størrelse i prosent av bildet. */
+              { isPick: true, value: f.hot && f.hot.on ? String(f.hot.delay != null ? f.hot.delay : 5) : '',
+                options: [{ v: '', label: 'Ingen fremheving' }, ...[0, 2, 3, 5, 8].map(n => ({ v: String(n), label: 'Glød etter ' + n + ' s' }))],
+                on: e => { const v = e.target.value; this.updatePitch(p => { const b = p.blocks[sel]; if (b && Array.isArray(b.free)) b.free = b.free.map(x => x.id !== f.id ? x
+                  : { ...x, hot: v === '' ? { ...(x.hot || {}), on: false } : { x: 45, y: 45, w: 10, h: 6, ...(x.hot || {}), on: true, delay: +v } }); }); } },
+              ...(f.hot && f.hot.on ? [['x', 'X %'], ['y', 'Y %'], ['w', 'Bredde %'], ['h', 'Høyde %']].map(([k, ph]) => ({ isNum: true, ph, value: f.hot[k],
+                on: e => { const n = +e.target.value; this.updatePitch(p => { const b = p.blocks[sel]; if (b && Array.isArray(b.free)) b.free = b.free.map(x => x.id === f.id ? { ...x, hot: { ...(x.hot || {}), [k]: n } } : x); }); } })) : []),
               { isPick: true, value: String(Math.round((+f.blur || 0) / 10) * 10),
                 options: [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100].map(n => ({ v: String(n), label: n ? 'Uskarphet ' + n + ' %' : 'Ingen uskarphet' })),
                 on: e => { const n = +e.target.value || 0; this.updatePitch(p => { const b = p.blocks[sel]; if (b && Array.isArray(b.free)) b.free = b.free.map(x => x.id === f.id ? { ...x, blur: n } : x); }); } }

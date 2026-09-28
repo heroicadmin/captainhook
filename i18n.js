@@ -16,6 +16,7 @@ export const NO_EN = {
   'Fyll bakgrunnen': 'Fill the background',
   'Ingen uskarphet': 'No blur',
   'Uten ramme': 'No frame',
+  'Ingen fremheving': 'No highlight',
   'Kant': 'Border',
   'Avrundet': 'Rounded',
   'Skygge': 'Shadow',

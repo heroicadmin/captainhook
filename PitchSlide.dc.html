@@ -17,6 +17,14 @@
   @keyframes tier-fade-in { from{opacity:0} to{opacity:1} }
   @keyframes slide-dust { 0%{transform:translate3d(0,4cqw,0);opacity:0} 12%{opacity:var(--o,.2)} 88%{opacity:var(--o,.2)} 100%{transform:translate3d(1.2cqw,-16cqw,0);opacity:0} }
   @media (prefers-reduced-motion: reduce){ [data-dust]{animation:none!important} }
+  /* fremheving på et fritt bilde: toner inn etter en forsinkelse (--hd) og gløder svakt.
+     På kundesiden starter klokka først når sliden er vist (.is-in), ikke når siden lastes. */
+  @keyframes hot-in { to{opacity:1} }
+  @keyframes hot-pulse { 0%,100%{box-shadow:0 0 0 .12cqi rgba(110,225,255,.85),0 0 1.4cqi .2cqi rgba(64,200,255,.38)} 50%{box-shadow:0 0 0 .16cqi rgba(140,235,255,.95),0 0 2.6cqi .5cqi rgba(64,200,255,.6)} }
+  [data-hot]{opacity:0;animation:hot-in .9s ease var(--hd,5s) forwards,hot-pulse 2.8s ease-in-out calc(var(--hd,5s) + .9s) infinite}
+  [data-reveal] [data-band]:not(.is-in) [data-hot]{animation:none}
+  @media (prefers-reduced-motion: reduce){ [data-hot]{opacity:1;animation:none!important;box-shadow:0 0 0 .14cqi rgba(110,225,255,.9),0 0 1.8cqi .3cqi rgba(64,200,255,.45)} }
+  @media print{ [data-hot]{opacity:1!important;animation:none!important;box-shadow:0 0 0 .14cqi rgba(110,225,255,.9),0 0 1.8cqi .3cqi rgba(64,200,255,.45)} }
   /* detaljene på en aktivitet i årshjulet — kan ikke uttrykkes inline, det er foreldre-hover */
   [data-tlitem] [data-tlnote]{opacity:0;transform:translate3d(0,.4cqw,0);pointer-events:none;transition:opacity .16s ease,transform .16s ease}
   [data-tlitem]:hover{z-index:5}
@@ -45,7 +53,12 @@
         <!-- vinduslinjen måles mot bildets egen bredde (cqi), ikke slidens — ellers ble den tung på små bilder -->
         <div style="flex:none;height:2.4cqi;background:var(--rule,#302B3F);display:flex;align-items:center;gap:.6cqi;padding:0 1.2cqi"><b style="width:.75cqi;height:.75cqi;border-radius:50%;background:#4A4459;display:block"></b><b style="width:.75cqi;height:.75cqi;border-radius:50%;background:#4A4459;display:block"></b><b style="width:.75cqi;height:.75cqi;border-radius:50%;background:#4A4459;display:block"></b></div>
       </sc-if>
-      <img loading="{{ imgLoad }}" decoding="async" src="{{ f.src }}" alt="" draggable="false" style="display:block;width:100%;height:{{ f.ih }};object-fit:{{ f.fit }};--fb:{{ f.blur }};filter:blur(var(--fb,0px));transform:{{ f.tf }};border-radius:{{ f.irad }};max-width:none;pointer-events:none">
+      <div style="position:relative;flex:1 1 auto;min-height:0;line-height:0">
+        <img loading="{{ imgLoad }}" decoding="async" src="{{ f.src }}" alt="" draggable="false" style="display:block;width:100%;height:{{ f.ih }};object-fit:{{ f.fit }};--fb:{{ f.blur }};filter:blur(var(--fb,0px));transform:{{ f.tf }};border-radius:{{ f.irad }};max-width:none;pointer-events:none">
+        <sc-if value="{{ f.hasHot }}" hint-placeholder-val="{{ false }}">
+          <span data-hot="1" style="position:absolute;left:{{ f.hx }};top:{{ f.hy }};width:{{ f.hw }};height:{{ f.hh }};--hd:{{ f.hd }};border-radius:.5cqi;pointer-events:none"></span>
+        </sc-if>
+      </div>
     </div>
   </sc-for>
 
@@ -2111,7 +2124,12 @@
         <!-- vinduslinjen måles mot bildets egen bredde (cqi), ikke slidens — ellers ble den tung på små bilder -->
         <div style="flex:none;height:2.4cqi;background:var(--rule,#302B3F);display:flex;align-items:center;gap:.6cqi;padding:0 1.2cqi"><b style="width:.75cqi;height:.75cqi;border-radius:50%;background:#4A4459;display:block"></b><b style="width:.75cqi;height:.75cqi;border-radius:50%;background:#4A4459;display:block"></b><b style="width:.75cqi;height:.75cqi;border-radius:50%;background:#4A4459;display:block"></b></div>
       </sc-if>
-      <img loading="{{ imgLoad }}" decoding="async" src="{{ f.src }}" alt="" draggable="false" style="display:block;width:100%;height:{{ f.ih }};object-fit:{{ f.fit }};--fb:{{ f.blur }};filter:blur(var(--fb,0px));transform:{{ f.tf }};border-radius:{{ f.irad }};max-width:none;pointer-events:none">
+      <div style="position:relative;flex:1 1 auto;min-height:0;line-height:0">
+        <img loading="{{ imgLoad }}" decoding="async" src="{{ f.src }}" alt="" draggable="false" style="display:block;width:100%;height:{{ f.ih }};object-fit:{{ f.fit }};--fb:{{ f.blur }};filter:blur(var(--fb,0px));transform:{{ f.tf }};border-radius:{{ f.irad }};max-width:none;pointer-events:none">
+        <sc-if value="{{ f.hasHot }}" hint-placeholder-val="{{ false }}">
+          <span data-hot="1" style="position:absolute;left:{{ f.hx }};top:{{ f.hy }};width:{{ f.hw }};height:{{ f.hh }};--hd:{{ f.hd }};border-radius:.5cqi;pointer-events:none"></span>
+        </sc-if>
+      </div>
     </div>
   </sc-for>
 
@@ -3487,7 +3505,13 @@ class Component extends DCLogic {
           const fr = (!fill && FR[f.frame]) || {};
           const base = { id: f.id, key: 'free-' + f.id, src, blur,
             pad: fr.pad || '0', bg: fr.bg || 'transparent', bd: fr.bd || '0', rad: fr.rad || '0', sh: fr.sh || 'none',
-            bar: !!fr.bar, irad: f.frame === 'rounded' && !fill ? '1.2cqw' : '0' };
+            bar: !!fr.bar, irad: f.frame === 'rounded' && !fill ? '1.2cqw' : '0',
+            /* fremheving: et felt over en del av bildet, i prosent av bildet. Ikke på
+               fyllbilder — der er bildet beskåret, så prosentene ville truffet feil sted. */
+            hasHot: !fill && !!(f.hot && f.hot.on),
+            hx: ((f.hot && +f.hot.x) || 0) + '%', hy: ((f.hot && +f.hot.y) || 0) + '%',
+            hw: ((f.hot && +f.hot.w) || 10) + '%', hh: ((f.hot && +f.hot.h) || 6) + '%',
+            hd: ((f.hot && f.hot.delay != null ? +f.hot.delay : 5)) + 's' };
           return fill
             ? { ...base, back: true, w: '100%', h: '100%', left: '0', top: '0', ih: '100%', fit: 'cover',
                 tf: bl ? 'scale(' + (1 + bl / 100 * 0.08).toFixed(3) + ')' : 'none' }
