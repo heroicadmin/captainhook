@@ -19,9 +19,12 @@
   @media (prefers-reduced-motion: reduce){ [data-dust]{animation:none!important} }
   /* fremheving på et fritt bilde: toner inn etter en forsinkelse (--hd) og gløder svakt.
      På kundesiden starter klokka først når sliden er vist (.is-in), ikke når siden lastes. */
-  @keyframes hot-in { to{opacity:1} }
+  /* Gløden ligger på feltet fra start, så innfadingen viser den. Før lå den bare i
+     pulsen, som startet etter innfadingen — da var det ingenting å se mens opasiteten
+     steg, og gløden dukket opp brått. Innfadingen vokser også gløden ut fra kanten. */
+  @keyframes hot-in { from{opacity:0;box-shadow:0 0 0 .06cqi rgba(110,225,255,.4),0 0 .2cqi 0 rgba(64,200,255,0)} to{opacity:1;box-shadow:0 0 0 .12cqi rgba(110,225,255,.85),0 0 1.4cqi .2cqi rgba(64,200,255,.38)} }
   @keyframes hot-pulse { 0%,100%{box-shadow:0 0 0 .12cqi rgba(110,225,255,.85),0 0 1.4cqi .2cqi rgba(64,200,255,.38)} 50%{box-shadow:0 0 0 .16cqi rgba(140,235,255,.95),0 0 2.6cqi .5cqi rgba(64,200,255,.6)} }
-  [data-hot]{opacity:0;animation:hot-in .9s ease var(--hd,5s) forwards,hot-pulse 2.8s ease-in-out calc(var(--hd,5s) + .9s) infinite}
+  [data-hot]{opacity:0;box-shadow:0 0 0 .12cqi rgba(110,225,255,.85),0 0 1.4cqi .2cqi rgba(64,200,255,.38);animation:hot-in 1.8s cubic-bezier(.33,0,.2,1) var(--hd,5s) both,hot-pulse 2.8s ease-in-out calc(var(--hd,5s) + 1.8s) infinite}
   [data-reveal] [data-band]:not(.is-in) [data-hot]{animation:none}
   @media (prefers-reduced-motion: reduce){ [data-hot]{opacity:1;animation:none!important;box-shadow:0 0 0 .14cqi rgba(110,225,255,.9),0 0 1.8cqi .3cqi rgba(64,200,255,.45)} }
   @media print{ [data-hot]{opacity:1!important;animation:none!important;box-shadow:0 0 0 .14cqi rgba(110,225,255,.9),0 0 1.8cqi .3cqi rgba(64,200,255,.45)} }
