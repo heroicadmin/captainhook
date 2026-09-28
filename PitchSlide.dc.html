@@ -2281,6 +2281,18 @@ class Component extends DCLogic {
       if (t.parentElement === r && t !== n) tops.add(t);
     });
     const edit = this.editing();
+    /* Pynt uten tekst (hjørnemarkeringer, streker) skal også ligge over bildet. Det
+       som blir liggende under er bare de store bakgrunnslagene — det som dekker det
+       meste av sliden uten å ha tekst i seg — og grunnflaten. */
+    if (hasBack) {
+      const ra = r.clientWidth * r.clientHeight || 1;
+      [...r.children].forEach(ch => {
+        if (tops.has(ch) || ch.hasAttribute('data-free') || ch.hasAttribute('data-slidebase') || ch.hasAttribute('data-chrome')) return;
+        /* layoutmål, ikke skjermmål — miniatyrene i arkivet er skalert ned */
+        const w = ch.offsetWidth, h = ch.offsetHeight;
+        if (w && h && (w * h) / ra < 0.6) tops.add(ch);
+      });
+    }
     [...r.children].forEach(ch => {
       /* bare løft — en beholder som allerede ligger høyere enn 2 står som den står */
       if (tops.has(ch)) { if (!ch.dataset.lifted && !((parseInt(getComputedStyle(ch).zIndex, 10) || 0) >= 2)) { ch.dataset.lifted = ch.style.zIndex || '-'; ch.style.zIndex = '2'; } }
