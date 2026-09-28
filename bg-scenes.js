@@ -65,7 +65,10 @@
           speed: parseFloat(this.getAttribute('speed') || '1')
         };
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'low-power', preserveDrawingBuffer: true });
-        renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+        /* høyst ~3,2 MP per bilde: en stor Retina-skjerm ga ellers over 14 MP å tegne
+           hver ramme, og det gjorde rullingen hakkete. Bakgrunnen er myk, forskjellen syns ikke. */
+        const pr = (ww, hh) => Math.max(0.5, Math.min(devicePixelRatio, 2, Math.sqrt(3.2e6 / Math.max(1, ww * hh))));
+        renderer.setPixelRatio(pr(w, h));
         renderer.setSize(w, h, false);
         renderer.domElement.style.cssText = 'display:block;width:100%;height:100%';
         this.appendChild(renderer.domElement);
@@ -90,7 +93,7 @@
         this._ro = new ResizeObserver(() => {
           const nw = this.clientWidth, nh = this.clientHeight;
           if (!nw || !nh) return;
-          renderer.setSize(nw, nh, false);
+          renderer.setPixelRatio(pr(nw, nh)); renderer.setSize(nw, nh, false);
           s.resize && s.resize(nw / nh);
         });
         this._ro.observe(this);

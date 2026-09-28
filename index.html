@@ -143,7 +143,7 @@
   /* seksjonen toner inn uten å flytte seg — bevegelsen ligger i elementene, ellers
      kompenserer to lag med transform mot hverandre og teksten rykker */
   /* grunnflaten står ferdig malt på arket; det er innholdet oppå som toner inn */
-  [data-reveal] [data-band] [data-fade]{opacity:0;transition:opacity .5s linear}
+  [data-reveal] [data-band] [data-fade]{opacity:0;transition:opacity .6s cubic-bezier(.22,.61,.36,1)}
   [data-reveal] [data-band].is-in [data-fade]{opacity:1}
   /* innholdet i sliden kommer etter selve seksjonen: eyebrow, tittel, tekst, så kortene.
      Sluttverdien er translate3d(0,0,0) og ikke none, slik at laget ikke rives ned midt i overgangen */
@@ -166,6 +166,10 @@
      tones inn. Slidens eget slør må da vekk — ellers lå to lag oppå hverandre, og
      innholdsslidene slapp bare gjennom 1–5 % av den levende bakgrunnen. */
   [data-page] [data-slidebase]{display:none}
+  /* forlengelsen av bakgrunnsfotoet: bare når raden er bredere enn sliden (data-wide
+     settes av extendBands). Også en vanlig 1920×1080 får sidekanter, fordi toppfeltet tar høyde. */
+  [data-ext]{display:none}
+  [data-landing="1"] [data-band][data-wide] > [data-ext]{display:block}
   /* 338 x 190 mm er 16:9 i liggende format. Én slide per side. */
   @page{size:338mm 190mm;margin:0}
   @media print{
@@ -175,6 +179,7 @@
        Endrer du disse navnene i markupen, må de endres her også. */
     [data-chrome]{display:none!important}
     [data-amb]{display:none!important}
+    [data-ext]{display:none!important}
     [data-scroll]{overflow:visible!important;height:auto!important;scroll-snap-type:none!important}
     [data-band]{break-after:page;page-break-after:always;break-inside:avoid;page-break-inside:avoid;
                 width:338mm!important;height:190mm!important;min-height:0!important;max-height:190mm!important;
@@ -268,7 +273,7 @@
         </sc-if>
       </div>
     </sc-if>
-    <div data-scroll="1" onScroll="{{ onViewScroll }}" style="height:100dvh;overflow-y:auto;overflow-x:hidden;scroll-behavior:smooth;scroll-snap-type:{{ view.page.snap }};position:relative;z-index:1">
+    <div data-scroll="1" data-landing="{{ view.page.landing }}" onScroll="{{ onViewScroll }}" style="height:100dvh;overflow-y:auto;overflow-x:hidden;scroll-behavior:smooth;scroll-snap-type:{{ view.page.snap }};position:relative;z-index:1">
 
       <header data-chrome="1" style="position:sticky;top:0;z-index:60;background:rgba(20,18,29,.78);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.07)">
         <div style="max-width:1440px;margin:0 auto;padding:0 clamp(14px,2.4vw,30px);height:58px;display:flex;align-items:center;gap:clamp(9px,1.4vw,16px);min-width:0">
@@ -292,8 +297,11 @@
       <!-- ingen breddetak: sliden strekker seg til å fylle skjermen helt, uansett format -->
       <main style="margin:0 auto;display:flex;flex-direction:column;min-width:0;width:100%">
         <sc-for list="{{ view.slides }}" as="sl" hint-placeholder-count="4">
-          <section data-band="1" id="{{ sl.anchor }}" data-screen-label="{{ sl.label }}" style="width:100%;position:relative;scroll-snap-align:start;scroll-snap-stop:always;scroll-margin-top:58px;box-sizing:border-box;place-items:center;padding:{{ view.page.pad }};height:{{ view.page.h }};display:{{ view.page.disp }};background:{{ sl.desk }}">
-            <div data-page="1" style="position:relative;overflow:{{ view.page.overflow }};width:100%;margin:0 auto;max-width:{{ view.page.maxW }};background:{{ sl.base }};border-radius:{{ view.page.radius }};border:{{ view.page.border }};box-shadow:{{ view.page.shadow }}">
+          <section data-band="1" id="{{ sl.anchor }}" data-screen-label="{{ sl.label }}" style="width:100%;position:relative;scroll-snap-align:start;scroll-snap-stop:always;scroll-margin-top:58px;box-sizing:border-box;place-items:center;padding:{{ view.page.pad }};height:{{ view.page.h }};display:{{ view.page.disp }};background:{{ sl.bandBg }}">
+            <!-- brede skjermer: slidens bakgrunnsfoto fortsetter ut som en uskarp, mørkere kopi.
+                 Kilden settes av extendBands(); laget vises bare når vinduet er bredere enn 16:9 -->
+            <div data-ext="1" aria-hidden="true" style="position:absolute;inset:0;overflow:hidden;pointer-events:none"><img data-ext-img="1" alt="" style="position:absolute;left:-60px;top:-60px;width:calc(100% + 120px);height:calc(100% + 120px);object-fit:cover;filter:blur(48px) brightness(.62) saturate(1.1);opacity:0;transition:opacity .6s ease"></div>
+            <div data-page="1" style="position:relative;overflow:{{ view.page.overflow }};width:100%;margin:0 auto;max-width:{{ view.page.maxW }};background:{{ sl.sheetBg }};border-radius:{{ view.page.radius }};border:{{ view.page.border }};box-shadow:{{ view.page.shadow }}">
               <div data-fade="1" data-noi18n="1">
                 <dc-import name="PitchSlide" slide="{{ sl.block }}" meta="{{ view.meta }}" system="{{ system }}" index="{{ sl.i }}" total="{{ view.total }}" show-num="{{ false }}" hint-size="100%,auto"></dc-import>
               </div>
@@ -2545,7 +2553,7 @@ class Component extends DCLogic {
     document.body.appendChild(this._file);
   }
   componentWillUnmount() { clearTimeout(this._saveTimer); removeEventListener('input', this._onInput, true); if (this._dlg) Object.keys(this._dlg).forEach(k => { window[k] = this._dlg[k]; });
-    removeEventListener('hashchange', this._onHash); removeEventListener('keydown', this._onKey); this._file?.remove(); this._io?.disconnect(); clearTimeout(this._bandT); clearTimeout(this._bandFail); }
+    removeEventListener('hashchange', this._onHash); removeEventListener('keydown', this._onKey); if (this._onExtResize) removeEventListener('resize', this._onExtResize); this._file?.remove(); this._io?.disconnect(); clearTimeout(this._bandT); clearTimeout(this._bandFail); }
 
   /* seksjonene på kundesiden tones inn når de ruller inn i bildet */
   jumpBand(dir) {
@@ -2658,7 +2666,38 @@ class Component extends DCLogic {
       this._tracker.scroll(((i + 1) / bands.length) * 100);
     }
   }
+  /* Brede skjermer: slidens bakgrunnsfoto fortsetter ut på sidene som en uskarp kopi.
+     Fotoet finnes i sliden selv — det bildet som dekker minst 90 % av den (forsidefoto,
+     skillebilde, et fritt bilde som fyller bakgrunnen). Da virker det for alle slidetyper
+     uten en liste over hvilke som har bakgrunnsfoto. */
+  extendBands() {
+    const sc = document.querySelector('[data-scroll]');
+    if (!sc) return;
+    if (!this._onExtResize) {
+      this._onExtResize = () => { clearTimeout(this._extT); this._extT = setTimeout(() => this.extendBands(), 150); };
+      addEventListener('resize', this._onExtResize);
+    }
+    sc.querySelectorAll('[data-band]').forEach(band => {
+      const ext = band.querySelector('[data-ext-img]');
+      const slide = band.querySelector('[data-slide]');
+      const sheet = band.querySelector('[data-page]');
+      if (!ext || !slide) return;
+      if (sheet && band.offsetWidth - sheet.offsetWidth > 16) band.setAttribute('data-wide', '');
+      else band.removeAttribute('data-wide');
+      /* bare der kanten faktisk syns — ellers ville hver rad tegnet et uskarpt foto for ingenting */
+      if (!band.hasAttribute('data-wide')) { if (ext.getAttribute('src')) { ext.removeAttribute('src'); ext.style.opacity = '0'; } return; }
+      const area = slide.offsetWidth * slide.offsetHeight;
+      let src = '';
+      if (area) slide.querySelectorAll('img').forEach(im => {
+        const a = im.offsetWidth * im.offsetHeight;
+        if (a >= area * 0.9 && im.getAttribute('src') && getComputedStyle(im).display !== 'none') src = im.getAttribute('src');
+      });
+      if (src) { if (ext.getAttribute('src') !== src) ext.setAttribute('src', src); ext.style.opacity = '1'; }
+      else if (ext.getAttribute('src')) { ext.removeAttribute('src'); ext.style.opacity = '0'; }
+    });
+  }
   observeBands() {
+    this.extendBands();
     if (typeof IntersectionObserver !== 'function') return;
     const root = document.querySelector('[data-scroll]');
     if (!root) return;
@@ -3764,10 +3803,13 @@ class Component extends DCLogic {
       const fit = 'calc(100dvh - 58px)';
       return pages
         ? { pages: true, pad: padY + ' clamp(12px,2.4vw,34px)', radius: '10px',
-            border: fr.border, shadow: fr.shadow, snap: 'y mandatory', deskA: dk.a, deskB: dk.b,
+            border: fr.border, shadow: fr.shadow, snap: 'y mandatory', deskA: dk.a, deskB: dk.b, landing: '0',
             h: fit, disp: 'grid', overflow: 'hidden', maxW: 'calc((' + fit + ' - 2 * ' + padY + ') * 16 / 9)' }
         : { pages: false, pad: '0', radius: '0', border: '0', shadow: 'none',
-            snap: 'y proximity', deskA: 'transparent', deskB: 'transparent',
+            /* Ingen snapping i landingsside: «proximity» dro siden på plass etter hver
+               rulling med hjulet, og det kjentes som et rykk. Pilene og tastaturet ruller
+               fortsatt rett til neste slide. */
+            snap: 'none', landing: '1', deskA: 'transparent', deskB: 'transparent',
             /* Før sto maxW til «none»: sliden ble like bred som vinduet, og dermed like
                høy som vinduet på en 16:9-skjerm — da lå det 58px høye toppfeltet oppå
                toppen av hver slide. Bredden regnes nå ut fra høyden som faktisk er ledig. */
@@ -5669,6 +5711,10 @@ class Component extends DCLogic {
         slides: ((pg, on) => pitch.blocks.map((b, i) => ({ block: b, i, anchor: 'st' + i,
           desk: i % 2 ? pg.deskB : pg.deskA,
           base: D.veilBg(b.veil, b.type === 'cover' || b.type === 'divider', on, D.surfaceOf(pitch.meta, tplOf(pitch.meta)).paper),
+          /* Landingsside: sløret males på hele raden, ikke bare arket, så det går ut til
+             kanten på skjermer bredere enn 16:9. Sidevisning beholder bordflaten rundt arket. */
+          bandBg: pg.pages ? (i % 2 ? pg.deskB : pg.deskA) : D.veilBg(b.veil, b.type === 'cover' || b.type === 'divider', on, D.surfaceOf(pitch.meta, tplOf(pitch.meta)).paper),
+          sheetBg: pg.pages ? D.veilBg(b.veil, b.type === 'cover' || b.type === 'divider', on, D.surfaceOf(pitch.meta, tplOf(pitch.meta)).paper) : 'transparent',
           label: String(i + 1).padStart(2, '0') + ' · ' + ((LIB(b.type) || {}).name || b.type) })))(pageStyle(pitch.meta), ambFor(pitch.meta).on)
       };
     }
