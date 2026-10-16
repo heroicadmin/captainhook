@@ -2654,7 +2654,7 @@ class Component extends DCLogic {
       /* et band som fortsatt er en placeholder er lavt, og rett etter lasting fikk alle
          plass i vinduet samtidig — da ble hele decket merket som vist, og ingenting senere
          tonet inn (heller ikke en fremheving med forsinkelse). Vent på ekte høyde. */
-      if (b.offsetHeight < Math.max(120, b.offsetWidth * 0.4)) return;
+      if (!this.bandReady(b)) return;
       const r = b.getBoundingClientRect();
       if (r.top < vis.bottom && r.bottom > vis.top) b.classList.add('is-in');
     });
@@ -2700,6 +2700,15 @@ class Component extends DCLogic {
       else if (ext.getAttribute('src')) { ext.removeAttribute('src'); ext.style.opacity = '0'; }
     });
   }
+  /* Har sliden i båndet fått sin ekte størrelse? Før lyktes dette mot vinduets bredde
+     (høyde ≥ 40 % av bredden), men sliden er 16:9 og begrenses av vinduets HØYDE — i et
+     lavt eller bredt vindu (1728×700: 642 px mot en grense på 691) ble ingen slide noen
+     gang merket som vist, og all tekst som toner inn sto usynlig. Nå måles selve sliden:
+     en plassholder er flat, en ferdig slide er 16:9 uansett vindu. */
+  bandReady(b) {
+    const sl = b && b.querySelector('[data-slide]');
+    return !!sl && sl.offsetWidth > 0 && sl.offsetHeight >= Math.max(60, sl.offsetWidth * 0.4);
+  }
   observeBands() {
     this.extendBands();
     if (typeof IntersectionObserver !== 'function') return;
@@ -2722,7 +2731,7 @@ class Component extends DCLogic {
     root.querySelectorAll('[data-band]:not([data-seen])').forEach(el => {
       if (el.classList.contains('is-in')) { el.setAttribute('data-seen', '1'); return; }
       /* bandet er fortsatt en placeholder — vent til sliden har målt seg i 16:9 */
-      if (el.offsetHeight < Math.max(120, el.offsetWidth * 0.4)) return;
+      if (!this.bandReady(el)) return;
       el.setAttribute('data-seen', '1'); this._io.observe(el);
     });
     clearTimeout(this._bandT);
@@ -2733,7 +2742,7 @@ class Component extends DCLogic {
     this._bandFail = setTimeout(() => {
       const r = root.getBoundingClientRect();
       root.querySelectorAll('[data-band]:not(.is-in)').forEach(el => {
-        if (el.offsetHeight < Math.max(120, el.offsetWidth * 0.4)) return;
+        if (!this.bandReady(el)) return;
         const b = el.getBoundingClientRect();
         if (b.top < r.bottom && b.bottom > r.top) el.classList.add('is-in');
       });
